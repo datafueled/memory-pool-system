@@ -1,6 +1,6 @@
 /* protlii3.c: PROTECTION FOR LINUX (INTEL 386)
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.109/code/protlii3.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protlii3.c#9 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * SOURCES
@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <signal.h>
 
-SRCID(protlii3, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/protlii3.c#1 $");
+SRCID(protlii3, "$Id: //info.ravenbrook.com/project/mps/master/code/protlii3.c#9 $");
 
 
 /* Useful stuff that doesn't appear to be in any header files. */

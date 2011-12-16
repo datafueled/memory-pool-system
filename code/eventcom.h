@@ -1,7 +1,7 @@
 /* <code/eventcom.h> -- Event Logging Common Definitions
  *
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/eventcom.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventcom.h#10 $
  *
  * .sources: mps.design.telemetry
  */

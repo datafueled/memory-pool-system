@@ -2,7 +2,7 @@
 #
 # .quote.why: The following is in quotes because otherwise the
 # preprocessor seems to barf.
-# "$Header: //info.ravenbrook.com/project/mps/version/1.109/code/ssxcpp.s#1 $"
+# "$Header: //info.ravenbrook.com/project/mps/master/code/ssxcpp.s#1 $"
 #
 # Copyright (c) 2005 Ravenbrook Limited.  See end of file for license.
 #

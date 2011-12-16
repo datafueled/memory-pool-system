@@ -1,6 +1,6 @@
 # fri4gc.gmk: BUILD FOR FreeBSD/INTEL/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.109/code/fri4gc.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/fri4gc.gmk#15 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = fri4gc

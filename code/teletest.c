@@ -1,6 +1,6 @@
 /* teletest.c: TELEMETRY TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/teletest.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/teletest.c#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .source: The command parser here was taken and adapted from bttest.c.
@@ -13,7 +13,7 @@
 
 #include <stdlib.h>
 
-SRCID(teletest, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/teletest.c#1 $");
+SRCID(teletest, "$Id: //info.ravenbrook.com/project/mps/master/code/teletest.c#11 $");
 
 
 static mps_arena_t arena;

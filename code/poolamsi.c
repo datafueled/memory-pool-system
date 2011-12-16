@@ -1,6 +1,6 @@
 /* poolamsi.c: AUTOMATIC MARK & SWEEP POOL CLASS C INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolamsi.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolamsi.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -8,7 +8,7 @@
 #include "mps.h"
 #include "poolams.h"
 
-SRCID(poolamsi, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolamsi.c#1 $");
+SRCID(poolamsi, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamsi.c#2 $");
 
 
 /* mps_class_ams -- return the AMS pool class descriptor */

@@ -1,6 +1,6 @@
 /* th.h: THREAD MANAGER
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.109/code/th.h#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/th.h#10 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  .purpose: Provides thread suspension facilities to the shield.

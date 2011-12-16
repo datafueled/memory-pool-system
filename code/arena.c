@@ -1,6 +1,6 @@
 /* arena.c: ARENA ALLOCATION FEATURES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/arena.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/arena.c#18 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .sources: <design/arena/> is the main design document.  */
@@ -9,7 +9,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/arena.c#2 $");
+SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/master/code/arena.c#18 $");
 
 
 /* ArenaControlPool -- get the control pool */

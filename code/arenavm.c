@@ -1,6 +1,6 @@
 /* arenavm.c: VIRTUAL MEMORY ARENA CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/arenavm.c#3 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#18 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *
@@ -27,7 +27,7 @@
 #include "mpm.h"
 #include "mpsavm.h"
 
-SRCID(arenavm, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/arenavm.c#3 $");
+SRCID(arenavm, "$Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#18 $");
 
 
 /* @@@@ Arbitrary calculation for the maximum number of distinct */

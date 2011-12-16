@@ -1,6 +1,6 @@
 /* lockw3.c: RECURSIVE LOCKS IN WIN32
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/lockw3.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/lockw3.c#9 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: These are implemented using critical sections.
@@ -29,7 +29,7 @@
 
 #include "mpswin.h"
 
-SRCID(lockw3, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/lockw3.c#1 $");
+SRCID(lockw3, "$Id: //info.ravenbrook.com/project/mps/master/code/lockw3.c#9 $");
 
 
 /* .lock.win32: Win32 lock structure; uses CRITICAL_SECTION */

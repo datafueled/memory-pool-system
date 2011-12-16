@@ -1,6 +1,6 @@
 /* trace.c: GENERIC TRACER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/trace.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/trace.c#36 $
  * Copyright (c) 2001-2003, 2006, 2007 Ravenbrook Limited.
  * See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
@@ -11,7 +11,7 @@
 #include "mpm.h"
 #include <limits.h> /* for LONG_MAX */
 
-SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/trace.c#2 $");
+SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/master/code/trace.c#36 $");
 
 /* Forward declarations */
 Rank traceBand(Trace);

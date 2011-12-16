@@ -1,13 +1,13 @@
 /* pooln.c: NULL POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/pooln.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "pooln.h"
 #include "mpm.h"
 
-SRCID(pooln, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/pooln.c#1 $");
+SRCID(pooln, "$Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#10 $");
 
 
 /* PoolNStruct -- the pool structure */

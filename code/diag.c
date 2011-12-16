@@ -1,6 +1,6 @@
 /* diag.c: MEMORY POOL MANAGER DIAGNOSTICS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/diag.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/diag.c#10 $
  * Copyright (c) 2007 Ravenbrook Limited.  See end of file for license.
  *
  * To Do: [RHSK 2007-08-13]
@@ -32,6 +32,7 @@ struct RuleStruct RulesGlobal[] = {
   { "+", "DiagFilter_Rules", "*", "*" },
   { "+", "VMCompact", "*", "*" },
   /* ----v---- always on please (RHSK) ----v---- */
+  { "+", "MPSVersion", "*", "*" },
   { "+", "traceSetSignalEmergency", "*", "*" },
   { NULL, "", "", "" }
 };
@@ -189,6 +190,12 @@ enum {
   TPMatch_Yes,
   TPMatch_No
 };
+
+static void version_diag(void)
+{
+  DIAG_SINGLEF(( "MPSVersion",
+    "$S", MPSVersion(), NULL ));
+}
 
 static void rules_diag(Rule rules)
 {
@@ -406,6 +413,7 @@ static void filterStream_TagBegin(mps_lib_FILE *stream, const char *tag)
 
   if(first) {
     first = FALSE;
+    version_diag();
     rules_diag(&RulesGlobal[0]);
     diag_test();
   }

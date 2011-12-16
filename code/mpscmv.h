@@ -1,6 +1,6 @@
 /* mpscmv.h: MEMORY POOL SYSTEM CLASS "MV"
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpscmv.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpscmv.h#8 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 

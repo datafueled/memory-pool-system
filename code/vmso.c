@@ -1,6 +1,6 @@
 /* vmso.c: VIRTUAL MEMORY MAPPING FOR SOLARIS 2.x
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/vmso.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/vmso.c#9 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -55,7 +55,7 @@
 /* unistd for _SC_PAGESIZE */
 #include <unistd.h>
 
-SRCID(vmso, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/vmso.c#1 $");
+SRCID(vmso, "$Id: //info.ravenbrook.com/project/mps/master/code/vmso.c#9 $");
 
 
 /* VMStruct -- virtual memory structure */

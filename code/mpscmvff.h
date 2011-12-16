@@ -1,6 +1,6 @@
 /* mpscmvff.h: MEMORY POOL SYSTEM CLASS "MVFF"
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpscmvff.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpscmvff.h#8 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 

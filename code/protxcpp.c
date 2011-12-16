@@ -1,6 +1,6 @@
 /* protxcpp.c: PROTECTION FOR MAC OS X ON POWERPC
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.109/code/protxcpp.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protxcpp.c#3 $
  *  Copyright (c) 2001,2005 Ravenbrook Limited.  See end of file for license.
  *
  *  Most of this was copied from protso.c and modified.
@@ -31,7 +31,7 @@
 #include <signal.h>
 #include <sys/ucontext.h>
 
-SRCID(protxcpp, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/protxcpp.c#1 $");
+SRCID(protxcpp, "$Id: //info.ravenbrook.com/project/mps/master/code/protxcpp.c#3 $");
 
 /* The previously-installed signal action, as returned by */
 /* sigaction(3).  See ProtSetup. */

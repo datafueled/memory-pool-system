@@ -1,6 +1,6 @@
 /* poolmv.c: MANUAL VARIABLE POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolmv.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -31,7 +31,7 @@
 #include "poolmfs.h"
 #include "mpm.h"
 
-SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolmv.c#1 $");
+SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#11 $");
 
 
 #define mvBlockPool(mv) MFSPool(&(mv)->blockPoolStruct)

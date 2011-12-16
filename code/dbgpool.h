@@ -1,6 +1,6 @@
 /* dbgpool.h: POOL DEBUG MIXIN
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/dbgpool.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/dbgpool.h#9 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */

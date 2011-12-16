@@ -1,6 +1,6 @@
 /*  lo.h: LEAF OBJECT POOL CLASS INTERFACE
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.109/code/lo.h#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/lo.h#8 $
  *
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *

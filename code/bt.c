@@ -1,6 +1,6 @@
 /* bt.c: BIT TABLES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/bt.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/bt.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * READERSHIP
@@ -17,7 +17,7 @@
 #include "check.h"
 #include "mpm.h"
 
-SRCID(bt, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/bt.c#1 $");
+SRCID(bt, "$Id: //info.ravenbrook.com/project/mps/master/code/bt.c#10 $");
 
 
 /* BTIndexAlignUp, BTIndexAlignDown -- Align bit-table indices

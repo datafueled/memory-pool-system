@@ -1,6 +1,6 @@
 /* ref.c: REFERENCES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/ref.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/ref.c#8 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Implement operations on Ref, RefSet, ZoneSet, and Rank.
@@ -10,7 +10,7 @@
 
 #include "mpm.h"
 
-SRCID(ref, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/ref.c#1 $");
+SRCID(ref, "$Id: //info.ravenbrook.com/project/mps/master/code/ref.c#8 $");
 
 
 /* RankCheck -- check a rank value */

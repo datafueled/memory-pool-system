@@ -1,4 +1,4 @@
-; $Header: //info.ravenbrook.com/project/mps/version/1.109/code/mpslibcb.def#1 $
+; $Header: //info.ravenbrook.com/project/mps/master/code/mpslibcb.def#1 $
 ; --- EXTERNAL MPS FUNCTIONS ---
 ; This file tells the linker to export the mpslibcb functions from 
 ; the MPS DLL.

@@ -1,6 +1,6 @@
 /* zmess.c: Message test
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/zmess.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/zmess.c#2 $
  * Copyright (c) 2008 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *

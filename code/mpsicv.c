@@ -1,6 +1,6 @@
 /* mpsicv.c: MPSI COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpsicv.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpsicv.c#17 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  */

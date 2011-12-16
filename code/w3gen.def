@@ -1,4 +1,4 @@
-; $Header: //info.ravenbrook.com/project/mps/version/1.109/code/w3gen.def#1 $
+; $Header: //info.ravenbrook.com/project/mps/master/code/w3gen.def#7 $
 ; --- EXTERNAL MPS FUNCTIONS ---
 ; This is a list of the external MPS functions (those a client 
 ; might wish to call) present in the accompanying mps.lib library.

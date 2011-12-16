@@ -1,6 +1,6 @@
 /* awlut.c: POOL CLASS AWL UNIT TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/awlut.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/awlut.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN

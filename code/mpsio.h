@@ -1,6 +1,6 @@
 /* mpsio.h: RAVENBROOK MEMORY POOL SYSTEM I/O INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpsio.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpsio.h#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: For MPS client application developers, MPS developers.

@@ -1,6 +1,6 @@
 /* bttest.c: BIT TABLE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/bttest.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/bttest.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -18,7 +18,7 @@ struct itimerspec; /* stop complaints from time.h */
 #endif
 #include <time.h>
 
-SRCID(bttest, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/bttest.c#1 $");
+SRCID(bttest, "$Id: //info.ravenbrook.com/project/mps/master/code/bttest.c#10 $");
 
 
 static BT bt; /* the BT which we will use */

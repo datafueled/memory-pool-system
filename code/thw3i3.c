@@ -1,6 +1,6 @@
 /* thw3i3.c: WIN32 THREAD MANAGER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/thw3i3.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/thw3i3.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * Implements thread registration, suspension, and stack
@@ -80,7 +80,7 @@
 
 #include "mpswin.h"
 
-SRCID(thw3i3, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/thw3i3.c#1 $");
+SRCID(thw3i3, "$Id: //info.ravenbrook.com/project/mps/master/code/thw3i3.c#10 $");
 
 
 typedef struct ThreadStruct {   /* Win32 thread structure */

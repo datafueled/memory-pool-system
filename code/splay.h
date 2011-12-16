@@ -1,6 +1,6 @@
 /* splay.h: SPLAY TREE HEADER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/splay.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/splay.h#9 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .source: <design/splay/>

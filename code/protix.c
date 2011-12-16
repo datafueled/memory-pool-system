@@ -1,6 +1,6 @@
 /* protix.c: PROTECTION FOR UNIX
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.109/code/protix.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protix.c#3 $
  *  Copyright (c) 2001,2007 Ravenbrook Limited.  See end of file for license.
  *
  *  Somewhat generic across different Unix systems.  Shared between
@@ -61,7 +61,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 
-SRCID(protix, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/protix.c#1 $");
+SRCID(protix, "$Id: //info.ravenbrook.com/project/mps/master/code/protix.c#3 $");
 
 /* ProtSet -- set protection
  *

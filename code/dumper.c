@@ -1,6 +1,6 @@
 /* dumper.c: Simple Event Dumper
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/dumper.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/dumper.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MM developers.

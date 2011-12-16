@@ -1,6 +1,6 @@
 /* seg.c: SEGMENTS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/seg.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/seg.c#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: The design for this module is <design/seg/>.
@@ -29,7 +29,7 @@
 #include "tract.h"
 #include "mpm.h"
 
-SRCID(seg, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/seg.c#1 $");
+SRCID(seg, "$Id: //info.ravenbrook.com/project/mps/master/code/seg.c#11 $");
 
 
 /* SegGCSeg -- convert generic Seg to GCSeg */

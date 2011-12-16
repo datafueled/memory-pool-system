@@ -1,6 +1,6 @@
 /* finaltest.c: LARGE-SCALE FINALIZATION TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/finaltest.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/finaltest.c#3 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *

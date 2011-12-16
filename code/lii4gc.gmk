@@ -1,6 +1,6 @@
 # lii4gc.gmk: BUILD FOR LINUX/INTEL/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.109/code/lii4gc.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/lii4gc.gmk#12 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = lii4gc

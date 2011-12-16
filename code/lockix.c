@@ -1,6 +1,6 @@
 /* lockix.c: RECURSIVE LOCKS FOR POSIX SYSTEMS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/lockix.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/lockix.c#1 $
  * Copyright (c) 2001,2007 Ravenbrook Limited.  See end of file for license.
  *
  * .posix: The implementation uses a POSIX interface, and should be reusable
@@ -41,7 +41,7 @@
 #error "lockix.c is Unix specific, currently for MPS_OS_FR XC."
 #endif
 
-SRCID(lockix, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/lockix.c#1 $");
+SRCID(lockix, "$Id: //info.ravenbrook.com/project/mps/master/code/lockix.c#1 $");
 
 
 /* LockStruct -- the MPS lock structure

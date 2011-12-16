@@ -1,6 +1,6 @@
 /* vmw3.c: VIRTUAL MEMORY MAPPING FOR WIN32
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/vmw3.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/vmw3.c#9 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: See <design/vm/>.
@@ -55,7 +55,7 @@
 
 #include "mpswin.h"
 
-SRCID(vmw3, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/vmw3.c#1 $");
+SRCID(vmw3, "$Id: //info.ravenbrook.com/project/mps/master/code/vmw3.c#9 $");
 
 
 /* VMStruct -- virtual memory structure */

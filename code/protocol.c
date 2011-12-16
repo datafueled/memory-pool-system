@@ -1,6 +1,6 @@
 /* pool.c: PROTOCOL IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/protocol.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/protocol.c#9 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -10,7 +10,7 @@
 
 #include "mpm.h"
 
-SRCID(protocol, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/protocol.c#1 $");
+SRCID(protocol, "$Id: //info.ravenbrook.com/project/mps/master/code/protocol.c#9 $");
 
 
 /* ProtocolClassCheck -- check a protocol class */

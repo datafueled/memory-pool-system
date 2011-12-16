@@ -1,6 +1,6 @@
 /* locus.c: LOCUS MANAGER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/locus.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/locus.c#14 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -15,7 +15,7 @@
 #include "mpstd.h"
 #include <float.h> /* for DBL_MAX */
 
-SRCID(locus, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/locus.c#2 $");
+SRCID(locus, "$Id: //info.ravenbrook.com/project/mps/master/code/locus.c#14 $");
 
 
 /* SegPrefCheck -- check the consistency of a segment preference */

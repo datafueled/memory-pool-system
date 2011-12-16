@@ -1,6 +1,6 @@
 /* poolams.c: AUTOMATIC MARK & SWEEP POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolams.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolams.c#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -20,7 +20,7 @@
 #include "mpm.h"
 #include <stdarg.h>
 
-SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolams.c#1 $");
+SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/master/code/poolams.c#16 $");
 
 
 #define AMSSig          ((Sig)0x519A3599) /* SIGnature AMS */

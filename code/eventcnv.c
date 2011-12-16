@@ -1,7 +1,7 @@
 /* eventcnv.c: Simple event log converter
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/eventcnv.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventcnv.c#10 $
  */
 
 #include "config.h"

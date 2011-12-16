@@ -1,7 +1,7 @@
 /* <code/event.h> -- Event Logging Interface
  *
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/event.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/event.h#9 $
  *
  * READERSHIP
  *

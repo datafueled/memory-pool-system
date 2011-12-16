@@ -1,6 +1,6 @@
 /* cbs.h: CBS -- Coalescing Block Structure
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/cbs.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/cbs.h#9 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .source: <design/cbs/>.

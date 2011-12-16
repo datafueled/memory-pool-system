@@ -1,7 +1,7 @@
 @rem impl.bat.gathconf: GATHERING A RELEASE FOR CONFIGURA
 @rem
 @rem $HopeName: !gathconf.bat(trunk.1) $
-@rem $Id: //info.ravenbrook.com/project/mps/version/1.109/code/w3vc9.bat#1 $
+@rem $Id: //info.ravenbrook.com/project/mps/master/code/w3vc9.bat#1 $
 @rem Copyright (C) 2000 Harlequin Limited.  All rights reserved.
 @rem Copyright (C) 2005-2008 Ravenbrook Limited.  All rights reserved.
 

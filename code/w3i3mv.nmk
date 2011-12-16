@@ -1,6 +1,6 @@
 # w3i3mv.nmk: WINDOWS (INTEL) NMAKE FILE
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.109/code/w3i3mv.nmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/w3i3mv.nmk#18 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = w3i3mv

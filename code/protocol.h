@@ -1,6 +1,6 @@
 /* protocol.h: PROTOCOL INHERITANCE DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/protocol.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/protocol.h#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 

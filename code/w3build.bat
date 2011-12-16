@@ -1,12 +1,12 @@
 @rem impl.bat.gathconf: GATHERING A RELEASE FOR CONFIGURA
 @rem
 @rem $HopeName: !gathconf.bat(trunk.1) $
-@rem $Id: //info.ravenbrook.com/project/mps/version/1.109/code/w3build.bat#2 $
+@rem $Id: //info.ravenbrook.com/project/mps/master/code/w3build.bat#17 $
 @rem Copyright (C) 2000 Harlequin Limited.  All rights reserved.
 @rem Copyright (C) 2005-2010 Ravenbrook Limited.  All rights reserved.
 
 
-@set mpsreleasename=rel-1_109_1
+@set mpsreleasename=rel-1_109_0
 
 
 rmdir /q/s w3i3mv

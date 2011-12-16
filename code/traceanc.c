@@ -1,6 +1,6 @@
 /* traceanc.c: ANCILLARY SUPPORT FOR TRACER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/traceanc.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/traceanc.c#1 $
  * Copyright (c) 2001-2003, 2006-2008 Ravenbrook Limited.
  * See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.

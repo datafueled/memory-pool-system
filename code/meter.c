@@ -1,6 +1,6 @@
 /* meter.c: METERS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/meter.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/meter.c#9 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * TRANSGRESSIONS
@@ -13,7 +13,7 @@
 #include "meter.h"
 #include "mpm.h"
 
-SRCID(meter, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/meter.c#1 $");
+SRCID(meter, "$Id: //info.ravenbrook.com/project/mps/master/code/meter.c#9 $");
 
 
 /* MeterInit -- initialize a meter */

@@ -1,6 +1,6 @@
 /* chain.h: GENERATION CHAINS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/chain.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/chain.h#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
