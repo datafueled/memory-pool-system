@@ -1,6 +1,6 @@
 /* poolawl.c: AUTOMATIC WEAK LINKED POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/poolawl.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolawl.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *
@@ -43,7 +43,7 @@
 #include "mpm.h"
 #include "chain.h"
 
-SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/poolawl.c#1 $");
+SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolawl.c#1 $");
 
 
 #define AWLSig ((Sig)0x519B7A37) /* SIGnature PooL AWL */
@@ -1239,7 +1239,8 @@ static Bool AWLCheck(AWL awl)
   CHECKL(1uL << awl->alignShift == awl->poolStruct.alignment);
   CHECKD(Chain, awl->chain);
   /* 30 is just a sanity check really, not a constraint. */
-  CHECKL(0 <= awl->gen && awl->gen <= 30);
+  CHECKL(0 <= awl->gen);
+  CHECKL(awl->gen <= 30);
   /* Nothing to check about succAccesses. */
   CHECKL(FUNCHECK(awl->findDependent));
   /* Don't bother to check stats. */

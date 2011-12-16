@@ -1,6 +1,6 @@
 /* splay.c: SPLAY TREE IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/splay.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/splay.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Splay trees are used to manage potentially unbounded
@@ -17,7 +17,7 @@
 #include "splay.h"
 #include "mpm.h"
 
-SRCID(splay, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/splay.c#1 $");
+SRCID(splay, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/splay.c#1 $");
 
 
 /* Basic getter and setter methods */
@@ -830,8 +830,8 @@ static Compare SplayFindFirstCompare(void *key, SplayNode node)
   } else if ((*testNode)(tree, node, closureP, closureS)) {
     return CompareEQUAL;
   } else {
-    AVER(SplayNodeRightChild(node) != NULL &&
-         (*testTree)(tree, SplayNodeRightChild(node), closureP, closureS));
+    AVER(SplayNodeRightChild(node) != NULL);
+    AVER((*testTree)(tree, SplayNodeRightChild(node), closureP, closureS));
     return CompareGREATER;
   }
 }
@@ -861,8 +861,8 @@ static Compare SplayFindLastCompare(void *key, SplayNode node)
   } else if ((*testNode)(tree, node, closureP, closureS)) {
     return CompareEQUAL;
   } else {
-    AVER(SplayNodeLeftChild(node) != NULL &&
-         (*testTree)(tree, SplayNodeLeftChild(node), closureP, closureS));
+    AVER(SplayNodeLeftChild(node) != NULL);
+    AVER((*testTree)(tree, SplayNodeLeftChild(node), closureP, closureS));
     return CompareLESS;
   }
 }

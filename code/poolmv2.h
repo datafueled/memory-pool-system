@@ -1,6 +1,6 @@
 /* poolmv2.h: MANUAL VARIABLE-SIZED TEMPORAL POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/poolmv2.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolmv2.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: The implementation of the new manual-variable pool class

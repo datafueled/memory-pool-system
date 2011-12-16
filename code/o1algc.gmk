@@ -1,6 +1,6 @@
 # o1algc.gmk: BUILD FOR OSF/1, ALPHA, GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.105/code/o1algc.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.106/code/o1algc.gmk#2 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # _ANSI_C_SOURCE is defined in PFMDEFS to avoid bug in library headers
@@ -9,7 +9,7 @@
 PFM = o1algc
 PFMDEFS = -D_ANSI_C_SOURCE
 
-MPMPF = mpsliban.c mpsioan.c lockan.c than.c vmo1.c \
+MPMPF = lockan.c than.c vmo1.c \
         proto1.c prmcan.c span.c
 MPMS = sso1al.s
 

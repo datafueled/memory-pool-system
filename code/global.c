@@ -1,6 +1,6 @@
 /* global.c: ARENA-GLOBAL INTERFACES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/global.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/global.c#1 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(global, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/global.c#1 $");
+SRCID(global, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/global.c#1 $");
 
 
 /* All static data objects are declared here. See .static */

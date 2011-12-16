@@ -1,6 +1,6 @@
 /* check.h: ASSERTION INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/check.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/check.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *

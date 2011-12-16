@@ -1,6 +1,6 @@
 /* poolams.c: AUTOMATIC MARK & SWEEP POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/poolams.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolams.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -20,7 +20,7 @@
 #include "mpm.h"
 #include <stdarg.h>
 
-SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/poolams.c#1 $");
+SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolams.c#1 $");
 
 
 #define AMSSig          ((Sig)0x519A3599) /* SIGnature AMS */
@@ -1176,7 +1176,8 @@ static Res amsIterate(Seg seg, AMSObjectFunction f, void *closure)
           /* Find out how large the free block is. */
           more = BTFindLongResRange(&dummy, &nextIndex, amsseg->allocTable,
                                     i, amsseg->grains, 1);
-          AVER(more && dummy == i);
+          AVER(more);
+          AVER(dummy == i);
           next = AMS_INDEX_ADDR(seg, nextIndex);
         } else {
           /* If there's no allocTable, this is the free block at the end. */

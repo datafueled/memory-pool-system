@@ -40,9 +40,11 @@
 
 <h2><a id="section-1" name="section-1">1. Introduction</a></h2>
 
-<p> This is the procedure for building a release of the Memory Pool System from the version sources. </p>
+<p> This is the procedure for building a generic release of the Memory Pool System (an "mps-kit") from the version sources. </p>
 
-<p> The readership of this document is anyone developing the integration. </p>
+<p> The intended readership of this document is Ravenbrook development staff.  
+	(If you are a user of the MPS, and want to build object code from 
+	an mps-kit, please see the readme.txt file in the kit). </p>
 
 <p> This document is not confidential. </p>
 
@@ -57,7 +59,7 @@
 
 <ol>
 
-<li><p> Choose a release name of the form "VERSION.N" (for example,
+<li><p> Choose a RELEASE name of the form "VERSION.N" (for example,
 0.3.0). VERSION is the number of the version you're releasing.  N is the
 first unused release number (starting at zero).  Look in the index of
 releases (release/index.html) for existing release numbers for your
@@ -67,12 +69,27 @@ version. </p></li>
 contains an up-to-date description of the release you intend to build
 and the correct release name. </p> </li>
 
-<li><p> <strong>Submit <code>readme.txt</code> to Perforce
-before you continue.</strong> </p></li>
+<li><p> In
+    <code>version/<i>VERSION</i>/code/version.c</code>, 
+    set 
+    <code>MPS_RELEASE</code>
+    to the correct value (see the rules in the comments), 
+    and check strings that contain copyright dates, etc.
+</p> </li>
 
-<li><p> Determine the changelevel at which you're going to make the
+<li><p> Please update
+    <code>version/<i>VERSION</i>/example/hello-world/index.txt</code>, 
+    so that it works with the RELEASE you are creating
+    (eg. 1.106.1 &rarr; 1.106.2).
+</p> </li>
+
+<li><p> <strong>Submit <code>readme.txt</code>, 
+<code>version.c</code>, and other changed files
+to Perforce before you continue.</strong> </p></li>
+
+<li><p> Determine the CHANGELEVEL at which you're going to make the
 release.  This will usually be the latest submitted changelevel on the
-version branch; to get it use </p> <blockquote> <code>p4 changes -m 1
+version branch; to get it, use p4 changes with a max of 1 (one):</p> <blockquote> <code>p4 changes -m 1
 version/VERSION/...</code> </blockquote> </li>
 
 </ol>
@@ -86,7 +103,7 @@ version/VERSION/...</code> </blockquote> </li>
 
 <li>
 
-  <p> Sync the version sources to the changelevel you determined in step 2.1.  Sync the version sources to a clean area of the disk, to be sure that there are no extraneous files around. </p>
+  <p> Sync the version sources to the CHANGELEVEL you determined in step 2.1.  Sync the version sources to a clean area of the disk, to be sure that there are no extraneous files around. </p>
 
   <blockquote> <code>
     p4 sync version/VERSION/...#none <br />
@@ -101,7 +118,7 @@ version/VERSION/...</code> </blockquote> </li>
   <p> Create a tarball containing the MPS sources, and open it for add: </p>
 
   <blockquote><code>
-    cp -r version/VERSION mps-kit-RELEASE <br />
+    cp -R version/VERSION mps-kit-RELEASE <br />
     mkdir -p release/RELEASE<br />
     tar cf - mps-kit-RELEASE | gzip -c &gt; release/RELEASE/mps-kit-RELEASE.tar.gz <br />
     rm -r mps-kit-RELEASE<br />
@@ -121,7 +138,7 @@ version/VERSION/...</code> </blockquote> </li>
 </li>
 
 <li> <p> Submit the tarball and the readme.txt file to Perforce with
-the comment "Adding the MPS Kit tarball and readme.txt file for
+the comment "MPS: adding the MPS Kit tarball and readme.txt file for
 release RELEASE." </p> </li>
 
 </ol>
@@ -133,13 +150,27 @@ release RELEASE." </p> </li>
 
 <ol>
 
-<li> <p> Sync the version sources to the changelevel you determined in step 2.1.  Sync the version sources to a clean area of the disk, to be sure that there are no extraneous files around. </p> </li>
+<li> <p> Sync the version sources to the CHANGELEVEL you determined in step 2.1.  Sync the version sources to a clean area of the disk, to be sure that there are no extraneous files around. </p> </li>
 
-<li> <p> Launch WinZip and create a new archive called "mps-kit-RELEASE.zip" in the directory "release/RELEASE".  Add the MPS sources by selecting "version/VERSION" and turning on "Include subfolders" option. </p> </li>
+<li> <p> Using the Windows file-browser, copy the version/VERSION directory, paste a copy, and rename it mps-kit-RELEASE. </p></li>
 
-<li> <p> Make a self-extracting archive called "mps-kit-RELEASE.exe" from "mps-kit-RELEASE.zip" (in the same directory), by selcting Actions &rarr; Make .EXE File. </p> </li>
+<li> <p> Use the Info-ZIP command-line utility "zip" to create a new archive of these files, called "mps-kit-RELEASE.zip" in the directory "release/RELEASE": </p> 
+  <blockquote> <pre><code>zip -r  release\RELEASE\mps-kit-RELEASE.zip  mps-kit-RELEASE</code></pre> </blockquote>
+</li>
 
-<li> <p> Add the self-extracting archive and the zip file to Perforce with the comment "Adding the MPS Kit zip file for release RELEASE." </p> </li>
+<li> <p> Make a self-extracting archive called "mps-kit-RELEASE.exe" from "mps-kit-RELEASE.zip" (in the same directory).  The approved way to do this is to prepend the "unzipsfx.exe" extractor (here presumed to be "C:\local\bin\unzipsfx.exe"), and then adjust the offsets in the resulting file: </p>
+  <blockquote> <pre><code>copy /b  C:\local\bin\unzipsfx.exe+release\RELEASE\mps-kit-RELEASE.zip  release\RELEASE\mps-kit-RELEASE.exe
+zip -A  release\RELEASE\mps-kit-RELEASE.exe
+</code></pre> </blockquote>
+</li>
+
+<li> <p> You can check both archives like this: </p> 
+  <blockquote> <pre><code>unzip -tq  release\RELEASE\mps-kit-RELEASE.zip
+unzip -tq  release\RELEASE\mps-kit-RELEASE.exe
+</code></pre> </blockquote>
+</li>
+
+<li> <p> Add the zip file and the self-extracting archive to Perforce with the comment "MPS: adding the MPS Kit zip file for release RELEASE." </p> </li>
 
 </ol>
 
@@ -161,11 +192,29 @@ consistent with previous releases. </p></li>
 the release changelevel to the <code>releases</code> table, so that the
 correct set of known and fixed issues can be derived. </p></li>
 
-<li><p> Submit these changes with the comment "Registered release
+<li><p> Submit these changes with the comment "MPS: registered release
 RELEASE."  </p></li>
 
-<li><p> Inform the project manager and staff by e-mail to <a
-href="mailto:mps-staff@ravenbrook.com">mps-staff@ravenbrook.com</a>. </p></li>
+<li>
+  <p>
+    Edit the main MPS Project index page at
+    <code>//info.ravenbrook.com/project/mps/index.html</code>,
+    to refer to the new release:
+  </p> 
+  <ul>
+    <li> update links to 'the latest release' or 
+      'download' (important); 
+    </li>
+    <li> consider updating the 'project status' section. </li>
+  </ul>
+</li>
+
+<li><p>
+  Inform the project manager and staff by e-mail to <a
+  href="mailto:mps-staff@ravenbrook.com">mps-staff@ravenbrook.com</a>.
+  Consider announcing the new release by e-mail to 
+  <a href="mailto:mps-discussion@ravenbrook.com">mps-discussion@ravenbrook.com</a>.
+</p></li>
 
 </ol>
 
@@ -228,12 +277,42 @@ href="mailto:mps-staff@ravenbrook.com">mps-staff@ravenbrook.com</a>. </p></li>
 
 </tr>
 
+<tr valign="top">
+
+  <td>2005-10-06..31</td>
+
+  <td><a href="mailto:rhsk@ravenbrook.com">RHSK</a></td>
+
+  <td>Clarify this procedure is for general mps-kit releases; correct cp -r to -R.  Add: check version.c.</td>
+
+</tr>
+
+<tr valign="top">
+
+  <td>2006-01-19..30</td>
+
+  <td><a href="mailto:rhsk@ravenbrook.com">RHSK</a></td>
+
+  <td>Correct readership statement, and direct MPS users to the mps-kit readme.</td>
+
+</tr>
+
+<tr valign="top">
+
+  <td>2006-02-16</td>
+
+  <td><a href="mailto:rhsk@ravenbrook.com">RHSK</a></td>
+
+  <td>Use Info-ZIP (free) for Windows archives, not WinZip.</td>
+
+</tr>
+
 </table>
 
 
 <h2><a id="section-C" name="section-C">C. Copyright and License</a></h2>
 
-<p> This document is copyright &copy; 2002 <a href="http://www.ravenbrook.com/">Ravenbrook Limited</a>.  All rights reserved.  This is an open source license.  Contact Ravenbrook for commercial licensing options. </p>
+<p> This document is copyright &copy; 2002, 2005-2006 <a href="http://www.ravenbrook.com/">Ravenbrook Limited</a>.  All rights reserved.  This is an open source license.  Contact Ravenbrook for commercial licensing options. </p>
 
 <p> Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: </p>
 
@@ -254,7 +333,7 @@ href="mailto:mps-staff@ravenbrook.com">mps-staff@ravenbrook.com</a>. </p></li>
 
 <div align="center">
 
-<p><code>$Id: //info.ravenbrook.com/project/mps/version/1.105/procedure/release-build/index.html#1 $</code></p>
+<p><code>$Id: //info.ravenbrook.com/project/mps/version/1.106/procedure/release-build/index.html#7 $</code></p>
 
 <p>
 <a href="/">Ravenbrook</a> /

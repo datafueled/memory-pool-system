@@ -1,6 +1,6 @@
 # iam4cc.gmk: BUILD FOR IRIX 6 N32/MIPS IV/CC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.105/code/iam4cc.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.106/code/iam4cc.gmk#2 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # This is the GNU makefile for platform.iam4cc.
@@ -8,7 +8,7 @@
 PFM = iam4cc
 PFMDEFS = -n32
 
-MPMPF = mpsliban.c mpsioan.c lockan.c than.c vmi5.c \
+MPMPF = lockan.c than.c vmi5.c \
         protan.c prmcan.c ssan.c span.c
 SWPF = than.c vmi5.c protsw.c prmcan.c ssan.c
 

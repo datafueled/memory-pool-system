@@ -1,6 +1,6 @@
 /* prmci3li.c: PROTECTION MUTATOR CONTEXT INTEL 386 (LINUX)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/prmci3li.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/prmci3li.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This module implements the part of the protection module
@@ -25,7 +25,7 @@
 #include "prmcli.h"
 #include "prmci3.h"
 
-SRCID(prmci3li, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/prmci3li.c#1 $");
+SRCID(prmci3li, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/prmci3li.c#1 $");
 
 
 /* Prmci3AddressHoldingReg -- return an address of a register in a context */

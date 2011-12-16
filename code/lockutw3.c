@@ -1,6 +1,6 @@
 /* lockutw3.c: LOCK UTILIZATION TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/lockutw3.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/lockutw3.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -31,7 +31,7 @@ void incR(unsigned long i)
     }
   } else {
     incR(i >> 1);
-    incR(i+1 >> 1);
+    incR( (i+1) >> 1);
   }
   LockReleaseRecursive(lock);
 }
@@ -39,7 +39,7 @@ void incR(unsigned long i)
 
 void inc(unsigned long i)
 {
-  incR(i+1>>1);
+  incR( (i+1) >>1);
   i >>= 1;
   while (i) {
     LockClaim(lock);

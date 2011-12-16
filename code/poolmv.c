@@ -1,6 +1,6 @@
 /* poolmv.c: MANUAL VARIABLE POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/poolmv.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolmv.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -31,7 +31,7 @@
 #include "poolmfs.h"
 #include "mpm.h"
 
-SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/poolmv.c#1 $");
+SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolmv.c#1 $");
 
 
 #define mvBlockPool(mv) MFSPool(&(mv)->blockPoolStruct)
@@ -363,7 +363,8 @@ static Res MVSpanFree(MVSpan span, Addr base, Addr limit, Pool blockPool)
   Size freeAreaSize = 0; /* .design.largest.free */
 
   AVERT(MVSpan, span);
-  AVER(span->base.base <= base && limit <= span->limit.limit);
+  AVER(span->base.base <= base);
+  AVER(limit <= span->limit.limit);
   AVERT(Pool, blockPool);
 
   prev = NULL;
@@ -594,7 +595,8 @@ static void MVFree(Pool pool, Addr old, Size size)
   AVERT(MVSpan, span);
 
   /* the to be freed area should be within the span just found */
-  AVER(span->base.base <= base && limit <= span->limit.limit);
+  AVER(span->base.base <= base);
+  AVER(limit <= span->limit.limit);
 
   /* Unfortunately, if allocating the new block descriptor fails we */
   /* can't do anything, and the memory is lost.  See note 2. */

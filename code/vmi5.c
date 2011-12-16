@@ -1,6 +1,6 @@
 /* vmi5.c: VIRTUAL MEMORY MAPPING FOR IRIX 5 (AND 6)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/vmi5.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/vmi5.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * Design: <design/vm/>
@@ -51,7 +51,7 @@
 #define MAP_FAILED ((void *)-1)
 #endif
 
-SRCID(vmi5, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/vmi5.c#1 $");
+SRCID(vmi5, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/vmi5.c#1 $");
 
 
 /* VMStruct -- virtual memory structure */

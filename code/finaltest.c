@@ -1,6 +1,6 @@
 /* finaltest.c: LARGE-SCALE FINALIZATION TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/finaltest.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/finaltest.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -241,7 +241,7 @@ static void *test(void *arg, size_t s)
 }
 
 
-int main(int argc, char **argv)
+int main(void)
 {
   mps_arena_t arena;
   mps_thr_t thread;

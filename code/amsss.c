@@ -1,6 +1,6 @@
 /* amsss.c: POOL CLASS AMS STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/amsss.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/amsss.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -74,7 +74,7 @@ static mps_pool_debug_option_s freecheckOptions =
 static void *test(void *arg, size_t haveAmbigous)
 {
   mps_pool_t pool;
-  mps_root_t exactRoot, ambigRoot;
+  mps_root_t exactRoot, ambigRoot = NULL;
   size_t lastStep = 0, i, r;
   unsigned long objs;
   mps_ap_t busy_ap;

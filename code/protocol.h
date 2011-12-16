@@ -1,6 +1,6 @@
 /* protocol.h: PROTOCOL INHERITANCE DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/protocol.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/protocol.h#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -102,20 +102,22 @@ typedef struct ProtocolInstStruct *ProtocolInst;
  * If "pro" is an instance of "interface", then returns TRUE
  * and sets coerceResult to point directly to the part of "pro"
  * which contains the slots for "interface"
+ * RHSK  2006-04-05  s/interface/interfaceIn/: job000605, suspect msvc bug.
  */
 typedef Bool (*ProtocolCoerceInstMethod)(ProtocolInst *coerceResult,
                                          ProtocolInst pro,
-                                         ProtocolClass interface);
+                                         ProtocolClass interfaceIn);
 
 /* ProtocolCoerceClassMethod -- coerce "proClass" to an "interface" class
  *
  * If "proClass" is a subclass of "interface", then returns TRUE
  * and sets coerceResult to point directly to the part of
  * "proClass" which contains the slots for "interface".
+ * RHSK  2006-04-05  s/interface/interfaceIn/: job000605, suspect msvc bug.
  */
 typedef Bool (*ProtocolCoerceClassMethod)(ProtocolClass *coerceResult,
                                           ProtocolClass proClass,
-                                          ProtocolClass interface);
+                                          ProtocolClass interfaceIn);
 
 
 

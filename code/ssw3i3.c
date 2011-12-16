@@ -1,6 +1,6 @@
 /* ssw3i3.c: WIN32/INTEL STACK SCANNING
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/ssw3i3.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/ssw3i3.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  This scans the stack and fixes the registers which may contain
@@ -19,7 +19,7 @@
 
 #include "mpm.h"
 
-SRCID(ssw3i3, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/ssw3i3.c#1 $");
+SRCID(ssw3i3, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/ssw3i3.c#1 $");
 
 
 Res StackScan(ScanState ss, Addr *stackBot)

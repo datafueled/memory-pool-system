@@ -1,6 +1,6 @@
 /* mpmtypes.h: MEMORY POOL MANAGER TYPES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/mpmtypes.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/mpmtypes.h#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2001 Global Graphics Software.
  *
@@ -379,15 +379,16 @@ enum {
 /* <code/mps.h#result-codes> and the check in <code/mpsi.c#check.rc> */
 
 enum {
-  ResOK = 0,
-  ResFAIL,
-  ResRESOURCE,
-  ResMEMORY,
-  ResLIMIT,
-  ResUNIMPL,
-  ResIO,
-  ResCOMMIT_LIMIT,
-  ResPARAM
+  ResOK = 0,  /* MPS_RES_OK */
+  ResFAIL,  /* MPS_RES_FAIL */
+  ResRESOURCE,  /* MPS_RES_RESOURCE */
+  ResMEMORY,  /* MPS_RES_MEMORY */
+  ResLIMIT,  /* MPS_RES_LIMIT */  
+    /* note "LIMIT" does _not_ have usual end-of-enum meaning -rhsk */
+  ResUNIMPL,  /* MPS_RES_UNIMPL */
+  ResIO,  /* MPS_RES_IO */
+  ResCOMMIT_LIMIT,  /* MPS_RES_COMMIT_LIMIT */
+  ResPARAM  /* MPS_RES_PARAM */
 };
 
 
@@ -406,8 +407,8 @@ enum {
 /* .message.types: Keep in sync with <code/mps.h#message.types> */
 
 enum {
-  MessageTypeFINALIZATION,
-  MessageTypeGC,
+  MessageTypeFINALIZATION,  /* MPS_MESSAGE_TYPE_FINALIZATION */
+  MessageTypeGC,  /* MPS_MESSAGE_TYPE_GC */
   MessageTypeLIMIT
 };
 

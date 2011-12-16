@@ -1,19 +1,17 @@
 MEMORY POOL SYSTEM KIT README
 
-Richard Brooksby, Ravenbrook Limited, 2002-05-20
-
-
 CONTENTS
 
   1. Introduction
-  2. Getting started
-  3. The structure of the kit
-  4. Developing using the kit
-  5. Testing
-  6. Building and testing a release
-  7. Contributing your work
-  8. Getting help
-  9. Licensing
+  2. What's new; status
+  3. Getting started
+  4. The structure of the kit
+  5. Developing using the kit
+  6. Testing
+  7. Building and testing a release
+  8. Contributing your work
+  9. Getting help
+ 10. Licensing
   A. References
   B. Document history
   C. Copyright and license
@@ -21,7 +19,7 @@ CONTENTS
 
 1. INTRODUCTION
 
-This is the Memory Pool System Kit -- a compelete set of sources for
+This is the Memory Pool System Kit -- a complete set of sources for
 using, modifying, and adapting the MPS.
 
 The Memory Pool System (MPS) is a very general, adaptable, flexible,
@@ -48,26 +46,84 @@ extend the MPS.
 This document is not confidential.
 
 
-2. GETTING STARTED
+2. WHAT'S NEW; STATUS
+
+[
+......Post 1.106.2 changes:
+
+Functional changes to MPS code:
+
+<http://www.ravenbrook.com/project/mps/issue/job001455/>
+Defect discovered:
+  - if there was a pool of pool-class LO (leaf-only objects,
+    see mps_class_lo), the mps_arena_formatted_objects_walk() 
+    call would fail.
+Fixed: mps_arena_formatted_objects_walk() will now work.
+
+Other changes:
+
+<http://www.ravenbrook.com/project/mps/issue/job001421/>
+  - the default "all" build now builds mps library and plinth, on 
+    all platforms.
+]
+
+This is release 1.106.2, made on 2006-04-11.
+Changes from release 1.106.1:
+
+No functional changes to MPS implementation code.
+
+Fixed <http://www.ravenbrook.com/project/mps/issue/job001352/>
+  - the "mps.a" library does not (now) contain plinth files;
+  - therefore, if your MPS client code needs the example plinth
+    ("mpsplan.a"), you must link with it explicitly to obtain 
+    _mps_lib_assert_fail, _mps_clock, etc;
+  - the default "all" build now succeeds on Unix-like platforms
+    (in 1.106.1 the "all" build only worked on Mac OS X).
+
+Fixed <http://www.ravenbrook.com/project/mps/issue/job000605/>
+Fixed <http://www.ravenbrook.com/project/mps/issue/job001366/>
+  - the default Windows "all" build now works with Visual C++ 6.0.
+
+Work on <http://www.ravenbrook.com/project/mps/issue/job001365/>
+  - hopefully fixed some build problems with Visual C++ 7.0.
+
+Fixed <http://www.ravenbrook.com/project/mps/issue/job001367/>
+  - there is a "hello-world" example of using the MPS, in:
+      example/hello-world/index.txt
+
+See:
+  <http://www.ravenbrook.com/project/mps/release/>
+for further details of this release (including defects found), and 
+details of earlier and later releases.  
+
+For more information about the status and progress of the MPS project, 
+consult the project home-page: <http://www.ravenbrook.com/project/mps/>.
+
+
+3. GETTING STARTED
 
 The MPS Kit is a complete set of sources and documentation to enable
 third parties to use, modify, and adapt the MPS.
 
 For Windows, the kit is distributed as the self-extracting archive
-"mps-kit-1.100.1.exe", and also as the ZIP archive
-"mps-kit-1.100.1.zip", which may be unpacked using WinZip.
+"mps-kit-1.106.2.exe", and also as the ZIP archive
+"mps-kit-1.106.2.zip", which may be unpacked using WinZip.
 
 For Unix and Mac OS X, the integration kit is distributed as the tarball
-"mps-kit-1.100.1.tar.gz".  Unpack it using the command "gunzip -c
-mps-kit-1.100.1.tar.gz | tar xvf -", or by dropping the file onto
+"mps-kit-1.106.2.tar.gz".  Unpack it using the command "gunzip -c
+mps-kit-1.106.2.tar.gz | tar xvf -", or by dropping the file onto
 StuffIt Expander under Mac OS X.
 
 The top-level file "index.html" in the sources indexes many other files,
 and is a good place to start.  You should read the user manuals and the
 high level design documents.
 
+A quick start to writing code that uses the MPS is the "hello-world" 
+example:
+    example/hello-world/index.txt
 
-3. THE STRUCTURE OF THE KIT
+
+4. THE STRUCTURE OF THE KIT
 
 The Integration Kit is a copy of the sources used to develop and
 maintain the MPS at Ravenbrook Limited <http://www.ravenbrook.com/>. The
@@ -101,7 +157,7 @@ number.  We've only been able to include a few key documents in the open
 source release so far.
 
 
-4. DEVELOPING USING THE KIT
+5. DEVELOPING USING THE KIT
 
 The MPS can be built on a wide variety of platforms.  For Unix-like
 platforms you will need the GNU Make tool.  Some platforms (such as
@@ -182,13 +238,13 @@ such as "amcss" (a stress test for the Automatic Mostly-Copying pool
 class).
 
 
-5. TESTING
+6. TESTING
 
 There is an extensive regression test suite in the "test" directory, but
 we have not yet had time to make it easy to run.
 
 
-6. BUILDING A RELEASE
+7. BUILDING A RELEASE
 
 The procedure for building a release of the MPS is in
 "procedure/release-build".  This will only be of interest if you are
@@ -197,7 +253,7 @@ to do this, please get in touch with us <mps-questions@ravenbrook.com>
 to discuss it.
 
 
-7. CONTRIBUTING YOUR WORK
+8. CONTRIBUTING YOUR WORK
 
 We'd like to include improvements to the MPS in the distributions from
 Ravenbrook Limited.  Please consider putting your work under a
@@ -208,7 +264,7 @@ that the documentation is up to date (even if only with sketchy but
 accurate notes) and the procedures have been maintained.
 
 
-8. GETTING HELP
+9. GETTING HELP
 
 You can obtain expert professional support for the MPS from Ravenbrook
 Limited <http://www.ravenbrook.com/>, the developers of the MPS, who
@@ -221,7 +277,7 @@ mps-discussion-request@ravenbrook.com or send the word "help" for
 general information.
 
 
-9. LICENSING
+10. LICENSING
 
 The MPS is distributed under an open source license (see the file
 "license.txt").  The license is designed to make it possible for you to
@@ -248,17 +304,22 @@ Richard Brooksby; Ravenbrook Limited; 2002-06-18;
 
 B. DOCUMENT HISTORY
 
-2002-05-20  RB  Created based on template from P4DTI project.
-2002-06-18  NB  Minor updates and corrections.
-2002-06-18  RB  Removed obsolete requirement for MASM.
-2002-06-19  NB  Added note on self-extracting archive
+2002-05-20  RB    Original author: Richard Brooksby, Ravenbrook Limited.
+2002-05-20  RB    Created based on template from P4DTI project.
+2002-06-18  NB    Minor updates and corrections.
+2002-06-18  RB    Removed obsolete requirement for MASM.
+2002-06-19  NB    Added note on self-extracting archive
+2006-01-30  RHSK  Update from "1.100.1" to "1.106.1".
+2006-03-30  RHSK  Add section 2: What's new.
+2006-04-11  RHSK  Update from "1.106.1" to "1.106.2".
+2006-06-29  RHSK  Note fixed job001421, job001455.
 
 
 C. COPYRIGHT AND LICENSE
 
-Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
-All rights reserved.  This is an open source license.  Contact
-Ravenbrook for commercial licensing options.
+Copyright (C) 2001-2002, 2006 Ravenbrook Limited.  All rights reserved.
+<http://www.ravenbrook.com/>.  This is an open source license.  
+Contact Ravenbrook for commercial licensing options.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -294,4 +355,4 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-$Id: //info.ravenbrook.com/project/mps/version/1.105/readme.txt#1 $
+$Id: //info.ravenbrook.com/project/mps/version/1.106/readme.txt#7 $

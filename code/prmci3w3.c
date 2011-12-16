@@ -1,6 +1,6 @@
 /* prmci3w3.c: PROTECTION MUTATOR CONTEXT INTEL 386 (Win32)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/prmci3w3.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/prmci3w3.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * PURPOSE
@@ -23,7 +23,7 @@
 #include "prmci3.h"
 #include "mpm.h"
 
-SRCID(prmci3w3, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/prmci3w3.c#1 $");
+SRCID(prmci3w3, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/prmci3w3.c#1 $");
 
 
 /* Prmci3AddressHoldingReg -- Return an address for a given machine register */

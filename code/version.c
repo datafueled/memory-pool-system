@@ -1,7 +1,8 @@
 /* version.c: VERSION INSPECTION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/version.c#1 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/version.c#3 $
+ * Copyright (c) 2001, 2006 Ravenbrook Limited.  
+ * See end of file for license.
  *
  * PURPOSE
  *
@@ -16,17 +17,19 @@
 
 #include "mpm.h"
 
-SRCID(version, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/version.c#1 $");
+SRCID(version, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/version.c#3 $");
 
 
 /* MPS_RELEASE -- the release name
  *
  * .release: When making a new release, change the expansion of
- * MPS_RELEASE to be a string of the form "release.dylan.crow.2" or
+ * MPS_RELEASE to be a string of the form "release/1.106.1" or
  * whatever.
+ *
+ * (Note: before 2006-02-01 the style was "release.epcore.chub")
  */
 
-#define MPS_RELEASE "release.epcore.chub"
+#define MPS_RELEASE "release/1.106.2"
 
 
 /* MPSCopyrightNotice -- copyright notice for the binary
@@ -36,13 +39,15 @@ SRCID(version, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/versio
  */
 
 char MPSCopyrightNotice[] =
-  "Portions copyright (c) 2002 Ravenbrook Limited and Global Graphics Software.";
+  "Portions copyright (c) 2006 Ravenbrook Limited and Global Graphics Software.";
 
 
 /* MPSVersion -- return version string
  *
  * The value of MPSVersion is a declared object comprising the
- * concatenation of all the version info.
+ * concatenation of all the version info.  The "@(#)" prefix 
+ * is the convention used by the BSD Unix command what(1); 
+ * see also guide.mps.version.
  */
 
 char MPSVersionString[] =
@@ -58,7 +63,8 @@ char *MPSVersion(void)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2002, 2006 Ravenbrook Limited 
+ * <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

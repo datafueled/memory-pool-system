@@ -1,6 +1,6 @@
 /* poollo.c: LEAF POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/poollo.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/poollo.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -12,7 +12,7 @@
 #include "mpm.h"
 #include "mps.h"
 
-SRCID(poollo, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/poollo.c#1 $");
+SRCID(poollo, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/poollo.c#2 $");
 
 
 #define LOGen ((Serial)1)
@@ -460,7 +460,7 @@ static void LOWalk(Pool pool, Seg seg,
     }
     object = AddrAdd(object, format->headerSize);
     next = (*format->skip)(object);
-    next = AddrSub(object, format->headerSize);
+    next = AddrSub(next, format->headerSize);
     j = loIndexOfAddr(base, lo, next);
     AVER(i < j);
     (*f)(object, pool->format, pool, p, s);
@@ -639,8 +639,10 @@ static void LOBufferEmpty(Pool pool, Buffer buffer, Addr init, Addr limit)
   segBase = SegBase(seg);
 
   AVER(AddrIsAligned(base, PoolAlignment(pool)));
-  AVER(segBase <= base && base < SegLimit(seg));
-  AVER(segBase <= init && init <= SegLimit(seg));
+  AVER(segBase <= base);
+  AVER(base < SegLimit(seg));
+  AVER(segBase <= init);
+  AVER(init <= SegLimit(seg));
 
   /* convert base, init, and limit, to quantum positions */
   baseIndex = loIndexOfAddr(segBase, lo, base);

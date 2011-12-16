@@ -1,6 +1,6 @@
 # lii4gc.gmk: BUILD FOR LINUX/INTEL/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.105/code/lii4gc.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.106/code/lii4gc.gmk#2 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = lii4gc
@@ -10,7 +10,7 @@ THREADLIB = -lpthread
 
 PFMDEFS = -D_REENTRANT
 
-MPMPF = mpsliban.c mpsioan.c ${THREADSRC} vmli.c \
+MPMPF = ${THREADSRC} vmli.c \
         protli.c protlii3.c proti3.c prmci3li.c sslii3.c span.c
 SWPF = than.c vmli.c protsw.c prmcan.c ssan.c
 

@@ -1,13 +1,13 @@
 # sos8gp.gmk: BUILD FOR SOLARIS/SPARC v8/GCC WITH PROFILING PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.105/code/sos8gp.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.106/code/sos8gp.gmk#2 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # This is the GNU makefile for platform.sos8gp.
 
 PFM = sos8gp
 
-MPMPF = mpsliban.c mpsioan.c lockan.c than.c vmso.c \
+MPMPF = lockan.c than.c vmso.c \
         protso.c prmcan.c span.c
 MPMS = sssos8.s
 SWPF = than.c vmso.c protsw.c prmcan.c ssan.c

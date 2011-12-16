@@ -1,7 +1,7 @@
 /* eventpro.h: Interface for event processing routines
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/eventpro.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/eventpro.h#1 $
  */
 
 #ifndef eventpro_h

@@ -1,6 +1,6 @@
 /* trace.c: GENERIC TRACER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/trace.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/trace.c#1 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -10,7 +10,7 @@
 #include "mpm.h"
 #include <limits.h> /* for LONG_MAX */
 
-SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/trace.c#1 $");
+SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/trace.c#1 $");
 
 
 /* Types */
@@ -1401,7 +1401,8 @@ void TraceStart(Trace trace, double mortality, double finishingTime)
 
   AVERT(Trace, trace);
   AVER(trace->state == TraceINIT);
-  AVER(0.0 <= mortality && mortality <= 1.0);
+  AVER(0.0 <= mortality);
+  AVER(mortality <= 1.0);
   arena = trace->arena;
   AVER(finishingTime >= 0.0);
 

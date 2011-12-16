@@ -1,6 +1,6 @@
 /*  poolmrg.h: MANUAL RANK GUARDIAN POOL CLASS INTERFACE
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.105/code/poolmrg.h#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolmrg.h#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *  Portions copyright (c) 2002 Global Graphics Software.
  */

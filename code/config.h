@@ -1,6 +1,6 @@
 /* config.h: MPS CONFIGURATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/config.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/config.h#2 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *

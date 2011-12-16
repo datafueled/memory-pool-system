@@ -1,6 +1,6 @@
 /* locv.c: LEAF OBJECT POOL CLASS COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/locv.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/locv.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * This is (not much of) a coverage test for the Leaf Object
@@ -21,6 +21,9 @@ static void move(mps_addr_t object, mps_addr_t to);
 static mps_addr_t isMoved(mps_addr_t object);
 static void copy(mps_addr_t old, mps_addr_t new);
 static void pad(mps_addr_t base, size_t size);
+
+static void stepper(mps_addr_t addr, mps_fmt_t fmt, mps_pool_t pool, 
+                    void *p, size_t s);
 
 static mps_fmt_A_s locv_fmt =
   {
@@ -61,17 +64,26 @@ int main(void)
   die(mps_reserve(&p, ap, (size_t)4), "mps_reserve 4");
   *(mps_word_t *)p = 4;
   cdie(mps_commit(ap, p, (size_t)4), "commit 4");
+  
   die(mps_reserve(&roots[1], ap, (size_t)8), "mps_reserve 8");
   p = roots[1];
   *(mps_word_t *)p = 8;
   cdie(mps_commit(ap, p, (size_t)8), "commit 8");
+  
   die(mps_reserve(&p, ap, (size_t)4096), "mps_reserve 4096");
   *(mps_word_t *)p = 4096;
   cdie(mps_commit(ap, p, (size_t)4096), "commit 4096");
+  
   die(mps_reserve(&p, ap, (size_t)4), "mps_reserve last");
   *(mps_word_t *)p = 4;
   cdie(mps_commit(ap, p, (size_t)4), "commit last");
 
+  {
+    size_t count = 0;
+    mps_arena_formatted_objects_walk(arena, stepper, &count, 0);
+    cdie(count == 4, "walk 4 objects");
+  }
+  
   mps_ap_destroy(ap);
   mps_pool_destroy(pool);
   mps_fmt_destroy(format);
@@ -134,6 +146,22 @@ static void pad(mps_addr_t base, size_t size)
   testlib_unused(size);
   cdie(0, "pad");
 }
+
+static void stepper(mps_addr_t addr, mps_fmt_t fmt, mps_pool_t pool, 
+                    void *p, size_t s)
+{
+  size_t *pcount;
+
+  testlib_unused(addr);
+  testlib_unused(fmt);
+  testlib_unused(pool);
+  testlib_unused(s);
+  
+  pcount = p;
+  *pcount += 1;
+  return;
+}
+
 
 
 /* C. COPYRIGHT AND LICENSE

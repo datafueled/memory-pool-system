@@ -1,6 +1,6 @@
 /* testlib.c: TEST LIBRARY
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/testlib.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/testlib.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -17,6 +17,16 @@
 struct itimerspec; /* stop complaints from time.h */
 #endif
 #include <time.h>
+
+#ifdef MPS_OS_W3
+#ifdef _MSC_VER
+#pragma warning(disable: 4702)  /* unreachable code */
+ /* job000605: believed needed to prevent VC7 warning 
+  * for error() below, in which va_end is mandated by 
+  * ISO C (C99:7.15.1) even though it is unreachable.
+  */
+#endif
+#endif
 
 
 /* rnd -- a random number generator

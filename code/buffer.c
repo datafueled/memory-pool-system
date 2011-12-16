@@ -1,6 +1,6 @@
 /* buffer.c: ALLOCATION BUFFER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/buffer.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/buffer.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is (part of) the implementation of allocation buffers.
@@ -26,7 +26,7 @@
 
 #include "mpm.h"
 
-SRCID(buffer, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/buffer.c#1 $");
+SRCID(buffer, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/buffer.c#1 $");
 
 
 /* forward declarations */

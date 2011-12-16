@@ -1,6 +1,6 @@
 /* vmxc.c: VIRTUAL MEMORY MAPPING FOR MacOS X
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/vmxc.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/vmxc.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: <design/vm/>
@@ -38,7 +38,7 @@
 #include <unistd.h>
 #include <limits.h> /* for INT_MAX */
 
-SRCID(vmxc, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/vmxc.c#1 $");
+SRCID(vmxc, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/vmxc.c#1 $");
 
 
 /* VMStruct -- virtual memory structure */

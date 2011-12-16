@@ -1,6 +1,6 @@
 # sos8cx.gmk: BUILD FOR SOLARIS/SPARC v8/CXREF PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.105/code/sos8cx.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.106/code/sos8cx.gmk#2 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # Instead of compiling object files, this platform (using the cxref
@@ -10,7 +10,7 @@
 
 PFM = sos8cx
 
-MPMPF = mpsliban.c mpsioan.c lockan.c than.c vmso.c \
+MPMPF = lockan.c than.c vmso.c \
         protso.c prmcan.c span.c
 SWPF = than.c vmso.c protsw.c prmcan.c ssan.c
 LIBS = -lm

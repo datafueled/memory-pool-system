@@ -1,6 +1,6 @@
 # comm.gmk: COMMON GNUMAKEFILE FRAGMENT
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.105/code/comm.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.106/code/comm.gmk#4 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # DESCRIPTION
@@ -269,7 +269,7 @@ all: mpmss sacss amcss amcsshe amsss amssshe segsmss awlut awluthe \
      finalcv finaltest arenacv bttest teletest \
      abqtest cbstest btcv mv2test messtest steptest \
      eventcnv walkt0 libcbt \
-     mps.a
+     mps.a mpsplan.a
 
 swall: mmsw.a replaysw
 
