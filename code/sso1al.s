@@ -1,6 +1,6 @@
  # sso1al.s: STACK SCANNING FOR DIGITAL UNIX / ALPHA
  #
- # $Id: //info.ravenbrook.com/project/mps/version/1.106/code/sso1al.s#1 $
+ # $Id: //info.ravenbrook.com/project/mps/version/1.107/code/sso1al.s#1 $
  # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  #
  # .readership: Any MPS developer that is prepared to read Alpha

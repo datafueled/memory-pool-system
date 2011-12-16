@@ -1,6 +1,6 @@
 /* abqtest.c: AVAILABLE BLOCK QUEUE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/abqtest.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/abqtest.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -20,7 +20,7 @@ struct itimerspec; /* stop complaints from time.h */
 #include <math.h>
 
 
-SRCID(abqtest, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/abqtest.c#1 $");
+SRCID(abqtest, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/abqtest.c#1 $");
 
 
 static ABQStruct abq; /* the ABQ which we will use */

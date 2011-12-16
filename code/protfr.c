@@ -1,6 +1,6 @@
 /* protfr.c: PROTECTION FOR FreeBSD
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.106/code/protfr.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.107/code/protfr.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  */
@@ -20,7 +20,7 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 
-SRCID(protfr, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/protfr.c#1 $");
+SRCID(protfr, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/protfr.c#1 $");
 
 
 /* ProtSet -- set protection

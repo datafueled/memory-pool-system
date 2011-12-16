@@ -1,6 +1,6 @@
 /* boot.c: BOOTSTRAP ALLOCATOR
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/boot.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/boot.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .overview: A structure and protocols for allocating memory from a
@@ -14,7 +14,7 @@
 #include "boot.h"
 #include "mpm.h"
 
-SRCID(boot, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/boot.c#1 $");
+SRCID(boot, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/boot.c#1 $");
 
 
 #define BootBlockSig ((Sig)0x519B002B) /* SIGnature BOOT Block */

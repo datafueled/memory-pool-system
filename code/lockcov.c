@@ -1,6 +1,6 @@
 /* lockcov.c: LOCK COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/lockcov.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/lockcov.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 

@@ -1,6 +1,6 @@
 /* proti3.c: PROTECTION MUTATOR CONTEXT (INTEL 386)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/proti3.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/proti3.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: See <design/prot/> for the generic design of the interface
@@ -52,7 +52,7 @@
 #include "mpm.h"
 #include "prmci3.h"
 
-SRCID(proti3, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/proti3.c#1 $");
+SRCID(proti3, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/proti3.c#1 $");
 
 
 /* DecodeCB -- Decode an Intel x86 control byte into Hi, Medium & Low fields */

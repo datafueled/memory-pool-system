@@ -48,8 +48,8 @@ This document is not confidential.
 
 2. WHAT'S NEW; STATUS
 
-[
-......Post 1.106.2 changes:
+This is release 1.107.0, made on 2006-12-13.
+Changes from release 1.106.2:
 
 Functional changes to MPS code:
 
@@ -60,15 +60,33 @@ Defect discovered:
     call would fail.
 Fixed: mps_arena_formatted_objects_walk() will now work.
 
+<http://www.ravenbrook.com/project/mps/issue/job000666/>
+  - when MPS starts a garbage collection, it now tells 
+    the client by posting a message of the new type
+    mps_message_type_gc_start().  The message includes 
+    a textual explanation (for the client programmer) 
+    of why this collection was triggered.
+
+<http://www.ravenbrook.com/project/mps/issue/job001545/>
+<http://www.ravenbrook.com/project/mps/issue/job001546/>
+  - hot varieties contain asserts (AVERs and checks) now
+  - hot varieties do not gather statistics
+
 Other changes:
 
 <http://www.ravenbrook.com/project/mps/issue/job001421/>
   - the default "all" build now builds mps library and plinth, on 
     all platforms.
-]
 
-This is release 1.106.2, made on 2006-04-11.
-Changes from release 1.106.1:
+<http://www.ravenbrook.com/project/mps/issue/job001530/>
+  - Mac OS X on Intel now buildable; see build notes.
+
+Some work-in-progress MPS documentation is available; see:
+  manual/wiki/index.html
+
+
+[
+Historical: changes in release 1.106.2 (2006-04-11):
 
 No functional changes to MPS implementation code.
 
@@ -90,6 +108,7 @@ Work on <http://www.ravenbrook.com/project/mps/issue/job001365/>
 Fixed <http://www.ravenbrook.com/project/mps/issue/job001367/>
   - there is a "hello-world" example of using the MPS, in:
       example/hello-world/index.txt
+]
 
 See:
   <http://www.ravenbrook.com/project/mps/release/>
@@ -106,12 +125,12 @@ The MPS Kit is a complete set of sources and documentation to enable
 third parties to use, modify, and adapt the MPS.
 
 For Windows, the kit is distributed as the self-extracting archive
-"mps-kit-1.106.2.exe", and also as the ZIP archive
-"mps-kit-1.106.2.zip", which may be unpacked using WinZip.
+"mps-kit-1.107.0.exe", and also as the ZIP archive
+"mps-kit-1.107.0.zip", which may be unpacked using WinZip.
 
 For Unix and Mac OS X, the integration kit is distributed as the tarball
-"mps-kit-1.106.2.tar.gz".  Unpack it using the command "gunzip -c
-mps-kit-1.106.2.tar.gz | tar xvf -", or by dropping the file onto
+"mps-kit-1.107.0.tar.gz".  Unpack it using the command "gunzip -c
+mps-kit-1.107.0.tar.gz | tar xvf -", or by dropping the file onto
 StuffIt Expander under Mac OS X.
 
 The top-level file "index.html" in the sources indexes many other files,
@@ -312,7 +331,9 @@ B. DOCUMENT HISTORY
 2006-01-30  RHSK  Update from "1.100.1" to "1.106.1".
 2006-03-30  RHSK  Add section 2: What's new.
 2006-04-11  RHSK  Update from "1.106.1" to "1.106.2".
+2006-04-14  RHSK  Merge updates from version/1.106 back to master.
 2006-06-29  RHSK  Note fixed job001421, job001455.
+2006-12-13  RHSK  Release 1.107.0
 
 
 C. COPYRIGHT AND LICENSE
@@ -355,4 +376,4 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-$Id: //info.ravenbrook.com/project/mps/version/1.106/readme.txt#7 $
+$Id: //info.ravenbrook.com/project/mps/version/1.107/readme.txt#3 $

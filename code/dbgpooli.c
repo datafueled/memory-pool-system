@@ -1,6 +1,6 @@
 /* dbgpooli.c: POOL DEBUG MIXIN C INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/dbgpooli.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/dbgpooli.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -11,7 +11,7 @@
 #include "mps.h"
 #include "mpm.h"
 
-SRCID(dbgpooli, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/dbgpooli.c#1 $");
+SRCID(dbgpooli, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/dbgpooli.c#1 $");
 
 
 /* mps_pool_check_fenceposts -- check all the fenceposts in the pool */

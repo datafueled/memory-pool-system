@@ -1,6 +1,6 @@
 /* reserv.c: ARENA RESERVOIR
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/reserv.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/reserv.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * IMPROVEMENTS
@@ -11,7 +11,7 @@
 
 #include "mpm.h"
 
-SRCID(reserv, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/reserv.c#1 $");
+SRCID(reserv, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/reserv.c#1 $");
 
 
 /* The reservoir pool is defined here. See <design/reservoir/> */

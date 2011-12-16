@@ -1,6 +1,6 @@
 /* mps.h: RAVENBROOK MEMORY POOL SYSTEM C INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/mps.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/mps.h#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -65,17 +65,20 @@ enum {
   MPS_RES_PARAM                 /* illegal user parameter value */
 };
 
-/* .message.types: Keep in sync with <code/mpmtypes.h#message.types> */
+/* <a id="message.types"> Keep in sync with
+ * <code/mpmtypes.h#message.types> */
 /* Not meant to be used by clients, they should use the macros below. */
 enum {
   MPS_MESSAGE_TYPE_FINALIZATION,
-  MPS_MESSAGE_TYPE_GC
+  MPS_MESSAGE_TYPE_GC,
+  MPS_MESSAGE_TYPE_GC_START
 };
 
 /* Message Types
  * This is what clients should use. */
 #define mps_message_type_finalization() MPS_MESSAGE_TYPE_FINALIZATION
 #define mps_message_type_gc() MPS_MESSAGE_TYPE_GC
+#define mps_message_type_gc_start() MPS_MESSAGE_TYPE_GC_START
 
 
 /* Reference Ranks
@@ -186,7 +189,8 @@ typedef struct mps_fmt_A_s {
   mps_fmt_isfwd_t isfwd;
   mps_fmt_pad_t   pad;
 } mps_fmt_A_s;
-typedef struct mps_fmt_A_s *mps_fmt_A_t;  /* deprecated */
+typedef struct mps_fmt_A_s *mps_fmt_A_t;
+/* type-name mps_fmt_A_t is deprecated: use mps_fmt_A_s* instead */
 
 typedef struct mps_fmt_B_s {
   mps_align_t     align;
@@ -198,7 +202,8 @@ typedef struct mps_fmt_B_s {
   mps_fmt_pad_t   pad;
   mps_fmt_class_t mps_class;
 } mps_fmt_B_s;
-typedef struct mps_fmt_B_s *mps_fmt_B_t;  /* deprecated */
+typedef struct mps_fmt_B_s *mps_fmt_B_t;
+/* type-name mps_fmt_B_t is deprecated: use mps_fmt_B_s* instead */
 
 
 typedef struct mps_fmt_auto_header_s {
@@ -534,6 +539,10 @@ extern size_t mps_message_gc_condemned_size(mps_arena_t, mps_message_t);
 
 extern size_t mps_message_gc_not_condemned_size(mps_arena_t,
                                                 mps_message_t);
+
+/* MPS_MESSAGE_TYPE_GC_START */
+
+extern const char *mps_message_gc_start_why(mps_arena_t, mps_message_t);
 
 
 /* Finalization */

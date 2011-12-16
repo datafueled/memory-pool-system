@@ -1,6 +1,6 @@
 /* mpm.c: GENERAL MPM SUPPORT
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/mpm.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/mpm.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Miscellaneous support for the implementation of the MPM
@@ -15,10 +15,10 @@
 #include <float.h>
 #include <limits.h>
 
-SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/mpm.c#2 $");
+SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/mpm.c#1 $");
 
 
-#if defined(CHECK)
+#if defined(AVER_AND_CHECK)
 
 
 /* CheckLevel -- Control check level 
@@ -26,7 +26,7 @@ SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/mpm.c#2 $"
  * This controls the behaviour of Check methods (see impl.h.check).
  */
 
-unsigned CheckLevel = CHECK_DEFAULT;
+unsigned CheckLevel = CHECKLEVEL_INITIAL;
 
 
 /* MPMCheck -- test MPM assumptions */
@@ -123,7 +123,7 @@ Bool AlignCheck(Align align)
 }
 
 
-#endif /* defined(CHECK) */
+#endif /* defined(AVER_AND_CHECK) */
 
 
 /* WordIsAligned -- test whether a word is aligned */

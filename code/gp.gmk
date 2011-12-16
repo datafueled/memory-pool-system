@@ -1,6 +1,6 @@
 # gp.gmk: GNUMAKEFILE FRAGMENT FOR GNU CC/GPROF
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.106/code/gp.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.107/code/gp.gmk#1 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # This file is included by platform makefiles that use the GNU CC

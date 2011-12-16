@@ -1,6 +1,6 @@
 /* pthreadext.h: POSIX THREAD EXTENSIONS
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.106/code/pthrdext.h#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.107/code/pthrdext.h#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MM developers.

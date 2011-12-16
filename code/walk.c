@@ -1,13 +1,13 @@
 /* walk.c: OBJECT WALKER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/walk.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/walk.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "mpm.h"
 #include "mps.h"
 
-SRCID(walk, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/walk.c#1 $");
+SRCID(walk, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/walk.c#1 $");
 
 
 /* Heap Walking
@@ -310,7 +310,7 @@ static Res ArenaRootsWalk(Globals arenaGlobals, mps_roots_stepper_t f,
   /* call the client closure.  This fix method must perform no tracing */
   /* operations of its own. */
 
-  res = TraceCreate(&trace, arena);
+  res = TraceCreate(&trace, arena, TraceStartWhyWALK);
   /* Have to fail if no trace available.  Unlikely due to .assume.parked. */
   if (res != ResOK)
     return res;

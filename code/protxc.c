@@ -1,6 +1,6 @@
 /* protxc.c: PROTECTION FOR Mac OS X
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.106/code/protxc.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.107/code/protxc.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  This was mostly copied from protfr.c, in fact, there is nothing
@@ -25,7 +25,7 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 
-SRCID(protxc, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/protxc.c#1 $");
+SRCID(protxc, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/protxc.c#1 $");
 
 
 /* ProtSet -- set protection

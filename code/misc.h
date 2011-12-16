@@ -1,6 +1,6 @@
 /* misc.h: MISCELLANEOUS DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/misc.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/misc.h#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -90,6 +90,17 @@ typedef const struct SrcIdStruct {
 #define STR_(x) #x
 #define STR(x) STR_(x)
 
+/* NELEMS -- counts number of elements in an array
+ *
+ * NELEMS(a) expands into an expression that is the number
+ * of elements in the array a.
+ *
+ * WARNING: expands a more than once (you'd have to write obviously
+ * perverse code for this to matter though).
+ */
+
+#define NELEMS(a) (sizeof(a)/sizeof((a)[0]))
+
 
 /* DISCARD -- discards an expression, but checks syntax
  *
@@ -137,13 +148,14 @@ typedef const struct SrcIdStruct {
 /* PARENT -- parent structure
  *
  * Given a pointer to a field of a structure this returns a pointer to
- * the main structure.  PARENT(foo_t, x, foo->x) == foo.
+ * the main structure.  PARENT(foo_t, x, &(foo->x)) == foo.
  *
  * This macro is thread-safe, see design.mps.misc.parent.thread-safe.
  *
  * That intermediate (void *) is required to stop some compilers complaining
  * about alignment of 'type *' being greater than that of 'char *'.  Which
- * is true, but not a bug, since p really is a pointer into a 'type' struct.
+ * is true, but not a bug, since the result really is a pointer to a 'type'
+ * struct.
  */
 
 #define PARENT(type, field, p) \
@@ -169,7 +181,7 @@ typedef const struct SrcIdStruct {
 #define BS_DEL(ty, s, i)        BS_DIFF((s), BS_SINGLE(ty, (i)))
 #define BS_SUPER(s1, s2)        (BS_INTER((s1), (s2)) == (s2))
 #define BS_SUB(s1, s2)          BS_SUPER((s2), (s1))
-#define BS_IS_SINGLE(s)         (((s) & ((s)-1)) == 0)
+#define BS_IS_SINGLE(s)         (  ((s) != 0)  &&  (((s) & ((s)-1)) == 0)  )
 #define BS_SYM_DIFF(s1, s2)     ((s1) ^ (s2))
 
 

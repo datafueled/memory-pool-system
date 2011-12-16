@@ -1,7 +1,7 @@
 /* config.h: MPS CONFIGURATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/config.h#2 $
- * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/config.h#1 $
+ * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
  * PURPOSE
@@ -23,40 +23,71 @@
 
 /* First deal with old-style CONFIG_VAR_* build directives.  These
  * must be translated into the new directives CONFIG_ASSERT,
- * CONFIG_LOG, and CONFIG_DEBUG.
+ * CONFIG_DEBUG, and CONFIG_LOG.
  *
  * One day the old build system may be converted to use the new
  * directives.
  */
 
-#if defined(CONFIG_VAR_HI) || defined(CONFIG_VAR_HE) /* Hot varieties */
-#define CONFIG_DEBUG
-#define CHECK_DEFAULT CheckNONE
+#if defined(CONFIG_VAR_WI) || defined(CONFIG_VAR_WE) /* White-hot varieties */
+/* no asserts */
+/* ... so CHECKLEVEL_INITIAL is irrelevant */
+/* no debug diagnostic statistic meters */
+/* no telemetry log events */
+
+#elif defined(CONFIG_VAR_HI) || defined(CONFIG_VAR_HE) /* Hot varieties */
+#define CONFIG_ASSERT
+#define CHECKLEVEL_INITIAL CheckLevelMINIMAL
+/* no debug diagnostic statistic meters */
+/* no telemetry log events */
+
 #elif defined(CONFIG_VAR_CI) || defined(CONFIG_VAR_CE) /* Cool varieties */
-#define CONFIG_DEBUG
 #define CONFIG_ASSERT
+/* ... let PRODUCT determine CHECKLEVEL_INITIAL */
+#define CONFIG_DEBUG
+/* no telemetry log events */
+
 #elif defined(CONFIG_VAR_TI)    /* Telemetry, Internal; variety.ti */
-#define CONFIG_DEBUG
 #define CONFIG_ASSERT
-#define CONFIG_LOG
-#elif defined(CONFIG_VAR_II)    /* Ice, Internal; variety.ii */
-#define CONFIG_LOG
+/* ... let PRODUCT determine CHECKLEVEL_INITIAL */
 #define CONFIG_DEBUG
-#define CHECK_DEFAULT CheckNONE
-/* also CONFIG_VAR_WI and CONFIG_VAR_WE, for which all switches are off. */
+#define CONFIG_LOG
+
+#elif defined(CONFIG_VAR_II)    /* Ice, Internal; variety.ii (HotLog) */
+#define CONFIG_ASSERT
+#define CHECKLEVEL_INITIAL CheckLevelMINIMAL
+/* no debug diagnostic statistic meters */
+#define CONFIG_LOG
 #endif
 
 
+/* Build Features */
+
+
 #if defined(CONFIG_ASSERT)
-#define CHECK
+/* asserts: AVER, AVERT, NOTREACHED, CHECKx */
+/* note: a direct call to ASSERT() will *still* fire */
+#define AVER_AND_CHECK
 #define MPS_ASSERT_STRING "asserted"
 #else
-#define CHECK_NONE
+#define AVER_AND_CHECK_NONE
 #define MPS_ASSERT_STRING "nonasserted"
 #endif
 
 
+#if defined(CONFIG_DEBUG)
+/* DEBUG = DIAGNOSTICS = STATISTICs = METERs */
+/* WARNING: this changes the size and fields of MPS structs */
+#define DIAGNOSTICS
+#define MPS_DEBUG_STRING "debug"
+#else
+#define DIAGNOSTICS_NONE
+#define MPS_DEBUG_STRING "nondebug"
+#endif
+
+
 #if defined(CONFIG_LOG)
+/* TELEMETRY = LOG = EVENTs */
 #define EVENT
 #define MPS_LOG_STRING "logging"
 #else
@@ -64,14 +95,6 @@
 #define MPS_LOG_STRING "nonlogging"
 #endif
 
-
-#if defined(CONFIG_DEBUG)
-#define DIAGNOSTICS
-#define MPS_DEBUG_STRING "debug"
-#else
-#define DIAGNOSTICS_NONE
-#define MPS_DEBUG_STRING "nondebug"
-#endif
 
 #define MPS_VARIETY_STRING \
   MPS_ASSERT_STRING "." MPS_LOG_STRING "." MPS_DEBUG_STRING
@@ -125,7 +148,7 @@
  * are suddenly unused, etc.  We aren't interested in these
  */
 
-#if defined(CHECK_NONE)
+#if defined(AVER_AND_CHECK_NONE)
 
 /* "unreferenced formal parameter" */
 #pragma warning(disable: 4100)
@@ -133,7 +156,7 @@
 /* "unreferenced local function has been removed" */
 #pragma warning(disable: 4505)
 
-#endif /* CHECK_NONE */
+#endif /* AVER_AND_CHECK_NONE */
 
 #endif /* MPS_BUILD_MV */
 
@@ -209,6 +232,10 @@
 #define TraceLIMIT ((size_t)1)
 /* I count 4 function calls to scan, 10 to copy. */
 #define TraceCopyScanRATIO (1.5)
+/* Length (in chars) of a char buffer used to store the reason why a
+   collection started in the TraceStartMessageStruct (used by
+   mps_message_type_gc_start). */
+#define TRACE_START_MESSAGE_WHY_LEN 128
 
 /* Chosen so that the RememberedSummaryBlockStruct packs nicely into
    pages */
@@ -263,7 +290,7 @@
 #define THREAD_SINGLE
 #define PROTECTION_NONE
 #define DONGLE_NONE
-#define PROD_CHECK_DEFAULT CheckNONE /* CheckSHALLOW is too slow for SW */
+#define PROD_CHECKLEVEL_INITIAL CheckLevelMINIMAL /* CheckLevelSHALLOW is too slow for SW */
 
 #elif defined(CONFIG_PROD_DYLAN)
 #define MPS_PROD_STRING         "dylan"
@@ -272,7 +299,7 @@
 #define THREAD_MULTI
 #define PROTECTION
 #define DONGLE_NONE
-#define PROD_CHECK_DEFAULT CheckSHALLOW
+#define PROD_CHECKLEVEL_INITIAL CheckLevelSHALLOW
 
 #elif defined(CONFIG_PROD_MPS)
 #define MPS_PROD_STRING         "mps"
@@ -281,7 +308,7 @@
 #define THREAD_MULTI
 #define PROTECTION
 #define DONGLE_NONE
-#define PROD_CHECK_DEFAULT CheckSHALLOW
+#define PROD_CHECKLEVEL_INITIAL CheckLevelSHALLOW
 
 #else
 #error "No target product configured."
@@ -295,11 +322,11 @@
  */
 #define ARENA_SIZE              ((Size)1<<30)
 
-/* if CHECK_DEFAULT hasn't been defined already (e.g. by a variety, or
+/* if CHECKLEVEL_INITIAL hasn't been defined already (e.g. by a variety, or
  * in a makefile), take the value from the product. */
 
-#ifndef CHECK_DEFAULT
-#define CHECK_DEFAULT PROD_CHECK_DEFAULT
+#ifndef CHECKLEVEL_INITIAL
+#define CHECKLEVEL_INITIAL PROD_CHECKLEVEL_INITIAL
 #endif
 
 
@@ -323,7 +350,7 @@
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2003 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2003, 2006 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  *

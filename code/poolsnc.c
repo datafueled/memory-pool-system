@@ -1,6 +1,6 @@
 /* poolsnc.c: STACK NO CHECKING POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolsnc.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/poolsnc.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -21,7 +21,7 @@
 #include "mpscsnc.h"
 #include "mpm.h"
 
-SRCID(poolsnc, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolsnc.c#1 $");
+SRCID(poolsnc, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/poolsnc.c#1 $");
 
 
 #define SNCGen  ((Serial)1) /* "generation" for SNC pools */

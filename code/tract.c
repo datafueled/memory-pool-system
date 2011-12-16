@@ -1,6 +1,6 @@
 /* tract.c: PAGE TABLES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/tract.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/tract.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .ullagepages: Pages whose page index is < allocBase are recorded as
@@ -14,7 +14,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(tract, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/tract.c#1 $");
+SRCID(tract, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/tract.c#1 $");
 
 
 static void ChunkDecache(Arena arena, Chunk chunk);
@@ -22,7 +22,7 @@ static void ChunkDecache(Arena arena, Chunk chunk);
 
 /* TractArena -- get the arena of a tract */
 
-#define TractArena(seg) PoolArena(TractPool(tract))
+#define TractArena(tract) PoolArena(TractPool(tract))
 
 
 /* TractCheck -- check the integrity of a tract */

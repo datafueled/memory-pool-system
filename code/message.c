@@ -1,6 +1,6 @@
 /* message.c: MPS/CLIENT MESSAGES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/message.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/message.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -17,7 +17,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(message, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/message.c#1 $");
+SRCID(message, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/message.c#1 $");
 
 
 /* Maps from a Ring pointer to the message */
@@ -35,7 +35,7 @@ static void MessageDelete(Message message);
  * Message is on queue if and only if its ring is not a singleton.
  */
 
-static Bool MessageOnQueue(Message message)
+Bool MessageOnQueue(Message message)
 {
   AVERT(Message, message);
 
@@ -73,6 +73,10 @@ Bool MessageClassCheck(MessageClass class)
   CHECKL(class->name != NULL);
   CHECKL(FUNCHECK(class->delete));
   CHECKL(FUNCHECK(class->finalizationRef));
+  CHECKL(FUNCHECK(class->gcLiveSize));
+  CHECKL(FUNCHECK(class->gcCondemnedSize));
+  CHECKL(FUNCHECK(class->gcNotCondemnedSize));
+  CHECKL(FUNCHECK(class->gcStartWhy));
   CHECKL(class->endSig == MessageClassSig);
 
   return TRUE;
@@ -352,6 +356,14 @@ Size MessageGCNotCondemnedSize(Message message)
   return (*message->class->gcNotCondemnedSize)(message);
 }
 
+const char *MessageGCStartWhy(Message message)
+{
+  AVERT(Message, message);
+  AVER(message->type == MessageTypeGCSTART);
+
+  return (*message->class->gcStartWhy)(message);
+}
+
 
 /* type-specific stub methods */
 
@@ -394,6 +406,16 @@ Size MessageNoGCNotCondemnedSize(Message message)
   NOTREACHED;
 
   return (Size)0;
+}
+
+const char *MessageNoGCStartWhy(Message message)
+{
+  AVERT(Message, message);
+  UNUSED(message);
+
+  NOTREACHED;
+
+  return NULL;
 }
 
 

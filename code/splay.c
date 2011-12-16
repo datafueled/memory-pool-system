@@ -1,6 +1,6 @@
 /* splay.c: SPLAY TREE IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/splay.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/splay.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Splay trees are used to manage potentially unbounded
@@ -17,7 +17,7 @@
 #include "splay.h"
 #include "mpm.h"
 
-SRCID(splay, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/splay.c#1 $");
+SRCID(splay, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/splay.c#1 $");
 
 
 /* Basic getter and setter methods */
@@ -763,7 +763,7 @@ static Res SplayNodeDescribe(SplayNode node, mps_lib_FILE *stream,
                              SplayNodeDescribeMethod nodeDescribe) {
   Res res;
 
-#if defined(CHECK)
+#if defined(AVER_AND_CHECK)
   if (!SplayNodeCheck(node)) return ResFAIL;
   /* stream and nodeDescribe checked by SplayTreeDescribe */
 #endif
@@ -1005,7 +1005,7 @@ Res SplayTreeDescribe(SplayTree tree, mps_lib_FILE *stream,
                       SplayNodeDescribeMethod nodeDescribe) {
   Res res;
 
-#if defined(CHECK)
+#if defined(AVER_AND_CHECK)
   if (!SplayTreeCheck(tree)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
   if (!FUNCHECK(nodeDescribe)) return ResFAIL;

@@ -1,6 +1,6 @@
 /* poolamc.c: AUTOMATIC MOSTLY-COPYING MEMORY POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolamc.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/poolamc.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -12,7 +12,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/version/1.106/code/poolamc.c#1 $");
+SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/poolamc.c#1 $");
 
 
 /* PType enumeration -- distinguishes AMCGen and AMCNailboard */
@@ -421,7 +421,7 @@ static Res AMCBufInit(Buffer buffer, Pool pool, va_list args)
     /* Set up the buffer to be allocating in the nursery. */
     amcbuf->gen = amc->nursery;
   } else {
-    amcbuf->gen = NULL; /* no gen yet -- see <design/poolamc/#forward.gen> */
+    amcbuf->gen = NULL; /* no gen yet -- see <design/poolamc/#gen.forward> */
   }
   amcbuf->sig = amcBufSig;
   AVERT(amcBuf, amcbuf);
