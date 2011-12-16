@@ -1,6 +1,6 @@
 /* mps.h: RAVENBROOK MEMORY POOL SYSTEM C INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/mps.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/mps.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -239,6 +239,8 @@ extern void mps_arena_clamp(mps_arena_t);
 extern void mps_arena_release(mps_arena_t);
 extern void mps_arena_park(mps_arena_t);
 extern void mps_arena_expose(mps_arena_t);
+extern void mps_arena_unsafe_expose_remember_protection(mps_arena_t);
+extern void mps_arena_unsafe_restore_protection(mps_arena_t);
 extern mps_res_t mps_arena_start_collect(mps_arena_t);
 extern mps_res_t mps_arena_collect(mps_arena_t);
 extern mps_bool_t mps_arena_step(mps_arena_t, double, double);

@@ -1,7 +1,7 @@
 /* ring.c: RING IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/ring.c#1 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/ring.c#1 $
+ * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  *
  * .intro: This is a portable implementation of Rings.
  *
@@ -16,7 +16,7 @@
 #include "check.h"
 #include "misc.h"
 
-SRCID(ring, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/ring.c#1 $");
+SRCID(ring, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/ring.c#1 $");
 
 
 /* RingCheck, RingCheckSingle -- check the validity of a ring node
@@ -106,6 +106,14 @@ Ring (RingNext)(Ring ring)
   return RingNext(ring);                /* <code/mpm.h#ring.next> */
 }
 
+/* RingPrev -- get the previous element of a ring
+ */
+
+Ring (RingPrev)(Ring ring)
+{
+  return RingPrev(ring);                /* <code/mpm.h#ring.prev> */
+}
+
 
 /* RING_ELT -- get the ring element structure
  *
@@ -123,7 +131,7 @@ Ring (RingNext)(Ring ring)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2003 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

@@ -1,6 +1,6 @@
 /* misc.h: MISCELLANEOUS DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/misc.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/misc.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *

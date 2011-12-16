@@ -1,6 +1,6 @@
 /* protw3.c: PROTECTION FOR WIN32
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.102/code/protw3.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.103/code/protw3.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -18,7 +18,7 @@
 
 #include "mpswin.h"
 
-SRCID(protw3, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/protw3.c#1 $");
+SRCID(protw3, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/protw3.c#1 $");
 
 
 void ProtSetup(void)

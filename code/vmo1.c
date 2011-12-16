@@ -1,6 +1,6 @@
 /* vmo1.c: VIRTUAL MEMORY MAPPING FOR DIGITAL UNIX
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/vmo1.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/vmo1.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: <design/vm/>, <design/vmo1/>
@@ -41,7 +41,7 @@
 /* for getpagesize(2),close(2) */
 #include <unistd.h>
 
-SRCID(vmo1, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/vmo1.c#1 $");
+SRCID(vmo1, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/vmo1.c#1 $");
 
 
 /* Fix unprototyped system calls

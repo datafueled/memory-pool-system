@@ -1,6 +1,6 @@
 /* table.h: A dictionary mapping a Word to a void*
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/table.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/table.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .note.good-hash: As is common in hash table implementations, we

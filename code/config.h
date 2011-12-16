@@ -1,7 +1,7 @@
 /* config.h: MPS CONFIGURATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/config.h#1 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/config.h#1 $
+ * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
  * PURPOSE
@@ -210,6 +210,10 @@
 /* I count 4 function calls to scan, 10 to copy. */
 #define TraceCopyScanRATIO (1.5)
 
+/* Chosen so that the RememberedSummaryBlockStruct packs nicely into
+   pages */
+#define RememberedSummaryBLOCK 15
+
 
 
 /* Events
@@ -316,7 +320,7 @@
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2003 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  *

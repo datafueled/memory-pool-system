@@ -1,6 +1,6 @@
 /* cbs.c: COALESCING BLOCK STRUCTURE IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/cbs.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/cbs.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .intro: This is a portable implementation of coalescing block
@@ -18,7 +18,7 @@
 #include "poolmfs.h"
 #include "mpm.h"
 
-SRCID(cbs, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/cbs.c#1 $");
+SRCID(cbs, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/cbs.c#1 $");
 
 
 /* See <design/cbs/#align> */

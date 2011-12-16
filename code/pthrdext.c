@@ -1,6 +1,6 @@
 /* pthreadext.c: POSIX THREAD EXTENSIONS
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.102/code/pthrdext.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.103/code/pthrdext.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Provides extension to Pthreads.
@@ -31,7 +31,7 @@
 
 #include "pthrdext.h"
 
-SRCID(pthreadext, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/pthrdext.c#1 $");
+SRCID(pthreadext, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/pthrdext.c#1 $");
 
 
 /* PTHREADEXT_SIGSUSPEND, PTHREADEXT_SIGRESUME -- signals used

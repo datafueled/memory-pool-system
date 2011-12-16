@@ -1,6 +1,6 @@
 /* protli.c: PROTECTION FOR LINUX
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.102/code/protli.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.103/code/protli.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 
-SRCID(protli, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/protli.c#1 $");
+SRCID(protli, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/protli.c#1 $");
 
 
 /* ProtSet -- set protection

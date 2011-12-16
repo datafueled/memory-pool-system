@@ -1,7 +1,7 @@
 /* mpsi.c: MEMORY POOL SYSTEM C INTERFACE LAYER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/mpsi.c#1 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/mpsi.c#1 $
+ * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
  * .purpose: This code bridges between the MPS interface to C,
@@ -53,7 +53,7 @@
 #include "sac.h"
 #include "chain.h"
 
-SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/mpsi.c#1 $");
+SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/mpsi.c#1 $");
 
 
 /* mpsi_check -- check consistency of interface mappings
@@ -344,7 +344,24 @@ void mps_arena_expose(mps_arena_t mps_arena)
 {
   Arena arena = (Arena)mps_arena;
   ArenaEnter(arena);
-  ArenaExpose(ArenaGlobals(arena));
+  ArenaExposeRemember(ArenaGlobals(arena), 0);
+  ArenaLeave(arena);
+}
+
+/* Null implementations of remember and restore */
+void mps_arena_unsafe_expose_remember_protection(mps_arena_t mps_arena)
+{
+  Arena arena = (Arena)mps_arena;
+  ArenaEnter(arena);
+  ArenaExposeRemember(ArenaGlobals(arena), 1);
+  ArenaLeave(arena);
+}
+
+void mps_arena_unsafe_restore_protection(mps_arena_t mps_arena)
+{
+  Arena arena = (Arena)mps_arena;
+  ArenaEnter(arena);
+  ArenaRestoreProtection(ArenaGlobals(arena));
   ArenaLeave(arena);
 }
 
@@ -1930,7 +1947,7 @@ void mps_chain_destroy(mps_chain_t mps_chain)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2003 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

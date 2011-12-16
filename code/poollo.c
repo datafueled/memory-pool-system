@@ -1,6 +1,6 @@
 /* poollo.c: LEAF POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/poollo.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/poollo.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -12,7 +12,7 @@
 #include "mpm.h"
 #include "mps.h"
 
-SRCID(poollo, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/poollo.c#1 $");
+SRCID(poollo, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/poollo.c#1 $");
 
 
 #define LOGen ((Serial)1)

@@ -1,6 +1,6 @@
 /* message.c: MPS/CLIENT MESSAGES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/message.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/message.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -17,7 +17,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(message, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/message.c#1 $");
+SRCID(message, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/message.c#1 $");
 
 
 /* Maps from a Ring pointer to the message */

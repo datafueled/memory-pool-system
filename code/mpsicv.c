@@ -1,6 +1,6 @@
 /* mpsicv.c: MPSI COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/mpsicv.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/mpsicv.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  */
@@ -366,16 +366,25 @@ static void *test(void *arg, size_t s)
              "all roots check");
       }
       if(collections == 1) {
-	mps_arena_clamp(arena);
-	clamp_until = i + 10000;
+        mps_arena_clamp(arena);
+        clamp_until = i + 10000;
       }
-      if(collections % 3 == 0) {
-	mps_arena_expose(arena);
-	mps_arena_release(arena);
+      if(collections % 6 == 0) {
+        mps_arena_expose(arena);
+        mps_arena_release(arena);
+      }
+      if(collections % 6 == 3) {
+        mps_arena_unsafe_expose_remember_protection(arena);
+        mps_arena_unsafe_restore_protection(arena);
+        mps_arena_release(arena);
+      }
+      if(collections % 6 == 4) {
+        mps_arena_unsafe_expose_remember_protection(arena);
+        mps_arena_release(arena);
       }
       if(collections % 3 == 2) {
-	mps_arena_park(arena);
-	mps_arena_release(arena);
+        mps_arena_park(arena);
+        mps_arena_release(arena);
       }
     }
 
