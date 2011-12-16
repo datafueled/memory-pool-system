@@ -1,6 +1,6 @@
 /* mpsi.c: MEMORY POOL SYSTEM C INTERFACE LAYER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/mpsi.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/mpsi.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -53,7 +53,7 @@
 #include "sac.h"
 #include "chain.h"
 
-SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/mpsi.c#1 $");
+SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/mpsi.c#1 $");
 
 
 /* mpsi_check -- check consistency of interface mappings
@@ -341,6 +341,16 @@ void mps_space_park(mps_space_t mps_space)
 }
 
 
+mps_res_t mps_arena_start_collect(mps_space_t mps_space)
+{
+  Res res;
+  Arena arena = (Arena)mps_space;
+  ArenaEnter(arena);
+  res = ArenaStartCollect(ArenaGlobals(arena));
+  ArenaLeave(arena);
+  return res;
+}
+
 mps_res_t mps_arena_collect(mps_space_t mps_space)
 {
   Res res;
@@ -351,12 +361,14 @@ mps_res_t mps_arena_collect(mps_space_t mps_space)
   return res;
 }
 
-mps_bool_t mps_arena_step(mps_arena_t mps_arena, double time)
+mps_bool_t mps_arena_step(mps_arena_t mps_arena,
+                          double interval,
+                          double multiplier)
 {
   Bool b;
   Arena arena = (Arena)mps_arena;
   ArenaEnter(arena);
-  b = ArenaStep(ArenaGlobals(arena), time);
+  b = ArenaStep(ArenaGlobals(arena), interval, multiplier);
   ArenaLeave(arena);
   return b;
 }
@@ -439,10 +451,13 @@ mps_bool_t mps_arena_has_addr(mps_arena_t mps_arena, mps_addr_t p)
     Bool b;
     Arena arena = (Arena)mps_arena;
 
-    ArenaEnter(arena);
+    /* One of the few functions that can be called
+       during the call to an MPS function.  IE this function
+       can be called when walking the heap. */
+    ArenaEnterRecursive(arena);
     AVERT(Arena, arena);
     b = ArenaHasAddr(arena, (Addr)p);
-    ArenaLeave(arena);
+    ArenaLeaveRecursive(arena);
     return b;
 }
 
@@ -1882,7 +1897,8 @@ mps_res_t mps_chain_create(mps_chain_t *chain_o, mps_arena_t mps_arena,
   res = ChainCreate(&chain, arena, gen_count, (GenParamStruct *)params);
 
   ArenaLeave(arena);
-  if (res != ResOK) return res;
+  if (res != ResOK)
+    return res;
   *chain_o = (mps_chain_t)chain;
   return MPS_RES_OK;
 }

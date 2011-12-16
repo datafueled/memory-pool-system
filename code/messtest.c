@@ -1,6 +1,6 @@
 /* messtest.c: MESSAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/messtest.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/messtest.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-SRCID(messtest, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/messtest.c#1 $");
+SRCID(messtest, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/messtest.c#1 $");
 
 
 /* Basic infrastructure for creating dummy messages */

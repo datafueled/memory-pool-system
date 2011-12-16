@@ -1,13 +1,13 @@
 /* abq.c: AVAILABLE BLOCK QUEUE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/abq.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/abq.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: Any MPS developer
  *
  * .purpose: A FIFO queue substrate for <code/poolmv2.c>
  *
- * .design: See <design/poolmv2/>
+ * .design: See <design/poolmvt/>
  */
 
 #include "meter.h"
@@ -15,7 +15,7 @@
 #include "cbs.h"
 #include "mpm.h"
 
-SRCID(abq, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/abq.c#1 $");
+SRCID(abq, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/abq.c#1 $");
 
 
 /* Private prototypes */

@@ -1,6 +1,6 @@
 /* span.c: ANSI STACK PROBE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/span.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/span.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * PURPOSE
@@ -13,7 +13,7 @@
 
 #include "mpm.h"
 
-SRCID(span, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/span.c#1 $");
+SRCID(span, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/span.c#1 $");
 
 
 /* StackProbe -- probe above the stack to provoke early stack overflow */

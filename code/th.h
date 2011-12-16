@@ -1,10 +1,10 @@
 /* th.h: THREAD MANAGER
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.100/code/th.h#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.101/code/th.h#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  .purpose: Provides thread suspension facilities to the shield.
- *  See design.mps.thread-manager.  Each thread has to be
+ *  See <design/thread-manager/>.  Each thread has to be
  *  individually registered and deregistered with an arena.
  */
 

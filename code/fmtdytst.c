@@ -1,6 +1,6 @@
 /* fmtdytst.c: DYLAN FORMAT TEST CODE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/fmtdytst.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/fmtdytst.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MPS developers, Dylan developers.

@@ -1,6 +1,6 @@
 /* finalcv.c: FINALIZATION COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/finalcv.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/finalcv.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -141,7 +141,7 @@ static void *test(void *arg, size_t s)
   /* <design/poolmrg/#test.promise.ut.churn> */
   while (mps_collections(arena) < collectionCOUNT) {
     churn(ap);
-    /* design.mps.poolmrg.test.promise.ut.drop */
+    /* <design/poolmrg/#test.promise.ut.drop> */
     for (i = 0; i < rootCOUNT; ++i) {
       if (root[i] != NULL && state[i] == rootSTATE) {
         if (rnd() % finalizationRATE == 0) {

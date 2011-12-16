@@ -1,6 +1,6 @@
 /* protfri3.c: PROTECTION FOR FREEBSD (INTEL 386)
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.100/code/protfri3.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.101/code/protfri3.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * SOURCES
@@ -26,7 +26,7 @@
 #include <signal.h>
 #include <machine/trap.h>
 
-SRCID(protfri3, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/protfri3.c#1 $");
+SRCID(protfri3, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/protfri3.c#1 $");
 
 
 /* The previously-installed signal action, as returned by */

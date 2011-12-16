@@ -1,6 +1,6 @@
 /* mpsliban.c: RAVENBROOK MEMORY POOL SYSTEM LIBRARY INTERFACE (ANSI)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/mpsliban.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/mpsliban.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -109,6 +109,12 @@ int mps_lib_memcmp(const void *s1, const void *s2, size_t n)
 mps_clock_t mps_clock(void)
 {
   return (unsigned long)clock();
+}
+
+
+mps_clock_t mps_clocks_per_sec(void)
+{
+  return (unsigned long)CLOCKS_PER_SEC;
 }
 
 

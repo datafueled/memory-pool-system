@@ -1,6 +1,6 @@
 /* dbgpooli.c: POOL DEBUG MIXIN C INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/dbgpooli.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/dbgpooli.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -11,7 +11,7 @@
 #include "mps.h"
 #include "mpm.h"
 
-SRCID(dbgpooli, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/dbgpooli.c#1 $");
+SRCID(dbgpooli, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/dbgpooli.c#1 $");
 
 
 /* mps_pool_check_fenceposts -- check all the fenceposts in the pool */
@@ -21,7 +21,7 @@ void mps_pool_check_fenceposts(mps_pool_t mps_pool)
   Pool pool = (Pool)mps_pool;
   Arena arena;
   
-  /* CHECKT not AVERT, see design.mps.interface.c.check.space */
+  /* CHECKT not AVERT, see <design/interface-c/#check.space */
   AVER(CHECKT(Pool, pool));
   arena = PoolArena(pool);
 
@@ -41,7 +41,7 @@ void mps_pool_check_free_space(mps_pool_t mps_pool)
   Pool pool = (Pool)mps_pool;
   Arena arena;
   
-  /* CHECKT not AVERT, see design.mps.interface.c.check.space */
+  /* CHECKT not AVERT, see <design/interface-c/#check.space */
   AVER(CHECKT(Pool, pool));
   arena = PoolArena(pool);
 

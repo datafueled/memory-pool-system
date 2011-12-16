@@ -1,11 +1,11 @@
 /* abq.h: ABQ INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/abq.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/abq.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: A FIFO queue substrate for <code/poolmv2.c>
  *
- * .source: <design/poolmv2/>
+ * .source: <design/poolmvt/>
  */
 
 #ifndef abq_h

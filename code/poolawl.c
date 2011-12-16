@@ -1,6 +1,6 @@
 /* poolawl.c: AUTOMATIC WEAK LINKED POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/poolawl.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/poolawl.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *
@@ -43,7 +43,7 @@
 #include "mpm.h"
 #include "chain.h"
 
-SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/poolawl.c#1 $");
+SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/poolawl.c#1 $");
 
 
 #define AWLSig ((Sig)0x519B7A37) /* SIGnature PooL AWL */

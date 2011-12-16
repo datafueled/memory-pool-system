@@ -1,6 +1,6 @@
 /* shield.c: SHIELD IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/shield.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/shield.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * See: idea.shield, design.mps.shield.
@@ -74,7 +74,7 @@
 
 #include "mpm.h"
 
-SRCID(shield, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/shield.c#1 $");
+SRCID(shield, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/shield.c#1 $");
 
 
 void (ShieldSuspend)(Arena arena)

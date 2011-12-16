@@ -1,6 +1,6 @@
 /* global.c: ARENA-GLOBAL INTERFACES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/global.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/global.c#3 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(global, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/global.c#1 $");
+SRCID(global, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/global.c#3 $");
 
 
 /* All static data objects are declared here. See .static */
@@ -36,6 +36,9 @@ SRCID(global, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/global.
 static Bool arenaRingInit = FALSE;
 static RingStruct arenaRing;       /* <design/arena/#static.ring> */
 
+/* forward declarations */
+void arenaEnterLock(Arena, int);
+void arenaLeaveLock(Arena, int);
 
 /* ArenaControlPool -- get the control pool */
 
@@ -91,7 +94,7 @@ static void arenaDenounce(Arena arena)
   AVERT(Arena, arena);
 
   /* Temporarily give up the arena lock to avoid deadlock, */
-  /* see design.mps.thread-safety.deadlock. */
+  /* see <design/thread-safety/#deadlock>. */
   ArenaLeave(arena);
 
   /* Detach the arena from the global list. */
@@ -183,6 +186,10 @@ Bool GlobalsCheck(Globals arenaGlobals)
     CHECKL(RingCheck(&arena->greyRing[rank]));
   CHECKL(RingCheck(&arena->chainRing));
 
+  CHECKL(arena->tracedSize >= 0.0);
+  CHECKL(arena->tracedTime >= 0.0);
+  CHECKL(arena->lastWorldCollect >= 0);
+
   /* can't write a check for arena->epoch */
 
   /* check that each history entry is a subset of the next oldest */
@@ -261,6 +268,9 @@ Res GlobalsInit(Globals arenaGlobals)
   arena->finalPool = NULL;
   arena->busyTraces = TraceSetEMPTY;    /* <code/trace.c> */
   arena->flippedTraces = TraceSetEMPTY; /* <code/trace.c> */
+  arena->tracedSize = 0.0;
+  arena->tracedTime = 0.0;
+  arena->lastWorldCollect = mps_clock();
   arena->insideShield = FALSE;          /* <code/shield.c> */
   arena->shCacheI = (Size)0;
   arena->shCacheLimit = (Size)1;
@@ -269,7 +279,7 @@ Res GlobalsInit(Globals arenaGlobals)
   for(i = 0; i < ShieldCacheSIZE; i++)
     arena->shCache[i] = NULL;
 
-  for (i=0; i < TraceLIMIT; i++) {
+ for (i=0; i < TraceLIMIT; i++) {
     /* <design/arena/#trace.invalid> */
     arena->trace[i].sig = SigInvalid;
   }
@@ -414,15 +424,45 @@ void (ArenaEnter)(Arena arena)
 #else
 void ArenaEnter(Arena arena)
 {
-  AVER(CHECKT(Arena, arena));
-
-  StackProbe(StackProbeDEPTH);
-  LockClaim(ArenaGlobals(arena)->lock);
-  AVERT(Arena, arena); /* can't AVER it until we've got the lock */
-  ShieldEnter(arena);
+  arenaEnterLock(arena, 0);
 }
 #endif
 
+/*  The recursive argument specifies whether to claim the lock
+    recursively or not. */
+void arenaEnterLock(Arena arena, int recursive)
+{
+  Lock lock;
+
+  /* This check is safe to do outside the lock.  Unless the client
+     is also calling ArenaDestroy, but that's a protocol violation by
+     the client if so. */
+  AVER(CHECKT(Arena, arena));
+
+  StackProbe(StackProbeDEPTH);
+  lock = ArenaGlobals(arena)->lock;
+  if(recursive) {
+    LockClaimRecursive(lock);
+  } else {
+    LockClaim(lock);
+  }
+  AVERT(Arena, arena); /* can't AVER it until we've got the lock */
+  if(recursive) {
+    /* already in shield */
+  } else {
+    ShieldEnter(arena);
+  }
+  return;
+}
+
+/* Same as ArenaEnter, but for the few functions that need to be
+   reentrant with respect to some part of the MPS.
+   For example, mps_arena_has_addr. */
+
+void ArenaEnterRecursive(Arena arena)
+{
+  arenaEnterLock(arena, 1);
+}
 
 /* ArenaLeave -- leave the state where you can look at MPM data structures */
 
@@ -435,13 +475,36 @@ void (ArenaLeave)(Arena arena)
 #else
 void ArenaLeave(Arena arena)
 {
-  AVERT(Arena, arena);
-  ShieldLeave(arena);
-  ProtSync(arena);              /* <design/prot/#if.sync> */
-  LockReleaseMPM(ArenaGlobals(arena)->lock);
+  arenaLeaveLock(arena, 0);
 }
 #endif
 
+void arenaLeaveLock(Arena arena, int recursive)
+{
+  Lock lock;
+
+  AVERT(Arena, arena);
+
+  lock = ArenaGlobals(arena)->lock;
+
+  if(recursive) {
+    /* no need to leave shield */
+  } else {
+    ShieldLeave(arena);
+  }
+  ProtSync(arena);              /* <design/prot/#if.sync> */
+  if(recursive) {
+    LockReleaseRecursive(lock);
+  } else {
+    LockReleaseMPM(lock);
+  }
+  return;
+}
+
+void ArenaLeaveRecursive(Arena arena)
+{
+  arenaLeaveLock(arena, 1);
+}
 
 /* mps_exception_info -- pointer to exception info
  *
@@ -547,28 +610,105 @@ void ArenaPoll(Globals globals)
 
   globals->insidePoll = TRUE;
 
-  (void)ArenaStep(globals, 0.0);
+  (void)ArenaStep(globals, 0.0, 0.0);
 
   globals->insidePoll = FALSE;
 }
 #endif
 
-Bool ArenaStep(Globals globals, double interval)
+/* Work out whether we have enough time here to collect the world,
+ * and whether much time has passed since the last time we did that
+ * opportunistically. */
+static Bool arenaShouldCollectWorld(Arena arena,
+                                    double interval,
+                                    double multiplier,
+                                    Word now,
+                                    Word clocks_per_sec)
+{
+  double scanRate;
+  Size arenaSize;
+  double arenaScanTime;
+  double sinceLastWorldCollect;
+
+  /* don't collect the world if we're not given any time */
+  if ((interval > 0.0) && (multiplier > 0.0)) {
+    /* don't collect the world if we're already collecting. */
+    if (arena->busyTraces == TraceSetEMPTY) {
+      /* don't collect the world if it's very small */
+      arenaSize = ArenaCommitted(arena) - ArenaSpareCommitted(arena);
+      if (arenaSize > 1000000) {
+        /* how long would it take to collect the world? */
+        if ((arena->tracedSize > 1000000.0) &&
+            (arena->tracedTime > 1.0))
+          scanRate = arena->tracedSize / arena->tracedTime;
+        else
+          scanRate = 25000000.0; /* a reasonable default. */
+        arenaScanTime = arenaSize / scanRate;
+        arenaScanTime += 0.1;   /* for overheads. */
+
+        /* how long since we last collected the world? */
+        sinceLastWorldCollect = ((now - arena->lastWorldCollect) /
+                                 (double) clocks_per_sec);
+        /* have to be offered enough time, and it has to be a long time
+         * since we last did it. */
+        if ((interval * multiplier > arenaScanTime) &&
+            sinceLastWorldCollect > arenaScanTime * 10.0) {
+          return TRUE;
+        }
+      }
+    }
+  }
+  return FALSE;
+}
+
+Bool ArenaStep(Globals globals, double interval, double multiplier)
 {
   double size;
-  Bool b;
-
-  UNUSED(interval);
+  Size scanned;
+  Bool stepped;
+  Word start, end, now;
+  Word clocks_per_sec;
+  Arena arena;
 
   AVERT(Globals, globals);
+  AVER(interval >= 0.0);
+  AVER(multiplier >= 0.0);
 
-  b = TracePoll(globals);
+  arena = GlobalsArena(globals);
+  clocks_per_sec = mps_clocks_per_sec();
+
+  start = mps_clock();
+  end = start + (Word)(interval * clocks_per_sec);
+  AVER(end >= start);
+
+  stepped = FALSE;
+
+  if (arenaShouldCollectWorld(arena, interval, multiplier,
+                              start, clocks_per_sec)) {
+    ArenaStartCollect(globals);
+    arena->lastWorldCollect = start;
+    stepped = TRUE;
+  }
+
+  /* loop while there is work to do and time on the clock. */
+  do {
+    scanned = TracePoll(globals);
+    now = mps_clock();
+    if (scanned > 0) {
+      stepped = TRUE;
+      arena->tracedSize += scanned;
+    }
+  } while ((scanned > 0) && (now < end));
+
+  if (stepped) {
+    arena->tracedTime += (now - start) / (double) clocks_per_sec;
+  }
 
   size = globals->fillMutatorSize;
   globals->pollThreshold = size + ArenaPollALLOCTIME;
   AVER(globals->pollThreshold > size); /* enough precision? */
 
-  return b;
+  return stepped;
 }
 
 /* ArenaFinalize -- registers an object for finalization
@@ -599,7 +739,7 @@ Res ArenaFinalize(Arena arena, Ref obj)
 
 /* ArenaDefinalize -- removes one finalization registration of an object
  *
- * See design.mps.finalize.  */
+ * See <design/finalize>.  */
 
 Res ArenaDefinalize(Arena arena, Ref obj)
 {
@@ -736,7 +876,7 @@ Res GlobalsDescribe(Globals arenaGlobals, mps_lib_FILE *stream)
 
   arena = GlobalsArena(arenaGlobals);
   res = WriteF(stream,
-	       "  mpsVersion $S\n", arenaGlobals->mpsVersionString,
+               "  mpsVersion $S\n", arenaGlobals->mpsVersionString,
                "  lock $P\n", (WriteFP)arenaGlobals->lock,
                "  pollThreshold $U kB\n",
                (WriteFU)(arenaGlobals->pollThreshold / 1024),

@@ -1,6 +1,6 @@
 /* locus.c: LOCUS MANAGER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/locus.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/locus.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -15,7 +15,7 @@
 #include "mpstd.h"
 #include <float.h> /* for DBL_MAX */
 
-SRCID(locus, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/locus.c#1 $");
+SRCID(locus, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/locus.c#1 $");
 
 
 /* SegPrefCheck -- check the consistency of a segment preference */
@@ -154,7 +154,8 @@ Res ChainCreate(Chain *chainReturn, Arena arena, size_t genCount,
   }
 
   res = ControlAlloc(&p, arena, genCount * sizeof(GenDescStruct), FALSE);
-  if (res != ResOK) return res;
+  if (res != ResOK)
+    return res;
   gens = (GenDescStruct *)p;
 
   for (i = 0; i < genCount; ++i) {
@@ -256,8 +257,8 @@ double ChainDeferral(Chain chain)
 /* ChainCondemnAuto -- condemn approriate parts of this chain
  *
  * This is only called if ChainDeferral returned a value sufficiently
- * high that the tracer decided to start the collection.  (Usually
- * more than zero, but sometimes less; see mps.design.trace.)
+ * low that the tracer decided to start the collection.  (Usually
+ * such values are less than zero; see <design/trace/>)
  */
 Res ChainCondemnAuto(double *mortalityReturn, Chain chain, Trace trace)
 {
@@ -272,7 +273,8 @@ Res ChainCondemnAuto(double *mortalityReturn, Chain chain, Trace trace)
 
   /* Find lowest gen within its capacity, set topCondemnedGenSerial to the */
   /* preceeding one. */
-  currGenSerial = 0; gen = &chain->gens[0];
+  currGenSerial = 0;
+  gen = &chain->gens[0];
   AVERT(GenDesc, gen);
   genNewSize = GenDescNewSize(gen);
   do { /* At this point, we've decided to collect currGenSerial. */

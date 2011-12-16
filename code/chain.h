@@ -1,6 +1,6 @@
 /* chain.h: GENERATION CHAINS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/chain.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/chain.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -32,7 +32,7 @@ typedef struct GenDescStruct {
   Size capacity; /* capacity in kB */
   double mortality;
   double proflow; /* predicted proportion of survivors promoted */
-  RingStruct locusRing; /* this generation in all the pools using the chain */
+  RingStruct locusRing; /* Ring of all PoolGen's in this GenDesc (locus) */
 } GenDescStruct;
 
 
@@ -47,7 +47,8 @@ typedef struct PoolGenStruct {
   Serial nr;          /* generation number */
   Pool pool;          /* pool this belongs to */
   Chain chain;        /* chain this belongs to */
-  RingStruct genRing; /* this generation in all the pools using this chain */
+  /* link in ring of all PoolGen's in this GenDesc (locus) */
+  RingStruct genRing;
   Size totalSize;     /* total size of segs in gen in this pool */
   Size newSize;       /* size allocated since last GC */
 } PoolGenStruct;

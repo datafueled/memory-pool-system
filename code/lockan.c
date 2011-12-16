@@ -1,6 +1,6 @@
 /* lockan.c: ANSI RECURSIVE LOCKS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/lockan.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/lockan.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is a trivial implementation of recursive locks
@@ -14,7 +14,7 @@
 #include "lock.h"
 #include "mpmtypes.h"
 
-SRCID(lockan, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/lockan.c#1 $");
+SRCID(lockan, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/lockan.c#1 $");
 
 
 typedef struct LockStruct {     /* ANSI fake lock structure */

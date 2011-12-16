@@ -1,16 +1,16 @@
 /* root.c: ROOT IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/root.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/root.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is the implementation of the root datatype.
  *
  * .design: For design, see <design/root/> and
- * <design/root/>-interface. */
+ * design.mps.root-interface. */
 
 #include "mpm.h"
 
-SRCID(root, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/root.c#1 $");
+SRCID(root, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/root.c#1 $");
 
 
 /* RootStruct -- tracing root structure */

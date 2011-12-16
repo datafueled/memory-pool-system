@@ -1,6 +1,6 @@
 /* mpmtypes.h: MEMORY POOL MANAGER TYPES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/mpmtypes.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/mpmtypes.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2001 Global Graphics Software.
  *
@@ -252,7 +252,7 @@ typedef void (*FormatPadMethod)(Addr base, Size size);
 typedef Addr (*FormatClassMethod)(Addr object);
 
 
-/* Root*Method -- see <design/root/>-interface */
+/* Root*Method -- see design.mps.root-interface */
 /* .root-methods: These methods must match those defined in the */
 /* MPS C Interface.  (See <code/mps.h#root-methods>.) */
 

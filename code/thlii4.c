@@ -1,12 +1,12 @@
 /* thlii3.c: Threads Manager for Intel x86 systems with LinuxThreads
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.100/code/thlii4.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.101/code/thlii4.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is a pthreads implementation of the threads manager.
  * This implements <code/th.h>.
  *
- * .design: See design.mps.thread-manager.
+ * .design: See <design/thread-manager/>.
  *
  * .thread.id: The thread id is used to identify the current thread.
  *
@@ -46,7 +46,7 @@
 #include <pthread.h>
 #include "pthrdext.h"
 
-SRCID(thlii4, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/thlii4.c#1 $");
+SRCID(thlii4, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/thlii4.c#1 $");
 
 
 /* ThreadStruct -- thread desriptor */

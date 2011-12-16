@@ -1,6 +1,6 @@
 /* cbstest.c: COALESCING BLOCK STRUCTURE TEST
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.100/code/cbstest.c#2 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.101/code/cbstest.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -18,7 +18,7 @@ struct itimerspec; /* stop complaints from time.h */
 #endif
 #include <time.h>
 
-SRCID(cbstest, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/cbstest.c#2 $");
+SRCID(cbstest, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/cbstest.c#1 $");
 
 
 #define ArraySize ((Size)123456)

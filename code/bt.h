@@ -1,9 +1,10 @@
 /* bt.h: Bit Table Interface
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/bt.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/bt.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * .source: design.mps.bt.  */
+ * .source: <design/bt/>
+ */
 
 #ifndef bt_h
 #define bt_h
@@ -11,10 +12,9 @@
 #include "mpmtypes.h"
 
 
-/* design.mps.bt.if.size */
+/* <design/bt#if.size> */
 extern size_t (BTSize)(unsigned long length);
 #define BTSize(n) (((n) + MPS_WORD_WIDTH-1) / MPS_WORD_WIDTH * sizeof(Word))
-
 
 /* <design/bt/#if.get> */
 extern Bool (BTGet)(BT bt, Index index);

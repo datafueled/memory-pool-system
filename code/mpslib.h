@@ -1,6 +1,6 @@
 /* mpslib.h: RAVENBROOK MEMORY POOL SYSTEM LIBRARY INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/mpslib.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/mpslib.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MPS client application developers, MPS developers.
@@ -38,6 +38,7 @@ extern int (mps_lib_memcmp)(const void *, const void *, size_t);
 
 typedef unsigned long mps_clock_t;
 extern mps_clock_t mps_clock(void);
+extern mps_clock_t mps_clocks_per_sec(void);
 
 
 extern unsigned long mps_lib_telemetry_control(void);

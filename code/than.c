@@ -1,11 +1,11 @@
 /* than.c: ANSI THREADS MANAGER
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.100/code/than.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.101/code/than.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  This is a single-threaded implementation of the threads manager.
  *  Has stubs for thread suspension.
- *  See design.mps.thread-manager.
+ *  See <design/thread-manager/>.
  *
  *  .single: We only expect at most one thread on the ring.
  *
@@ -14,7 +14,7 @@
 
 #include "mpm.h"
 
-SRCID(than, "$Id: //info.ravenbrook.com/project/mps/version/1.100/code/than.c#1 $");
+SRCID(than, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/than.c#1 $");
 
 
 typedef struct ThreadStruct {   /* ANSI fake thread structure */

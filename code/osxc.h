@@ -1,6 +1,6 @@
 /* osxc.h: MacOS X (Carbon-compatible) system header hacks
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.100/code/osxc.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/osxc.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This header fixes bugs in the system headers.
