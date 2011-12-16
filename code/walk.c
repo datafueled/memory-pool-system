@@ -1,13 +1,13 @@
 /* walk.c: OBJECT WALKER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/walk.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/walk.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "mpm.h"
 #include "mps.h"
 
-SRCID(walk, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/walk.c#1 $");
+SRCID(walk, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/walk.c#1 $");
 
 
 /* Heap Walking

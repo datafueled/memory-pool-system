@@ -1,6 +1,6 @@
 /* sslii3.c: LINUX/INTEL STACK SCANNING
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/sslii3.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/sslii3.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  This scans the stack and fixes the registers which may contain
@@ -32,7 +32,7 @@
 
 #include "mpm.h"
 
-SRCID(sslii3, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/sslii3.c#1 $");
+SRCID(sslii3, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/sslii3.c#1 $");
 
 
 /* .assume.asm.order */

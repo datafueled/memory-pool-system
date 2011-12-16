@@ -1,6 +1,6 @@
 /* ld.c: LOCATION DEPENDENCY IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/ld.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/ld.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .def: A location dependency records the fact that the bit-patterns
@@ -48,7 +48,7 @@
 
 #include "mpm.h"
 
-SRCID(ld, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/ld.c#1 $");
+SRCID(ld, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/ld.c#1 $");
 
 
 /* LDReset -- reset a dependency to empty

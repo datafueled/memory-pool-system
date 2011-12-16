@@ -1,6 +1,6 @@
 /* mpsioan.c: RAVENBROOK MEMORY POOL SYSTEM I/O IMPLEMENTATION (ANSI)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/mpsioan.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/mpsioan.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: For MPS client application developers and MPS developers.

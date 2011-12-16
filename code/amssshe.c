@@ -1,6 +1,6 @@
 /* amssshe.c: POOL CLASS AMS STRESS TEST WITH HEADERS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/amssshe.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/amssshe.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: Adapted from amsss.c.

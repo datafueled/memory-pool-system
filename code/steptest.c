@@ -1,6 +1,6 @@
 /* steptest.c: TEST FOR ARENA STEPPING
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/steptest.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/steptest.c#1 $
  * Copyright (C) 1998 Ravenbrook Limited.  See end of file for license.
  *
  * Loosely based on <code/amcss.c>.

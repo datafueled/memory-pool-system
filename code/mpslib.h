@@ -1,6 +1,6 @@
 /* mpslib.h: RAVENBROOK MEMORY POOL SYSTEM LIBRARY INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/mpslib.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/mpslib.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MPS client application developers, MPS developers.

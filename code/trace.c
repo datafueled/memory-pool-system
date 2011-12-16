@@ -1,6 +1,6 @@
 /* trace.c: GENERIC TRACER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/trace.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/trace.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -10,7 +10,7 @@
 #include "mpm.h"
 #include <limits.h> /* for LONG_MAX */
 
-SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/trace.c#1 $");
+SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/trace.c#1 $");
 
 
 /* Types */
@@ -1670,6 +1670,32 @@ void ArenaPark(Globals globals)
         TraceDestroy(trace);
     TRACE_SET_ITER_END(ti, trace, arena->busyTraces, arena);
   }
+}
+
+/* ArenaExpose -- park arena and then lift all protection barriers. */
+
+void ArenaExpose(Globals globals)
+{
+  Seg seg;
+  Arena arena;
+
+  AVERT(Globals, globals);
+
+  ArenaPark(globals);
+
+  arena = GlobalsArena(globals);
+  if(SegFirst(&seg, arena)) {
+    Addr base;
+
+    do {
+      base = SegBase(seg);
+      if((SegPool(seg)->class->attr & AttrSCAN) != 0) {
+	SegSetSummary(seg, RefSetUNIV);
+	AVER(SegSM(seg) == AccessSetEMPTY);
+      }
+    } while(SegNext(&seg, arena, base));
+  }
+  return;
 }
 
 /* ArenaStartCollect -- start a collection of everything in the

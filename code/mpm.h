@@ -1,6 +1,6 @@
 /* mpm.h: MEMORY POOL MANAGER DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/mpm.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/mpm.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -477,6 +477,7 @@ extern Bool (ArenaStep)(Globals globals, double interval, double multiplier);
 extern void ArenaClamp(Globals globals);
 extern void ArenaRelease(Globals globals);
 extern void ArenaPark(Globals globals);
+extern void ArenaExpose(Globals globals);
 extern Res ArenaStartCollect(Globals globals);
 extern Res ArenaCollect(Globals globals);
 extern Bool ArenaHasAddr(Arena arena, Addr addr);

@@ -1,6 +1,6 @@
 /* vmsu.c: VIRTUAL MEMORY MAPPING FOR SUNOS 4
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/vmsu.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/vmsu.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: See <design/vm/> for general design.
@@ -49,7 +49,7 @@
 #include <sys/errno.h>
 #include <limits.h>
 
-SRCID(vmsu, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/vmsu.c#1 $");
+SRCID(vmsu, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/vmsu.c#1 $");
 
 
 /* Fix up unprototyped system calls. */

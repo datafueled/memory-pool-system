@@ -1,6 +1,6 @@
 /* version.c: VERSION INSPECTION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.101/code/version.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.102/code/version.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * PURPOSE
@@ -16,7 +16,7 @@
 
 #include "mpm.h"
 
-SRCID(version, "$Id: //info.ravenbrook.com/project/mps/version/1.101/code/version.c#1 $");
+SRCID(version, "$Id: //info.ravenbrook.com/project/mps/version/1.102/code/version.c#1 $");
 
 
 /* MPS_RELEASE -- the release name
