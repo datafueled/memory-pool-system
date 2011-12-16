@@ -1,6 +1,6 @@
 # eg.gmk: GNUMAKEFILE FRAGMENT FOR EGCS
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.103/code/eg.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.104/code/eg.gmk#1 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # This file is included by platform makefiles that use the EGCS

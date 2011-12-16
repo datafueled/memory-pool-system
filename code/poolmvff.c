@@ -1,6 +1,6 @@
 /* poolmvff.c: First Fit Manual Variable Pool
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/poolmvff.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/poolmvff.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -23,7 +23,7 @@
 #include "cbs.h"
 #include "mpm.h"
 
-SRCID(poolmvff, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/poolmvff.c#1 $");
+SRCID(poolmvff, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/poolmvff.c#1 $");
 
 
 /* Would go in poolmvff.h if the class had any MPS-internal clients. */

@@ -1,10 +1,19 @@
-/* finaltest.c: LARGE-SCALE FINALIZATION TEST
+/* expt825.c: Test for bug described in job000825
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/finaltest.c#1 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/expt825.c#1 $
+ * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
  * DESIGN
+ *
+ * Just a copy of finaltest.c with the following modifcations:
+ * maxtreeDEPTH is 2 rather than 12.  This makes the test run and fail
+ * much more quickly.
+ *
+ * After trees have been created and finalized, call
+ * mps_arena_unsafe_expose_remember_protection / restore.  If the bug
+ * is present then this sequence will fail.
+ *
  *
  * DEPENDENCIES
  *
@@ -14,6 +23,7 @@
  * NOTES
  *
  * This code was created by first copying <code/finalcv.c>
+ * and then further by copying <code/finaltest.c>
  */
 
 #include "testlib.h"
@@ -31,7 +41,7 @@
 
 #define testArenaSIZE   ((size_t)16<<20)
 #define rootCOUNT 20
-#define maxtreeDEPTH 12
+#define maxtreeDEPTH 2
 #define collectionCOUNT 10
 #define genCOUNT 2
 
@@ -160,6 +170,9 @@ static void *test(void *arg, size_t s)
           register_numbered_tree((mps_word_t)root[i], arena);
   }
 
+  mps_arena_unsafe_expose_remember_protection(arena);
+  mps_arena_unsafe_restore_protection(arena);
+
   printf("Losing all pointers to the trees.\n");
   /* clean out the roots */
   for(i = 0; i < rootCOUNT; ++i) {
@@ -261,7 +274,7 @@ int main(int argc, char **argv)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2003 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  *

@@ -1,6 +1,6 @@
 /* prmcan.c: PROTECTION MUTATOR CONTEXT (ANSI)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/prmcan.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/prmcan.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: See <design/prot/> for the generic design of the interface
@@ -14,7 +14,7 @@
 
 #include "mpm.h"
 
-SRCID(prmcan, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/prmcan.c#1 $");
+SRCID(prmcan, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/prmcan.c#1 $");
 
 
 /* ProtCanStepInstruction -- can the current instruction be single-stepped */

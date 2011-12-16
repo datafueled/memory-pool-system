@@ -1,6 +1,6 @@
 /* mpm.h: MEMORY POOL MANAGER DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/mpm.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/mpm.h#1 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -609,6 +609,8 @@ extern void SegClassMixInNoSplitMerge(SegClass class);
 
 #define SEG_SUPERCLASS(className) \
   ((SegClass)SUPERCLASS(className))
+
+#define ClassOfSeg(seg) ((seg)->class)
 
 extern Size SegSize(Seg seg);
 extern Addr (SegBase)(Seg seg);

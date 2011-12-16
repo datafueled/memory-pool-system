@@ -1,6 +1,6 @@
 /* event.c: EVENT LOGGING
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/event.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/event.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .sources: mps.design.event
@@ -25,7 +25,7 @@
 #include "event.h"
 #include "mpsio.h"
 
-SRCID(event, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/event.c#1 $");
+SRCID(event, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/event.c#1 $");
 
 
 #ifdef EVENT /* .trans.ifdef */

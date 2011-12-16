@@ -1,6 +1,6 @@
 /* trace.c: GENERIC TRACER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/trace.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/trace.c#1 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -10,7 +10,7 @@
 #include "mpm.h"
 #include <limits.h> /* for LONG_MAX */
 
-SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/trace.c#1 $");
+SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/trace.c#1 $");
 
 
 /* Types */
@@ -1761,7 +1761,7 @@ void ArenaExposeRemember(Globals globals, int remember)
 
     do {
       base = SegBase(seg);
-      if((SegPool(seg)->class->attr & AttrSCAN) != 0) {
+      if(IsSubclassPoly(ClassOfSeg(seg), GCSegClassGet())) {
 	if(remember) {
 	  RefSet summary;
 
@@ -1805,6 +1805,7 @@ void ArenaRestoreProtection(Globals globals)
       }
       b = SegOfAddr(&seg, arena, block->the[i].base);
       if(b && SegBase(seg) == block->the[i].base) {
+        AVER(IsSubclassPoly(ClassOfSeg(seg), GCSegClassGet()));
 	SegSetSummary(seg, block->the[i].summary);
       } else {
 	/* Either seg has gone or moved, both of which are

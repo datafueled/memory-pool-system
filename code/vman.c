@@ -1,6 +1,6 @@
 /* vman.c: ANSI VM: MALLOC-BASED PSEUDO MEMORY MAPPING
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/vman.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/vman.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -9,7 +9,7 @@
 #include <stdlib.h>     /* for malloc and free */
 #include <string.h>     /* for memset */
 
-SRCID(vman, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/vman.c#1 $");
+SRCID(vman, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/vman.c#1 $");
 
 
 /* VMStruct -- virtual memory structure */

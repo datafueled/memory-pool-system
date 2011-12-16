@@ -1,6 +1,6 @@
 # ic.gmk: GNUMAKEFILE FRAGMENT FOR IRIX 6 CC (N32 or N64 ABI)
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.103/code/i6cc.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.104/code/i6cc.gmk#1 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # This file is included by platform makefiles that use the IRIX 6 CC

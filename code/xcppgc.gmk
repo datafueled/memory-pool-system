@@ -1,6 +1,6 @@
 # xcppgc.gmk: BUILD FOR MACOS X (CARBON)/POWERPC/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.103/code/xcppgc.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.104/code/xcppgc.gmk#1 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = xcppgc

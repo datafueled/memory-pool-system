@@ -1,6 +1,6 @@
 /* mpm.c: GENERAL MPM SUPPORT
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/mpm.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/mpm.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Miscellaneous support for the implementation of the MPM
@@ -15,7 +15,7 @@
 #include <float.h>
 #include <limits.h>
 
-SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/mpm.c#1 $");
+SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/mpm.c#1 $");
 
 
 #if defined(CHECK)

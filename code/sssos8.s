@@ -1,6 +1,6 @@
 ! sssos8.s: STACK SCANNING
 !
-!  $Id: //info.ravenbrook.com/project/mps/version/1.103/code/sssos8.s#1 $
+!  $Id: //info.ravenbrook.com/project/mps/version/1.104/code/sssos8.s#1 $
 !
 !  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 !

@@ -1,6 +1,6 @@
 /* pool.c: POOL IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/pool.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/pool.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -32,7 +32,7 @@
 
 #include "mpm.h"
 
-SRCID(pool, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/pool.c#1 $");
+SRCID(pool, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/pool.c#1 $");
 
 
 /* PoolClassCheck -- check a pool class */

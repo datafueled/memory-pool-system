@@ -1,6 +1,6 @@
 /* qs.c: QUICKSORT
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.103/code/qs.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.104/code/qs.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  The purpose of this program is to act as a "real" client of the MM.

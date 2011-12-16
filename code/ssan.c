@@ -1,6 +1,6 @@
 /* ssan.c: ANSI STACK SCANNER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/ssan.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/ssan.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * This module provides zero functionality.  It exists to feed the
@@ -12,7 +12,7 @@
 #include "ss.h"
 
 
-SRCID(ssan, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/ssan.c#1 $");
+SRCID(ssan, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/ssan.c#1 $");
 
 
 Res StackScan(ScanState ss, Addr *stackBot)

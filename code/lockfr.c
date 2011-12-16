@@ -1,6 +1,6 @@
 /* lockfr.c: RECURSIVE LOCKS FOR POSIX SYSTEMS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.103/code/lockfr.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/lockfr.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .freebsd: This implementation supports FreeBSD (platform
@@ -34,7 +34,7 @@
 #error "lockfr.c is FreeBSD specific but MPS_OS_FR not defined"
 #endif
 
-SRCID(lockfr, "$Id: //info.ravenbrook.com/project/mps/version/1.103/code/lockfr.c#1 $");
+SRCID(lockfr, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/lockfr.c#1 $");
 
 
 /* LockStruct -- the MPS lock structure
