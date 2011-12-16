@@ -1,6 +1,6 @@
 /* vmix.c: VIRTUAL MEMORY MAPPING FOR UNIX (ISH)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/vmix.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/vmix.c#2 $
  * Copyright (c) 2001,2007 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is the implementation of the virtual memory mapping
@@ -58,7 +58,7 @@
 #error "vmix.c is Unix-like specific, currently MPS_OS_FR XC LI"
 #endif
 
-SRCID(vmix, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/vmix.c#2 $");
+SRCID(vmix, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/vmix.c#2 $");
 
 
 /* VMStruct -- virtual memory structure */
@@ -161,6 +161,11 @@ Res VMCreate(VM *vmReturn, Size size)
   AVERT(VM, vm);
 
   EVENT_PAA(VMCreate, vm, vm->base, vm->limit);
+  DIAG_SINGLEF((
+    "VM_ix_Create_ok",
+    "[$W..<$W>..$W)", 
+    vm->base, (char*)vm->limit - (char*)vm->base, vm->limit,
+    NULL ));
 
   *vmReturn = vm;
   return ResOK;
@@ -179,6 +184,12 @@ void VMDestroy(VM vm)
 
   AVERT(VM, vm);
   AVER(vm->mapped == (Size)0);
+
+  DIAG_SINGLEF((
+    "VM_ix_Destroy",
+    "[$W..<$W>..$W)", 
+    vm->base, (char*)vm->limit - (char*)vm->base, vm->limit,
+    NULL ));
 
   /* This appears to be pretty pointless, since the descriptor */
   /* page is about to vanish completely.  However, munmap might fail */

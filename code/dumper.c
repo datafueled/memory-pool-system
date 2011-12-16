@@ -1,6 +1,6 @@
 /* dumper.c: Simple Event Dumper
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/dumper.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/dumper.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MM developers.
@@ -64,7 +64,7 @@ static void error (const char *format, ...) {
 
 
 static void readEvent(char *type, char *format, Word code, Word length,
-		      Word cpuTime) {
+                      Word cpuTime) {
   AVER(type != NULL);
   AVER(format != NULL);
 
@@ -127,15 +127,15 @@ int main(int argc, char *argv[]) {
       size_t n;
       n = fread(header, sizeof(Word), 3, progin);
       if(n < 3) {
-	if(feof(progin))
-	  continue;
-	error("Can't read from input");
+        if(feof(progin))
+          continue;
+        error("Can't read from input");
       }
      
       switch(header[0]) {
 #include "eventdef.h"
       default:
-	error("Unknown event code %08lX", header[0]);
+        error("Unknown event code %08lX", header[0]);
       }
     }
   } while(arg < argc);

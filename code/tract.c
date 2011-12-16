@@ -1,6 +1,6 @@
 /* tract.c: PAGE TABLES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/tract.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/tract.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .ullagepages: Pages whose page index is < allocBase are recorded as
@@ -14,7 +14,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(tract, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/tract.c#1 $");
+SRCID(tract, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/tract.c#2 $");
 
 
 static void ChunkDecache(Arena arena, Chunk chunk);
@@ -206,6 +206,10 @@ Res ChunkInit(Chunk chunk, Arena arena,
   chunk->pageTable = pageTable = p;
 
   /* @@@@ Is BootAllocated always right? */
+  /* Last thing we BootAlloc'd is pageTable.  We requested pageSize */
+  /* alignment, and pageTableSize is itself pageSize aligned, so */
+  /* BootAllocated should also be pageSize aligned. */
+  AVER(AddrIsAligned(BootAllocated(boot), pageSize));
   chunk->allocBase = (Index)(BootAllocated(boot) >> pageShift);
 
   /* Init allocTable after class init, because it might be mapped there. */
@@ -245,18 +249,30 @@ void ChunkFinish(Chunk chunk)
  */
 
 
-/* ChunkCacheEntryCheck -- check a chunk cache entry */
+/* ChunkCacheEntryCheck -- check a chunk cache entry
+ *
+ * The cache is EITHER empty:
+ *   - chunk is null; AND
+ *   - base & limit are both null
+ * OR full:
+ *   - chunk is non-null, points to a ChunkStruct; AND
+ *   - base & limit are not both null;
+ *
+ * .chunk.empty.fields: Fields of an empty cache are nonetheless read, 
+ * and must be correct.
+ */
 
 Bool ChunkCacheEntryCheck(ChunkCacheEntry entry)
 {
   CHECKS(ChunkCacheEntry, entry);
-  if (entry->chunk != NULL) {
+  if (entry->chunk == NULL) {
+    CHECKL(entry->base == NULL);   /* .chunk.empty.fields */
+    CHECKL(entry->limit == NULL);  /* .chunk.empty.fields */
+  } else {
+    CHECKL(!(entry->base == NULL && entry->limit == NULL));
     CHECKD(Chunk, entry->chunk);
     CHECKL(entry->base == entry->chunk->base);
     CHECKL(entry->limit == entry->chunk->limit);
-    CHECKL(entry->pageTableBase == &entry->chunk->pageTable[0]);
-    CHECKL(entry->pageTableLimit
-           == &entry->chunk->pageTable[entry->chunk->pages]);
   }
   return TRUE;
 }
@@ -267,19 +283,23 @@ Bool ChunkCacheEntryCheck(ChunkCacheEntry entry)
 void ChunkCacheEntryInit(ChunkCacheEntry entry)
 {
   entry->chunk = NULL;
-  /* No need to init other fields. */
+  entry->base = NULL;   /* .chunk.empty.fields */
+  entry->limit = NULL;  /* .chunk.empty.fields */
   entry->sig = ChunkCacheEntrySig;
+  AVERT(ChunkCacheEntry, entry);
   return;
 }
 
 
 /* ChunkEncache -- cache a chunk */
 
-void ChunkEncache(Arena arena, Chunk chunk)
+static void ChunkEncache(Arena arena, Chunk chunk)
 {
-  AVERT(Arena, arena);
-  AVERT(Chunk, chunk);
-  AVER(arena == chunk->arena);
+  /* Critical path; called by ChunkOfAddr */
+  AVERT_CRITICAL(Arena, arena);
+  AVERT_CRITICAL(Chunk, chunk);
+  AVER_CRITICAL(arena == chunk->arena);
+  AVERT_CRITICAL(ChunkCacheEntry, &arena->chunkCache);
 
   /* check chunk already in cache first */
   if (arena->chunkCache.chunk == chunk) {
@@ -289,10 +309,8 @@ void ChunkEncache(Arena arena, Chunk chunk)
   arena->chunkCache.chunk = chunk;
   arena->chunkCache.base = chunk->base;
   arena->chunkCache.limit = chunk->limit;
-  arena->chunkCache.pageTableBase = &chunk->pageTable[0];
-  arena->chunkCache.pageTableLimit = &chunk->pageTable[chunk->pages];
 
-  AVERT(ChunkCacheEntry, &arena->chunkCache);
+  AVERT_CRITICAL(ChunkCacheEntry, &arena->chunkCache);
   return;
 }
 
@@ -301,9 +319,16 @@ void ChunkEncache(Arena arena, Chunk chunk)
 
 static void ChunkDecache(Arena arena, Chunk chunk)
 {
+  AVERT(Arena, arena);
+  AVERT(Chunk, chunk);
+  AVER(arena == chunk->arena);
+  AVERT(ChunkCacheEntry, &arena->chunkCache);
   if (arena->chunkCache.chunk == chunk) {
     arena->chunkCache.chunk = NULL;
+    arena->chunkCache.base = NULL;   /* .chunk.empty.fields */
+    arena->chunkCache.limit = NULL;  /* .chunk.empty.fields */
   }
+  AVERT(ChunkCacheEntry, &arena->chunkCache);
 }
 
 
@@ -317,9 +342,11 @@ Bool ChunkOfAddr(Chunk *chunkReturn, Arena arena, Addr addr)
   AVERT_CRITICAL(Arena, arena);
   /* addr is arbitrary */
 
-  /* check cache first */
+  /* check cache first; see also .chunk.empty.fields */
+  AVERT_CRITICAL(ChunkCacheEntry, &arena->chunkCache);
   if (arena->chunkCache.base <= addr && addr < arena->chunkCache.limit) {
     *chunkReturn = arena->chunkCache.chunk;
+    AVER_CRITICAL(*chunkReturn != NULL);
     return TRUE;
   }
   RING_FOR(node, &arena->chunkRing, next) {
@@ -339,6 +366,9 @@ Bool ChunkOfAddr(Chunk *chunkReturn, Arena arena, Addr addr)
  *
  * Finds the next higher chunk in memory which does _not_ contain addr.
  * Returns FALSE if there is none.
+ *
+ * [The name is misleading; it should be "NextChunkAboveAddr" -- the 
+ * word "Next" applies to chunks, not to addrs.  RHSK 2010-03-20.]
  */
 
 static Bool ChunkOfNextAddr(Chunk *chunkReturn, Arena arena, Addr addr)
@@ -441,7 +471,7 @@ Bool TractOfAddr(Tract *tractReturn, Arena arena, Addr addr)
 
 Tract TractOfBaseAddr(Arena arena, Addr addr)
 {
-  Tract tract;
+  Tract tract = NULL;
   Bool found;
 
   AVERT_CRITICAL(Arena, arena);

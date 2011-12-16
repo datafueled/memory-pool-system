@@ -1,13 +1,13 @@
 /* pooln.c: NULL POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/pooln.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/pooln.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "pooln.h"
 #include "mpm.h"
 
-SRCID(pooln, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/pooln.c#1 $");
+SRCID(pooln, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/pooln.c#1 $");
 
 
 /* PoolNStruct -- the pool structure */
@@ -248,6 +248,20 @@ static void NReclaim(Pool pool, Trace trace, Seg seg)
 }
 
 
+/* NTraceEnd -- trace end method for class N */
+
+static void NTraceEnd(Pool pool, Trace trace)
+{
+  PoolN poolN;
+
+  AVERT(Pool, pool);
+  poolN = PoolPoolN(pool);
+  AVERT(PoolN, poolN);
+
+  AVERT(Trace, trace);
+}
+
+
 /* NPoolClass -- pool class definition for N */
 
 DEFINE_POOL_CLASS(NPoolClass, this)
@@ -271,6 +285,7 @@ DEFINE_POOL_CLASS(NPoolClass, this)
   this->fix = NFix;
   this->fixEmergency = NFix;
   this->reclaim = NReclaim;
+  this->traceEnd = NTraceEnd;
   this->describe = NDescribe;
 }
 

@@ -1,6 +1,6 @@
 /* check.h: ASSERTION INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/check.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/check.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -107,7 +107,7 @@ enum {
  * and <design/interface-c/#check.space>.
  *
  * @@@@ This is a test, not a CHECK macro -- it does not assert.
- * It should be renamed MATCHSIG.  RHSK 2006-12-13.
+ * It should be renamed TESTSIG.  RHSK 2006-12-13.
  */
 
 #define CHECKT(type, val)       ((val) != NULL && (val)->sig == type ## Sig)
@@ -240,7 +240,7 @@ enum {
  * satisfy rule.impl.trick.]
  *
  * @@@@ These are tests, not CHECK macros -- they do not assert.
- * They should be renamed MATCHTYPE etc.  RHSK 2006-12-13.
+ * They should be renamed TESTTYPE etc.  RHSK 2006-12-13.
  */
 
 /* compile-time check */

@@ -1,6 +1,6 @@
 /* mpslibcb.h: RAVENBROOK MEMORY POOL SYSTEM LIBRARY CALLBACK INTERFACE
  *
- * $Header: //info.ravenbrook.com/project/mps/version/1.108/code/mpslibcb.h#1 $
+ * $Header: //info.ravenbrook.com/project/mps/version/1.109/code/mpslibcb.h#1 $
  * Copyright (c) 2005 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MPS client application developers, MPS developers.

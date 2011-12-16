@@ -1,6 +1,6 @@
 /* arena.c: ARENA ALLOCATION FEATURES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/arena.c#3 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/arena.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .sources: <design/arena/> is the main design document.  */
@@ -9,12 +9,17 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/arena.c#3 $");
+SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/arena.c#2 $");
 
 
 /* ArenaControlPool -- get the control pool */
 
 #define ArenaControlPool(arena) MV2Pool(&(arena)->controlPoolStruct)
+
+
+/* Forward declarations */
+
+static void ArenaTrivCompact(Arena arena, Trace trace);
 
 
 /* ArenaTrivDescribe -- produce trivial description of an arena */
@@ -63,6 +68,7 @@ DEFINE_CLASS(AbstractArenaClass, class)
   class->free = NULL;
   class->chunkInit = NULL;
   class->chunkFinish = NULL;
+  class->compact = ArenaTrivCompact;
   class->describe = ArenaTrivDescribe;
   class->sig = ArenaClassSig;
 }
@@ -88,6 +94,7 @@ Bool ArenaClassCheck(ArenaClass class)
   CHECKL(FUNCHECK(class->free));
   CHECKL(FUNCHECK(class->chunkInit));
   CHECKL(FUNCHECK(class->chunkFinish));
+  CHECKL(FUNCHECK(class->compact));
   CHECKL(FUNCHECK(class->describe));
   CHECKS(ArenaClass, class);
   return TRUE;
@@ -135,6 +142,8 @@ Bool ArenaCheck(Arena arena)
   CHECKD(ChunkCacheEntry, &arena->chunkCache);
 
   CHECKL(LocusCheck(arena));
+  
+  /* nothing to check for alertCollection */
 
   return TRUE;
 }
@@ -176,6 +185,8 @@ Res ArenaInit(Arena arena, ArenaClass class)
   ChunkCacheEntryInit(&arena->chunkCache);
 
   LocusInit(arena);
+  
+  arena->alertCollection = 0;
 
   res = GlobalsInit(ArenaGlobals(arena));
   if (res != ResOK)
@@ -218,9 +229,6 @@ Res ArenaCreateV(Arena *arenaReturn, ArenaClass class, va_list args)
     res = ResMEMORY; /* size was too small */
     goto failStripeSize;
   }
-
-  /* load cache */
-  ChunkEncache(arena, arena->primary);
 
   res = ControlInit(arena);
   if (res != ResOK)
@@ -350,6 +358,12 @@ Res ArenaDescribe(Arena arena, mps_lib_FILE *stream)
                "  spareCommitLimit $W\n", (WriteFW)arena->spareCommitLimit,
                "  zoneShift $U\n", (WriteFU)arena->zoneShift,
                "  alignment $W\n", (WriteFW)arena->alignment,
+               NULL);
+  if (res != ResOK) return res;
+
+  res = WriteF(stream,
+               "  droppedMessages $U$S\n", (WriteFU)arena->droppedMessages,
+               (arena->droppedMessages == 0 ? "" : "  -- MESSAGES DROPPED!"),
                NULL);
   if (res != ResOK) return res;
 
@@ -691,6 +705,23 @@ Res ArenaNoExtend(Arena arena, Addr base, Size size)
 
   NOTREACHED;
   return ResUNIMPL;
+}
+
+
+/* ArenaCompact -- respond (or not) to trace reclaim */
+
+void ArenaCompact(Arena arena, Trace trace)
+{
+  AVERT(Arena, arena);
+  AVERT(Trace, trace);
+  (*arena->class->compact)(arena, trace);
+}
+
+static void ArenaTrivCompact(Arena arena, Trace trace)
+{
+  UNUSED(arena);
+  UNUSED(trace);
+  return;
 }
 
 

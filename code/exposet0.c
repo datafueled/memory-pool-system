@@ -1,6 +1,6 @@
 /* exposet0.c: ARENA EXPOSE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/exposet0.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/exposet0.c#1 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  * 
@@ -199,9 +199,9 @@ static void *test(void *arg, size_t s)
       {
         unsigned long object_count = 0;
         mps_arena_expose(arena);
-	mps_arena_formatted_objects_walk(arena, test_stepper, &object_count, 0);
-	mps_arena_release(arena);
-	printf("stepped on %lu objects.\n", object_count);
+        mps_arena_formatted_objects_walk(arena, test_stepper, &object_count, 0);
+        mps_arena_release(arena);
+        printf("stepped on %lu objects.\n", object_count);
       }
     }
 

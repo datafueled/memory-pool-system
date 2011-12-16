@@ -1,6 +1,6 @@
 /* poolams.c: AUTOMATIC MARK & SWEEP POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/poolams.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolams.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -20,7 +20,7 @@
 #include "mpm.h"
 #include <stdarg.h>
 
-SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/poolams.c#2 $");
+SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolams.c#1 $");
 
 
 #define AMSSig          ((Sig)0x519A3599) /* SIGnature AMS */
@@ -1164,8 +1164,8 @@ static Res amsIterate(Seg seg, AMSObjectFunction f, void *closure)
       AVER(AddrIsAligned(next, alignment));
     } else {
       AVER((buffer == NULL)
-	   || (p < BufferScanLimit(buffer))
-	   || (p >= BufferLimit(buffer)));  /* not in the buffer */
+           || (p < BufferScanLimit(buffer))
+           || (p >= BufferLimit(buffer)));  /* not in the buffer */
 
       i = AMS_ADDR_INDEX(seg, p);
       if (!AMS_ALLOCED(seg, i)) { /* no object here */
@@ -1191,9 +1191,9 @@ static Res amsIterate(Seg seg, AMSObjectFunction f, void *closure)
           next = AddrAdd(p, alignment);
         }
         AVER(AddrIsAligned(next, alignment));
-	res = (*f)(seg, i, p, next, closure);
-	if (res != ResOK)
-	  return res;
+        res = (*f)(seg, i, p, next, closure);
+        if (res != ResOK)
+          return res;
       }
     }
     AVER(next > p); /* make sure we make progress */

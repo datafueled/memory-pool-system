@@ -1,6 +1,6 @@
 /* vmw3.c: VIRTUAL MEMORY MAPPING FOR WIN32
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/vmw3.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/vmw3.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: See <design/vm/>.
@@ -55,7 +55,7 @@
 
 #include "mpswin.h"
 
-SRCID(vmw3, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/vmw3.c#1 $");
+SRCID(vmw3, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/vmw3.c#1 $");
 
 
 /* VMStruct -- virtual memory structure */
@@ -122,7 +122,7 @@ Res VMCreate(VM *vmReturn, Size size)
 
   /* Allocate the vm descriptor.  This is likely to be wasteful. */
   vbase = VirtualAlloc(NULL, SizeAlignUp(sizeof(VMStruct), align),
-		       MEM_COMMIT, PAGE_READWRITE);
+                       MEM_COMMIT, PAGE_READWRITE);
   if (vbase == NULL)
     return ResMEMORY;
   vm = (VM)vbase;

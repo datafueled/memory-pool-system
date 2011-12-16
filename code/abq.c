@@ -1,6 +1,6 @@
 /* abq.c: AVAILABLE BLOCK QUEUE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/abq.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/abq.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: Any MPS developer
@@ -15,7 +15,7 @@
 #include "cbs.h"
 #include "mpm.h"
 
-SRCID(abq, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/abq.c#1 $");
+SRCID(abq, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/abq.c#1 $");
 
 
 /* Private prototypes */
@@ -215,12 +215,12 @@ Res ABQDescribe(ABQ abq, mps_lib_FILE *stream)
   AVER(stream != NULL);
 
   res = WriteF(stream,
-	       "ABQ $P\n{\n", (WriteFP)abq,
-	       "  elements: $U \n", (WriteFU)abq->elements,
-	       "  in: $U \n", (WriteFU)abq->in,
-	       "  out: $U \n", (WriteFU)abq->out,
+               "ABQ $P\n{\n", (WriteFP)abq,
+               "  elements: $U \n", (WriteFU)abq->elements,
+               "  in: $U \n", (WriteFU)abq->in,
+               "  out: $U \n", (WriteFU)abq->out,
                "  queue: \n",
-	       NULL);
+               NULL);
   if(res != ResOK)
     return res;
 

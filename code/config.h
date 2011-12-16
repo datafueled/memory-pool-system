@@ -1,6 +1,6 @@
 /* config.h: MPS CONFIGURATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/config.h#3 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/config.h#1 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -279,10 +279,6 @@
 #define TraceLIMIT ((size_t)1)
 /* I count 4 function calls to scan, 10 to copy. */
 #define TraceCopyScanRATIO (1.5)
-/* Length (in chars) of a char buffer used to store the reason why a
-   collection started in the TraceStartMessageStruct (used by
-   mps_message_type_gc_start). */
-#define TRACE_START_MESSAGE_WHY_LEN 128
 
 /* Chosen so that the RememberedSummaryBlockStruct packs nicely into
    pages */
@@ -307,8 +303,8 @@
 /* Diagnostics Buffer */
 
 #ifdef DIAG_WITH_STREAM_AND_WRITEF
-/* DIAG_BUFFER_SIZE: 10 screenfuls: 10x80x25 = 20000 */
-#define DIAG_BUFFER_SIZE      ((Size)20000)
+/* DIAG_BUFFER_SIZE: 100 screenfuls: 100x80x25 = 200000 */
+#define DIAG_BUFFER_SIZE      ((Size)200000)
 #else
 #define DIAG_BUFFER_SIZE      ((Size)1)
 #endif
@@ -394,16 +390,18 @@
 /* Dongle configuration */
 
 #if defined(DONGLE)
-
 #define DONGLE_TEST_FREQUENCY ((unsigned int)4000)
-
 #elif defined(DONGLE_NONE)
-
 /* nothing to do */
-
 #else
 #error "No dongle configured."
 #endif
+
+
+/* Pool Class AMC configuration */
+
+/* AMC treats segments of this many pages (or more) as "Large" */
+#define AMCLargeSegPAGES ((Count)8)
 
 
 #endif /* config_h */

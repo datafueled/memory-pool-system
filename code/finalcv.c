@@ -1,6 +1,6 @@
 /* finalcv.c: FINALIZATION COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/finalcv.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/finalcv.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -180,6 +180,8 @@ static void *test(void *arg, size_t s)
       /* <design/poolmrg/#test.promise.ut.message> */
       cdie(mps_message_get(&message, arena, mps_message_type_finalization()),
            "get");
+      cdie(0 == mps_message_clock(arena, message),
+           "message clock should be 0 (unset) for finalization messages");
       mps_message_finalization_ref(&objaddr, arena, message);
       obj = objaddr;
       objind = dylan_int_int(obj[vectorSLOT]);

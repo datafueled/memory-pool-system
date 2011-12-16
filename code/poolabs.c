@@ -1,6 +1,6 @@
 /* poolabs.c: ABSTRACT POOL CLASSES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/poolabs.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolabs.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 
 #include "mpm.h"
 
-SRCID(poolabs, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/poolabs.c#2 $");
+SRCID(poolabs, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolabs.c#1 $");
 
 
 typedef PoolClassStruct AbstractPoolClassStruct;
@@ -136,6 +136,7 @@ DEFINE_CLASS(AbstractPoolClass, class)
   class->fix = PoolNoFix;
   class->fixEmergency = PoolNoFix;
   class->reclaim = PoolNoReclaim;
+  class->traceEnd = PoolTrivTraceEnd;
   class->rampBegin = PoolNoRampBegin;
   class->rampEnd = PoolNoRampEnd;
   class->framePush = PoolNoFramePush;
@@ -527,6 +528,13 @@ void PoolNoReclaim(Pool pool, Trace trace, Seg seg)
   AVERT(Trace, trace);
   AVERT(Seg, seg);
   NOTREACHED;
+}
+
+void PoolTrivTraceEnd(Pool pool, Trace trace)
+{
+  AVERT(Pool, pool);
+  AVERT(Trace, trace);
+  NOOP;
 }
 
 

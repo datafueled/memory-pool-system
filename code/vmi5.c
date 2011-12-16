@@ -1,6 +1,6 @@
 /* vmi5.c: VIRTUAL MEMORY MAPPING FOR IRIX 5 (AND 6)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/vmi5.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/vmi5.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * Design: <design/vm/>
@@ -51,7 +51,7 @@
 #define MAP_FAILED ((void *)-1)
 #endif
 
-SRCID(vmi5, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/vmi5.c#1 $");
+SRCID(vmi5, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/vmi5.c#1 $");
 
 
 /* VMStruct -- virtual memory structure */
@@ -127,7 +127,7 @@ Res VMCreate(VM *vmReturn, Size size)
 
   /* .map.reserve: MAP_AUTORESRV is necessary to avoid reserving swap. */
   addr = mmap((void *)0, (size_t)size, PROT_NONE, MAP_SHARED | MAP_AUTORESRV,
-	      zero_fd, (off_t)0);
+              zero_fd, (off_t)0);
   if(addr == MAP_FAILED) {
     AVER(errno == ENOMEM); /* .assume.mmap.err */
     res = (errno == ENOMEM) ? ResRESOURCE : ResFAIL;
@@ -227,9 +227,9 @@ Res VMMap(VM vm, Addr base, Addr limit)
   /* Check it won't lose any bits. */
   AVER(size <= (Size)(size_t)-1);
   addr = mmap((void *)base, (size_t)size,
-	      PROT_READ | PROT_WRITE | PROT_EXEC,
-	      MAP_PRIVATE | MAP_FIXED,
-	      vm->zero_fd, (off_t)0);
+              PROT_READ | PROT_WRITE | PROT_EXEC,
+              MAP_PRIVATE | MAP_FIXED,
+              vm->zero_fd, (off_t)0);
   if(addr == MAP_FAILED) {
     AVER(errno == ENOMEM || errno == EAGAIN); /* .assume.mmap.err */
     return ResMEMORY;

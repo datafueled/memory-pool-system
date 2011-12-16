@@ -1,6 +1,6 @@
 /* seg.c: SEGMENTS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/seg.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/seg.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: The design for this module is <design/seg/>.
@@ -29,7 +29,7 @@
 #include "tract.h"
 #include "mpm.h"
 
-SRCID(seg, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/seg.c#1 $");
+SRCID(seg, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/seg.c#1 $");
 
 
 /* SegGCSeg -- convert generic Seg to GCSeg */
@@ -1146,10 +1146,10 @@ static void gcSegSetGreyInternal(Seg seg, TraceSet oldGrey, TraceSet grey)
     if (grey != TraceSetEMPTY) {
       AVER(RankSetIsSingle(seg->rankSet));
       for(rank = 0; rank < RankLIMIT; ++rank)
-	if (RankSetIsMember(seg->rankSet, rank)) {
-	  RingInsert(ArenaGreyRing(arena, rank), &gcseg->greyRing);
-	  break;
-	}
+        if (RankSetIsMember(seg->rankSet, rank)) {
+          RingInsert(ArenaGreyRing(arena, rank), &gcseg->greyRing);
+          break;
+        }
       AVER(rank != RankLIMIT); /* there should've been a match */
     }
   } else {

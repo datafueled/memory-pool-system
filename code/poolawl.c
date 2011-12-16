@@ -1,6 +1,6 @@
 /* poolawl.c: AUTOMATIC WEAK LINKED POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/poolawl.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolawl.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *
@@ -43,7 +43,7 @@
 #include "mpm.h"
 #include "chain.h"
 
-SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/poolawl.c#2 $");
+SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolawl.c#1 $");
 
 
 #define AWLSig ((Sig)0x519B7A37) /* SIGnature PooL AWL */
@@ -697,7 +697,7 @@ static Res AWLWhiten(Pool pool, Trace trace, Seg seg)
     /* Whiten everything except the buffer. */
     Addr base = SegBase(seg);
     Index scanLimitIndex = awlIndexOfAddr(base, awl,
-					  BufferScanLimit(buffer));
+                                          BufferScanLimit(buffer));
     Index limitIndex = awlIndexOfAddr(base, awl,
                                       BufferLimit(buffer));
 
@@ -762,10 +762,10 @@ static void AWLGrey(Pool pool, Trace trace, Seg seg)
 
       AWLRangeGrey(awlseg,
                    0,
-		   awlIndexOfAddr(base, awl, BufferScanLimit(buffer)));
+                   awlIndexOfAddr(base, awl, BufferScanLimit(buffer)));
       AWLRangeGrey(awlseg,
                    awlIndexOfAddr(base, awl, BufferLimit(buffer)),
-		   awlseg->grains);
+                   awlseg->grains);
     } else {
       AWLRangeGrey(awlseg, 0, awlseg->grains);
     }

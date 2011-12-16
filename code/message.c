@@ -1,6 +1,6 @@
 /* message.c: MPS/CLIENT MESSAGES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/message.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/message.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -17,7 +17,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(message, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/message.c#1 $");
+SRCID(message, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/message.c#1 $");
 
 
 /* Maps from a Ring pointer to the message */
@@ -30,20 +30,9 @@ static Bool MessageTypeEnabled(Arena arena, MessageType type);
 static void MessageDelete(Message message);
 
 
-/* MessageOnQueue -- is the message on the queue?
+/* Internal (MPM) Interface -- functions for message originator
  *
- * Message is on queue if and only if its ring is not a singleton.
  */
-
-Bool MessageOnQueue(Message message)
-{
-  AVERT(Message, message);
-
-  return !RingIsSingle(&message->queueRing);
-}
-
-
-/* Checking Functions */
 
 
 Bool MessageTypeCheck(MessageType type)
@@ -54,23 +43,29 @@ Bool MessageTypeCheck(MessageType type)
   return TRUE;
 }
 
+/* See .message.clocked.  Currently finalization messages are the */
+/* only ones that can be numerous. */
+#define MessageIsClocked(message) ((message)->class->type \
+                                 != MessageTypeFINALIZATION)
 
 Bool MessageCheck(Message message)
 {
   CHECKS(Message, message);
   CHECKU(Arena, message->arena);
-  CHECKL(MessageTypeCheck(message->type));
-  CHECKU(MessageClass, message->class);
+  CHECKD(MessageClass, message->class);
   CHECKL(RingCheck(&message->queueRing));
+  /* postedClock is uncheckable for clocked message types, */
+  /* but must be 0 for unclocked message types: */
+  CHECKL(MessageIsClocked(message) || (message->postedClock == 0));
 
   return TRUE;
 }
-
 
 Bool MessageClassCheck(MessageClass class)
 {
   CHECKS(MessageClass, class);
   CHECKL(class->name != NULL);
+  CHECKL(MessageTypeCheck(class->type));
   CHECKL(FUNCHECK(class->delete));
   CHECKL(FUNCHECK(class->finalizationRef));
   CHECKL(FUNCHECK(class->gcLiveSize));
@@ -82,29 +77,6 @@ Bool MessageClassCheck(MessageClass class)
   return TRUE;
 }
 
-
-/* Internal Functions */
-
-
-/* returns the arena associated with a message */
-Arena MessageArena(Message message)
-{
-  AVERT(Message, message);
-
-  return message->arena;
-}
-
-
-/* return the class of a message */
-MessageClass MessageGetClass(Message message)
-{
-  AVERT(Message, message);
-
-  return message->class;
-}
-
-
-/* Initialises a message */
 void MessageInit(Arena arena, Message message, MessageClass class,
                  MessageType type)
 {
@@ -116,14 +88,13 @@ void MessageInit(Arena arena, Message message, MessageClass class,
   message->arena = arena;
   message->class = class;
   RingInit(&message->queueRing);
-  message->type = type;
+  message->postedClock = 0;
   message->sig = MessageSig;
 
   AVERT(Message, message);
+  AVER(MessageGetType(message) == type);
 }
 
-
-/* Finishes a message */
 void MessageFinish(Message message)
 {
   AVERT(Message, message);
@@ -133,8 +104,22 @@ void MessageFinish(Message message)
   RingFinish(&message->queueRing);
 }
 
+Arena MessageArena(Message message)
+{
+  AVERT(Message, message);
 
-/* Posts a message to the arena's queue of pending messages */
+  return message->arena;
+}
+
+Bool MessageOnQueue(Message message)
+{
+  AVERT(Message, message);
+
+  /* message is on queue if and only if its ring is not a singleton. */
+  return !RingIsSingle(&message->queueRing);
+}
+
+/* Post a message to the arena's queue of pending messages */
 void MessagePost(Arena arena, Message message)
 {
   AVERT(Arena, arena);
@@ -143,7 +128,13 @@ void MessagePost(Arena arena, Message message)
   /* queueRing field must be a singleton, see */
   /* <design/message/#fun.post.singleton> */
   AVER(!MessageOnQueue(message));
-  if(MessageTypeEnabled(arena, message->type)) {
+  if(MessageTypeEnabled(arena, MessageGetType(message))) {
+    /* .message.clocked: Reading the clock with ClockNow() */
+    /* involves an mpslib call, so we avoid it for message */
+    /* types that may be numerous. */
+    if(MessageIsClocked(message)) {
+      message->postedClock = ClockNow();
+    }
     RingAppend(&arena->messageRing, &message->queueRing);
   } else {
     /* discard message immediately if client hasn't enabled that type */
@@ -151,8 +142,7 @@ void MessagePost(Arena arena, Message message)
   }
 }
 
-
-/* returns the Message at the head of the queue */
+/* Return the message at the head of the arena's queue */
 static Message MessageHead(Arena arena)
 {
   AVERT(Arena, arena);
@@ -161,23 +151,70 @@ static Message MessageHead(Arena arena)
   return MessageNodeMessage(RingNext(&arena->messageRing));
 }
 
-
-/* returns the type of a message */
-MessageType MessageGetType(Message message)
+/* Delete the message at the head of the queue (helper function). */
+static void MessageDeleteHead(Arena arena)
 {
-  AVERT(Message, message);
+  Message message;
 
-  return message->type;
+  AVERT(Arena, arena);
+  AVER(!RingIsSingle(&arena->messageRing));
+
+  message = MessageHead(arena);
+  AVERT(Message, message);
+  RingRemove(&message->queueRing);
+  MessageDelete(message);
+}
+
+/* Empty the queue by discarding all messages */
+void MessageEmpty(Arena arena)
+{
+  AVERT(Arena, arena);
+
+  while(!RingIsSingle(&arena->messageRing)) {
+    MessageDeleteHead(arena);
+  }
 }
 
 
-/* External Functions
+/* Delivery (Client) Interface -- functions for recipient
  *
- * These are actually the internal implementations of functions
- * exposed through the external interface */
+ * Most of these functions are exposed through the external MPS 
+ * interface.
+ */
 
 
-/* Determines whether the queue has any messages on it */
+static Bool MessageTypeEnabled(Arena arena, MessageType type)
+{
+  AVERT(Arena, arena);
+  AVER(MessageTypeCheck(type));
+
+  return BTGet(arena->enabledMessageTypes, type);
+}
+
+void MessageTypeEnable(Arena arena, MessageType type)
+{
+  AVERT(Arena, arena);
+  AVER(MessageTypeCheck(type));
+
+  BTSet(arena->enabledMessageTypes, type);
+}
+
+void MessageTypeDisable(Arena arena, MessageType type)
+{
+  Message message;
+
+  AVERT(Arena, arena);
+  AVER(MessageTypeCheck(type));
+
+  /* Flush existing messages of this type */
+  while(MessageGet(&message, arena, type)) {
+    MessageDelete(message);
+  }
+
+  BTRes(arena->enabledMessageTypes, type);
+}
+
+/* Any messages on the queue? */
 Bool MessagePoll(Arena arena)
 {
   AVERT(Arena, arena);
@@ -189,8 +226,7 @@ Bool MessagePoll(Arena arena)
   }
 }
 
-
-/* Determines the type of a message at the head of the queue */
+/* Return the type of the message at the head of the queue, if any */
 Bool MessageQueueType(MessageType *typeReturn, Arena arena)
 {
   Message message;
@@ -209,45 +245,7 @@ Bool MessageQueueType(MessageType *typeReturn, Arena arena)
   return TRUE;
 }
 
-
-/* Discards a message
- * (called from external interface) */
-void MessageDiscard(Arena arena, Message message)
-{
-  AVERT(Arena, arena);
-  AVERT(Message, message);
-
-  AVER(!MessageOnQueue(message));
-
-  MessageDelete(message);
-}
-
-
-/* Deletes the message at the head of the queue.
- * Internal function. */
-static void MessageDeleteHead(Arena arena)
-{
-  Message message;
-
-  AVERT(Arena, arena);
-  AVER(!RingIsSingle(&arena->messageRing));
-
-  message = MessageHead(arena);
-  AVERT(Message, message);
-  RingRemove(&message->queueRing);
-  MessageDelete(message);
-}
-
-/* Empties the queue by discarding all messages */
-void MessageEmpty(Arena arena)
-{
-  AVERT(Arena, arena);
-
-  while(!RingIsSingle(&arena->messageRing)) {
-    MessageDeleteHead(arena);
-  }
-}
-
+/* Get next message of specified type, removing it from the queue */
 Bool MessageGet(Message *messageReturn, Arena arena, MessageType type)
 {
   Ring node, next;
@@ -267,46 +265,51 @@ Bool MessageGet(Message *messageReturn, Arena arena, MessageType type)
   return FALSE;
 }
 
-
-static Bool MessageTypeEnabled(Arena arena, MessageType type)
+/* Discard a message (recipient has finished using it). */
+void MessageDiscard(Arena arena, Message message)
 {
   AVERT(Arena, arena);
-  AVER(MessageTypeCheck(type));
+  AVERT(Message, message);
 
-  return BTGet(arena->enabledMessageTypes, type);
-}
- 
+  AVER(!MessageOnQueue(message));
 
-void MessageTypeEnable(Arena arena, MessageType type)
-{
-  AVERT(Arena, arena);
-  AVER(MessageTypeCheck(type));
-
-  BTSet(arena->enabledMessageTypes, type);
+  MessageDelete(message);
 }
 
 
-void MessageTypeDisable(Arena arena, MessageType type)
+/* Message Methods, Generic
+ *
+ * (Some of these dispatch on message->class).
+ */
+
+
+/* Return the type of a message */
+MessageType MessageGetType(Message message)
 {
-  Message message;
+  MessageClass class;
+  AVERT(Message, message);
+  
+  class = message->class;
+  AVERT(MessageClass, class);
 
-  AVERT(Arena, arena);
-  AVER(MessageTypeCheck(type));
-
-  /* Flush existing messages of this type */
-  while(MessageGet(&message, arena, type)) {
-    MessageDelete(message);
-  }
-
-  BTRes(arena->enabledMessageTypes, type);
+  return class->type;
 }
 
+/* Return the class of a message */
+MessageClass MessageGetClass(Message message)
+{
+  AVERT(Message, message);
 
+  return message->class;
+}
 
-/* Dispatch Methods */
+Clock MessageGetClock(Message message)
+{
+  AVERT(Message, message);
 
+  return message->postedClock;
+}
 
-/* generic message delete dispatch */
 static void MessageDelete(Message message)
 {
   AVERT(Message, message);
@@ -315,7 +318,10 @@ static void MessageDelete(Message message)
 }
 
 
-/* type specific dispatch methods */
+/* Message Method Dispatchers, Type-specific
+ *
+ */
+
 
 void MessageFinalizationRef(Ref *refReturn, Arena arena,
                             Message message)
@@ -323,19 +329,17 @@ void MessageFinalizationRef(Ref *refReturn, Arena arena,
   AVER(refReturn != NULL);
   AVERT(Arena, arena);
   AVERT(Message, message);
-
-  AVER(message->type == MessageTypeFINALIZATION);
+  AVER(MessageGetType(message) == MessageTypeFINALIZATION);
 
   (*message->class->finalizationRef)(refReturn, arena, message);
 
   return;
 }
 
-
 Size MessageGCLiveSize(Message message)
 {
   AVERT(Message, message);
-  AVER(message->type == MessageTypeGC);
+  AVER(MessageGetType(message) == MessageTypeGC);
 
   return (*message->class->gcLiveSize)(message);
 }
@@ -343,7 +347,7 @@ Size MessageGCLiveSize(Message message)
 Size MessageGCCondemnedSize(Message message)
 {
   AVERT(Message, message);
-  AVER(message->type == MessageTypeGC);
+  AVER(MessageGetType(message) == MessageTypeGC);
 
   return (*message->class->gcCondemnedSize)(message);
 }
@@ -351,7 +355,7 @@ Size MessageGCCondemnedSize(Message message)
 Size MessageGCNotCondemnedSize(Message message)
 {
   AVERT(Message, message);
-  AVER(message->type == MessageTypeGC);
+  AVER(MessageGetType(message) == MessageTypeGC);
 
   return (*message->class->gcNotCondemnedSize)(message);
 }
@@ -359,13 +363,15 @@ Size MessageGCNotCondemnedSize(Message message)
 const char *MessageGCStartWhy(Message message)
 {
   AVERT(Message, message);
-  AVER(message->type == MessageTypeGCSTART);
+  AVER(MessageGetType(message) == MessageTypeGCSTART);
 
   return (*message->class->gcStartWhy)(message);
 }
 
 
-/* type-specific stub methods */
+/* Message Method Stubs, Type-specific
+ *
+ */
 
 
 void MessageNoFinalizationRef(Ref *refReturn, Arena arena,
@@ -421,7 +427,7 @@ const char *MessageNoGCStartWhy(Message message)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2002, 2008 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

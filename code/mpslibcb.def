@@ -1,0 +1,10 @@
+; $Header: //info.ravenbrook.com/project/mps/version/1.109/code/mpslibcb.def#1 $
+; --- EXTERNAL MPS FUNCTIONS ---
+; This file tells the linker to export the mpslibcb functions from 
+; the MPS DLL.
+; This list is for the w3i3mv platform.
+;
+; This file was extracted by hand from expgen.sh; see MPS job002148.
+EXPORTS
+; mpslibcb.h
+mps_lib_callback_register

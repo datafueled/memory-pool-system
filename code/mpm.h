@@ -1,6 +1,6 @@
 /* mpm.h: MEMORY POOL MANAGER DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpm.h#3 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpm.h#2 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -119,6 +119,12 @@ extern int (AddrComp)(Addr a, Addr b, Size size);
 #define ADDR_PTR(type, addr) ((type *)(addr))
 
 
+/* Clock */
+
+#define ClockNow() ((Clock)mps_clock())
+#define ClocksPerSec() ((Clock)mps_clocks_per_sec())
+
+
 /* Result codes */
 
 extern Bool ResIsAllocFailure(Res res);
@@ -205,6 +211,7 @@ extern Res (PoolFix)(Pool pool, ScanState ss, Seg seg, Addr *refIO);
   ((*(pool)->fix)(pool, ss, seg, refIO))
 extern void PoolFixEmergency(Pool pool, ScanState ss, Seg seg, Addr *refIO);
 extern void PoolReclaim(Pool pool, Trace trace, Seg seg);
+extern void PoolTraceEnd(Pool pool, Trace trace);
 extern void PoolWalk(Pool pool, Seg seg, FormattedObjectsStepMethod f,
                      void *v, unsigned long s);
 extern void PoolFreeWalk(Pool pool, FreeBlockStepMethod f, void *p);
@@ -244,6 +251,7 @@ extern void PoolTrivBlacken(Pool pool, TraceSet traceSet, Seg seg);
 extern Res PoolNoScan(Bool *totalReturn, ScanState ss, Pool pool, Seg seg);
 extern Res PoolNoFix(Pool pool, ScanState ss, Seg seg, Ref *refIO);
 extern void PoolNoReclaim(Pool pool, Trace trace, Seg seg);
+extern void PoolTrivTraceEnd(Pool pool, Trace trace);
 extern void PoolNoRampBegin(Pool pool, Buffer buf, Bool collectAll);
 extern void PoolTrivRampBegin(Pool pool, Buffer buf, Bool collectAll);
 extern void PoolNoRampEnd(Pool pool, Buffer buf);
@@ -254,7 +262,7 @@ extern Res PoolNoFramePop(Pool pool, Buffer buf, AllocFrame frame);
 extern Res PoolTrivFramePop(Pool pool, Buffer buf, AllocFrame frame);
 extern void PoolNoFramePopPending(Pool pool, Buffer buf, AllocFrame frame);
 extern void PoolNoWalk(Pool pool, Seg seg, FormattedObjectsStepMethod step,
-		       void *p, unsigned long s);
+                       void *p, unsigned long s);
 extern void PoolNoFreeWalk(Pool pool, FreeBlockStepMethod f, void *p);
 extern PoolDebugMixin PoolNoDebugMixin(Pool pool);
 extern BufferClass PoolNoBufferClass(void);
@@ -289,38 +297,37 @@ extern AbstractCollectPoolClass AbstractCollectPoolClassGet(void);
 
 
 /* Message Interface -- see <design/message/> */
-
+/* -- Internal (MPM) Interface -- functions for message originator */
 extern Bool MessageCheck(Message message);
 extern Bool MessageClassCheck(MessageClass class);
 extern Bool MessageTypeCheck(MessageType type);
-extern MessageClass MessageGetClass(Message message);
-extern Arena MessageArena(Message message);
 extern void MessageInit(Arena arena, Message message,
                         MessageClass class, MessageType type);
 extern void MessageFinish(Message message);
+extern Arena MessageArena(Message message);
 extern Bool MessageOnQueue(Message message);
 extern void MessagePost(Arena arena, Message message);
-extern Bool MessagePoll(Arena arena);
-extern MessageType MessageGetType(Message message);
-extern void MessageDiscard(Arena arena, Message message);
 extern void MessageEmpty(Arena arena);
-extern Bool MessageGet(Message *messageReturn, Arena arena,
-                       MessageType type);
-extern Bool MessageQueueType(MessageType *typeReturn, Arena arena);
+/* -- Delivery (Client) Interface -- functions for recipient */
 extern void MessageTypeEnable(Arena arena, MessageType type);
 extern void MessageTypeDisable(Arena arena, MessageType type);
-
-/* Message methods */
-
-/* Method dispatchers */
+extern Bool MessagePoll(Arena arena);
+extern Bool MessageQueueType(MessageType *typeReturn, Arena arena);
+extern Bool MessageGet(Message *messageReturn, Arena arena,
+                       MessageType type);
+extern void MessageDiscard(Arena arena, Message message);
+/* -- Message Methods, Generic */
+extern MessageType MessageGetType(Message message);
+extern MessageClass MessageGetClass(Message message);
+extern Clock MessageGetClock(Message message);
+/* -- Message Method Dispatchers, Type-specific */
 extern void MessageFinalizationRef(Ref *refReturn,
                                    Arena arena, Message message);
 extern Size MessageGCLiveSize(Message message);
 extern Size MessageGCCondemnedSize(Message message);
 extern Size MessageGCNotCondemnedSize(Message message);
 extern const char *MessageGCStartWhy(Message message);
-
-/* Convenience methods */
+/* -- Message Method Stubs, Type-specific */
 extern void MessageNoFinalizationRef(Ref *refReturn,
                                      Arena arena, Message message);
 extern Size MessageNoGCLiveSize(Message message);
@@ -374,6 +381,19 @@ extern void TraceSegAccess(Arena arena, Seg seg, AccessSet mode);
 extern Res TraceFix(ScanState ss, Ref *refIO);
 extern Res TraceFixEmergency(ScanState ss, Ref *refIO);
 
+extern void TraceQuantum(Trace trace);
+extern Res TraceStartCollectAll(Trace *traceReturn, Arena arena, int why);
+
+/* traceanc.c -- Trace Ancillary */
+
+extern Bool TraceStartMessageCheck(TraceStartMessage message);
+extern const char *TraceStartWhyToString(int why);
+extern void TracePostStartMessage(Trace trace);
+extern Bool TraceMessageCheck(TraceMessage message);  /* trace end */
+extern void TracePostMessage(Trace trace);  /* trace end */
+extern Bool TraceIdMessagesCheck(Arena arena, TraceId ti);
+extern Res TraceIdMessagesCreate(Arena arena, TraceId ti);
+extern void TraceIdMessagesDestroy(Arena arena, TraceId ti);
 
 /* Collection control parameters */
 
@@ -549,6 +569,8 @@ extern double ArenaMutatorAllocSize(Arena arena);
 extern Size ArenaAvail(Arena arena);
 
 extern Res ArenaExtend(Arena, Addr base, Size size);
+
+extern void ArenaCompact(Arena arena, Trace trace);
 
 extern Res ArenaFinalize(Arena arena, Ref obj);
 extern Res ArenaDefinalize(Arena arena, Ref obj);
@@ -751,14 +773,14 @@ extern AllocPattern AllocPatternRampCollectAll(void);
 extern Bool FormatCheck(Format format);
 extern Res FormatCreate(Format *formatReturn, Arena arena,
                         Align alignment,
-			FormatVariety variety,
+                        FormatVariety variety,
                         FormatScanMethod scan,
                         FormatSkipMethod skip,
                         FormatMoveMethod move,
                         FormatIsMovedMethod isMoved,
                         FormatCopyMethod copy,
                         FormatPadMethod pad,
-			FormatClassMethod class,
+                        FormatClassMethod class,
                         Size headerSize);
 extern void FormatDestroy(Format format);
 extern Arena FormatArena(Format format);
@@ -1050,7 +1072,7 @@ extern void DiagEnd(const char *tag);
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2003 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2003, 2008 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

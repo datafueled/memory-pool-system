@@ -1,6 +1,6 @@
 /* ssixi3.c: UNIX/INTEL STACK SCANNING
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/ssixi3.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/ssixi3.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  This scans the stack and fixes the registers which may contain
@@ -40,7 +40,7 @@
 
 #include "mpm.h"
 
-SRCID(ssixi3, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/ssixi3.c#2 $");
+SRCID(ssixi3, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/ssixi3.c#1 $");
 
 
 /* .assume.asm.order */

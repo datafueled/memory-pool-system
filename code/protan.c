@@ -1,6 +1,6 @@
 /* protan.c: ANSI MEMORY PROTECTION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/protan.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/protan.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *
@@ -11,7 +11,7 @@
 
 #include "mpm.h"
 
-SRCID(protan, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/protan.c#1 $");
+SRCID(protan, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/protan.c#1 $");
 
 
 /* ProtSetup -- global protection setup */
@@ -52,13 +52,13 @@ void ProtSync(Arena arena)
     if (SegFirst(&seg, arena)) {
       Addr base;
       do {
-	base = SegBase(seg);
-	if (SegPM(seg) != AccessSetEMPTY) { /* <design/protan/#fun.sync.seg> */
-	  ShieldEnter(arena);
-	  TraceSegAccess(arena, seg, SegPM(seg));
-	  ShieldLeave(arena);
-	  synced = FALSE;
-	}
+        base = SegBase(seg);
+        if (SegPM(seg) != AccessSetEMPTY) { /* <design/protan/#fun.sync.seg> */
+          ShieldEnter(arena);
+          TraceSegAccess(arena, seg, SegPM(seg));
+          ShieldLeave(arena);
+          synced = FALSE;
+        }
       } while(SegNext(&seg, arena, base));
     }
   } while(!synced);

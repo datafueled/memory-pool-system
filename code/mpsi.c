@@ -1,6 +1,6 @@
 /* mpsi.c: MEMORY POOL SYSTEM C INTERFACE LAYER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpsi.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpsi.c#1 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -53,7 +53,7 @@
 #include "sac.h"
 #include "chain.h"
 
-SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpsi.c#1 $");
+SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpsi.c#1 $");
 
 
 /* mpsi_check -- check consistency of interface mappings
@@ -91,6 +91,18 @@ static Bool mpsi_check(void)
   CHECKL((int)MPS_RANK_EXACT == (int)RankEXACT);
   CHECKL((int)MPS_RANK_WEAK == (int)RankWEAK);
 
+  /* Check that external and internal message types match. */
+  /* See <code/mps.h#message.types> and */
+  /* <code/mpmtypes.h#message.types>. */
+  /* Also see .check.enum.cast. */
+  CHECKL(CHECKTYPE(mps_message_type_t, MessageType));
+  CHECKL((int)MessageTypeFINALIZATION
+         == (int)MPS_MESSAGE_TYPE_FINALIZATION);
+  CHECKL((int)MessageTypeGC
+         == (int)MPS_MESSAGE_TYPE_GC);
+  CHECKL((int)MessageTypeGCSTART
+         == (int)MPS_MESSAGE_TYPE_GC_START);
+
   /* The external idea of a word width and the internal one */
   /* had better match.  See <design/interface-c/#cons>. */
   CHECKL(sizeof(mps_word_t) == sizeof(void *));
@@ -104,6 +116,10 @@ static Bool mpsi_check(void)
   /* better match.  See <design/interface-c/#cons.size> */
   /* and <design/interface-c/#pun.size>. */
   CHECKL(CHECKTYPE(size_t, Size));
+
+  /* Clock values are passed from external to internal and back */
+  /* out to external. */
+  CHECKL(CHECKTYPE(mps_clock_t, Clock));
 
   /* Check ap_s/APStruct compatibility by hand */
   /* .check.ap: See <code/mps.h#ap> and <code/buffer.h#ap>. */
@@ -481,6 +497,79 @@ mps_bool_t mps_arena_has_addr(mps_arena_t mps_arena, mps_addr_t p)
     AVERT(Arena, arena);
     b = ArenaHasAddr(arena, (Addr)p);
     ArenaLeaveRecursive(arena);
+    return b;
+}
+
+
+/* mps_addr_pool -- return the pool containing the given address
+ *
+ * Wrapper for PoolOfAddr.  Note: may return an MPS-internal pool.
+ */
+
+mps_bool_t mps_addr_pool(mps_pool_t *mps_pool_o,
+                         mps_arena_t mps_arena,
+                         mps_addr_t p)
+{
+    Bool b;
+    Pool pool;
+    Arena arena = (Arena)mps_arena;
+
+    AVER(mps_pool_o != NULL);
+    /* mps_arena -- will be checked by ArenaEnterRecursive */
+    /* p -- cannot be checked */
+
+    /* One of the few functions that can be called
+       during the call to an MPS function.  IE this function
+       can be called when walking the heap. */
+    ArenaEnterRecursive(arena);
+    b = PoolOfAddr(&pool, arena, (Addr)p);
+    ArenaLeaveRecursive(arena);
+
+    if(b)
+      *mps_pool_o = (mps_pool_t)pool;
+
+    return b;
+}
+
+
+/* mps_addr_fmt -- what format might this address have?
+ *
+ * .per-pool: There's no reason why all objects in a pool should have 
+ * the same format.  But currently, MPS internals support at most one 
+ * format per pool.
+ *
+ * If the address is in a pool and has a format, returns TRUE and 
+ * updates *mps_fmt_o to be that format.  Otherwise, returns FALSE 
+ * and does not update *mps_fmt_o.
+ *
+ * Note: may return an MPS-internal format.
+ */
+mps_bool_t mps_addr_fmt(mps_fmt_t *mps_fmt_o,
+                        mps_arena_t mps_arena,
+                        mps_addr_t p)
+{
+    Bool b;
+    Pool pool;
+    Format format = 0;
+    Arena arena = (Arena)mps_arena;
+
+    AVER(mps_fmt_o != NULL);
+    /* mps_arena -- will be checked by ArenaEnterRecursive */
+    /* p -- cannot be checked */
+
+    /* One of the few functions that can be called
+       during the call to an MPS function.  IE this function
+       can be called when walking the heap. */
+    ArenaEnterRecursive(arena);
+    /* .per-pool */
+    b = PoolOfAddr(&pool, arena, (Addr)p);
+    if(b)
+      b = PoolFormat(&format, pool);
+    ArenaLeaveRecursive(arena);
+
+    if(b)
+      *mps_fmt_o = (mps_fmt_t)format;
+
     return b;
 }
 
@@ -1564,49 +1653,6 @@ mps_res_t mps_definalize(mps_arena_t mps_arena, mps_addr_t *refref)
 /* Messages */
 
 
-mps_bool_t mps_message_poll(mps_arena_t mps_arena)
-{
-  Bool b;
-  Arena arena = (Arena)mps_arena;
-
-  ArenaEnter(arena);
-
-  b = MessagePoll(arena);
-
-  ArenaLeave(arena);
-  return b;
-}
-
-
-mps_message_type_t mps_message_type(mps_arena_t mps_arena,
-                                    mps_message_t mps_message)
-{
-  Arena arena = (Arena)mps_arena;
-  Message message = (Message)mps_message;
-  MessageType type;
-
-  ArenaEnter(arena);
-
-  type = MessageGetType(message);
-
-  ArenaLeave(arena);
-
-  return (mps_message_type_t)type;
-}
-
-void mps_message_discard(mps_arena_t mps_arena,
-                         mps_message_t mps_message)
-{
-  Arena arena = (Arena)mps_arena;
-  Message message = (Message)mps_message;
-
-  ArenaEnter(arena);
-
-  MessageDiscard(arena, message);
-
-  ArenaLeave(arena);
-}
-
 void mps_message_type_enable(mps_arena_t mps_arena,
                              mps_message_type_t mps_type)
 {
@@ -1633,23 +1679,16 @@ void mps_message_type_disable(mps_arena_t mps_arena,
   ArenaLeave(arena);
 }
 
-mps_bool_t mps_message_get(mps_message_t *mps_message_return,
-                           mps_arena_t mps_arena,
-                           mps_message_type_t mps_type)
+mps_bool_t mps_message_poll(mps_arena_t mps_arena)
 {
   Bool b;
   Arena arena = (Arena)mps_arena;
-  MessageType type = (MessageType)mps_type;
-  Message message;
 
   ArenaEnter(arena);
 
-  b = MessageGet(&message, arena, type);
+  b = MessagePoll(arena);
 
   ArenaLeave(arena);
-  if (b) {
-    *mps_message_return = (mps_message_t)message;
-  }
   return b;
 }
 
@@ -1671,10 +1710,78 @@ mps_bool_t mps_message_queue_type(mps_message_type_t *mps_message_type_return,
   return b;
 }
 
+mps_bool_t mps_message_get(mps_message_t *mps_message_return,
+                           mps_arena_t mps_arena,
+                           mps_message_type_t mps_type)
+{
+  Bool b;
+  Arena arena = (Arena)mps_arena;
+  MessageType type = (MessageType)mps_type;
+  Message message;
 
-/* Message-Type-Specific Methods */
+  ArenaEnter(arena);
 
-/* MPS_MESSAGE_TYPE_FINALIZATION */
+  b = MessageGet(&message, arena, type);
+
+  ArenaLeave(arena);
+  if (b) {
+    *mps_message_return = (mps_message_t)message;
+  }
+  return b;
+}
+
+void mps_message_discard(mps_arena_t mps_arena,
+                         mps_message_t mps_message)
+{
+  Arena arena = (Arena)mps_arena;
+  Message message = (Message)mps_message;
+
+  ArenaEnter(arena);
+
+  MessageDiscard(arena, message);
+
+  ArenaLeave(arena);
+}
+
+
+/* Message Methods */
+
+/* -- All Message Types */
+
+mps_message_type_t mps_message_type(mps_arena_t mps_arena,
+                                    mps_message_t mps_message)
+{
+  Arena arena = (Arena)mps_arena;
+  Message message = (Message)mps_message;
+  MessageType type;
+
+  ArenaEnter(arena);
+
+  type = MessageGetType(message);
+
+  ArenaLeave(arena);
+
+  return (mps_message_type_t)type;
+}
+
+mps_clock_t mps_message_clock(mps_arena_t mps_arena,
+                              mps_message_t mps_message)
+{
+  Arena arena = (Arena)mps_arena;
+  Message message = (Message)mps_message;
+  Clock postedClock;
+
+  ArenaEnter(arena);
+
+  postedClock = MessageGetClock(message);
+
+  ArenaLeave(arena);
+
+  return (mps_clock_t)postedClock;
+}
+
+
+/* -- mps_message_type_finalization */
 
 void mps_message_finalization_ref(mps_addr_t *mps_addr_return,
                                   mps_arena_t mps_arena,
@@ -1695,7 +1802,7 @@ void mps_message_finalization_ref(mps_addr_t *mps_addr_return,
   ArenaLeave(arena);
 }
 
-/* MPS_MESSAGE_TYPE_GC */
+/* -- mps_message_type_gc */
 
 size_t mps_message_gc_live_size(mps_arena_t mps_arena,
                                               mps_message_t mps_message)
@@ -1745,7 +1852,8 @@ size_t mps_message_gc_not_condemned_size(mps_arena_t mps_arena,
   return (size_t)size;
 }
 
-/* MPS_MESSAGE_TYPE_GC_START */
+/* -- mps_message_type_gc_start */
+
 const char *mps_message_gc_start_why(mps_arena_t mps_arena,
   mps_message_t mps_message)
 {
@@ -1763,6 +1871,20 @@ const char *mps_message_gc_start_why(mps_arena_t mps_arena,
 
   return s;
 }
+
+
+/* Alert */
+
+mps_res_t mps_alert_collection_set(mps_arena_t mps_arena, 
+                                   mps_alert_collection_fn_t fn)
+{
+  Arena arena = (Arena)mps_arena;
+  ArenaEnter(arena);
+  arena->alertCollection = fn;
+  ArenaLeave(arena);
+  return MPS_RES_OK;  
+}
+
 
 /* Telemetry */
 
@@ -1963,7 +2085,7 @@ void mps_chain_destroy(mps_chain_t mps_chain)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2003, 2006 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2003, 2006, 2008 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

@@ -1,6 +1,6 @@
 /* poolams.h: AUTOMATIC MARK & SWEEP POOL CLASS INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/poolams.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolams.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -34,7 +34,7 @@ typedef void (*AMSSegsDestroyFunction)(AMS ams);
 /* a segment size given an object size. */
 typedef Res (*AMSSegSizePolicyFunction)(Size *sizeReturn,
                                         Pool pool, Size size,
-					RankSet rankSet);
+                                        RankSet rankSet);
 
 
 typedef struct AMSStruct {

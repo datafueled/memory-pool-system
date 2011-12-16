@@ -1,6 +1,6 @@
 /* tract.h: PAGE TABLE INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/tract.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/tract.h#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -164,7 +164,6 @@ extern void ChunkFinish(Chunk chunk);
 
 extern Bool ChunkCacheEntryCheck(ChunkCacheEntry entry);
 extern void ChunkCacheEntryInit(ChunkCacheEntry entry);
-extern void ChunkEncache(Arena arena, Chunk chunk);
 
 extern Bool ChunkOfAddr(Chunk *chunkReturn, Arena arena, Addr addr);
 

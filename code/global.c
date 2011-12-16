@@ -1,6 +1,6 @@
 /* global.c: ARENA-GLOBAL INTERFACES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/global.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/global.c#1 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(global, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/global.c#1 $");
+SRCID(global, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/global.c#1 $");
 
 
 /* All static data objects are declared here. See .static */
@@ -186,14 +186,17 @@ Bool GlobalsCheck(Globals arenaGlobals)
       /* <design/arena/#trace.invalid> */
       CHECKL(trace->sig == SigInvalid);
     }
+    /* <design/message-gc/> */
+    CHECKL(TraceIdMessagesCheck(arena, ti));
   TRACE_SET_ITER_END(ti, trace, TraceSetUNIV, arena);
+
   for(rank = 0; rank < RankLIMIT; ++rank)
     CHECKL(RingCheck(&arena->greyRing[rank]));
   CHECKL(RingCheck(&arena->chainRing));
 
   CHECKL(arena->tracedSize >= 0.0);
   CHECKL(arena->tracedTime >= 0.0);
-  CHECKL(arena->lastWorldCollect >= 0);
+  /* no check for arena->lastWorldCollect (Clock) */
 
   /* can't write a check for arena->epoch */
 
@@ -223,6 +226,8 @@ Res GlobalsInit(Globals arenaGlobals)
 {
   Arena arena;
   Index i;
+  TraceId ti;
+  Trace trace;
   Rank rank;
 
   /* This is one of the first things that happens, */
@@ -271,13 +276,14 @@ Res GlobalsInit(Globals arenaGlobals)
   arena->formatSerial = (Serial)0;
   RingInit(&arena->messageRing);
   arena->enabledMessageTypes = NULL;
+  arena->droppedMessages = 0;
   arena->isFinalPool = FALSE;
   arena->finalPool = NULL;
   arena->busyTraces = TraceSetEMPTY;    /* <code/trace.c> */
   arena->flippedTraces = TraceSetEMPTY; /* <code/trace.c> */
   arena->tracedSize = 0.0;
   arena->tracedTime = 0.0;
-  arena->lastWorldCollect = mps_clock();
+  arena->lastWorldCollect = ClockNow();
   arena->insideShield = FALSE;          /* <code/shield.c> */
   arena->shCacheI = (Size)0;
   arena->shCacheLimit = (Size)1;
@@ -286,10 +292,14 @@ Res GlobalsInit(Globals arenaGlobals)
   for(i = 0; i < ShieldCacheSIZE; i++)
     arena->shCache[i] = NULL;
 
- for (i=0; i < TraceLIMIT; i++) {
+  TRACE_SET_ITER(ti, trace, TraceSetUNIV, arena)
     /* <design/arena/#trace.invalid> */
-    arena->trace[i].sig = SigInvalid;
-  }
+    arena->trace[ti].sig = SigInvalid;
+    /* <design/message-gc/#lifecycle> */
+    arena->tsMessage[ti] = NULL;
+    arena->tMessage[ti] = NULL;
+  TRACE_SET_ITER_END(ti, trace, TraceSetUNIV, arena);
+
   for(rank = 0; rank < RankLIMIT; ++rank)
     RingInit(&arena->greyRing[rank]);
   STATISTIC(arena->writeBarrierHitCount = 0);
@@ -316,6 +326,8 @@ Res GlobalsCompleteCreate(Globals arenaGlobals)
   Arena arena;
   Res res;
   void *p;
+  TraceId ti;
+  Trace trace;
 
   AVERT(Globals, arenaGlobals);
   arena = GlobalsArena(arenaGlobals);
@@ -330,6 +342,13 @@ Res GlobalsCompleteCreate(Globals arenaGlobals)
     arena->enabledMessageTypes = v;
     BTResRange(arena->enabledMessageTypes, 0, MessageTypeLIMIT);
   }
+  
+  TRACE_SET_ITER(ti, trace, TraceSetUNIV, arena)
+    /* <design/message-gc/#lifecycle> */
+    res = TraceIdMessagesCreate(arena, ti);
+    if(res != ResOK)
+      return res;
+  TRACE_SET_ITER_END(ti, trace, TraceSetUNIV, arena);
 
   res = ControlAlloc(&p, arena, LockSize(), FALSE);
   if (res != ResOK)
@@ -379,6 +398,8 @@ void GlobalsFinish(Globals arenaGlobals)
 void GlobalsPrepareToDestroy(Globals arenaGlobals)
 {
   Arena arena;
+  TraceId ti;
+  Trace trace;
 
   AVERT(Globals, arenaGlobals);
 
@@ -391,11 +412,27 @@ void GlobalsPrepareToDestroy(Globals arenaGlobals)
   /* destroyed would lead to a crash just the same. */
   LockFinish(arenaGlobals->lock);
 
+  TRACE_SET_ITER(ti, trace, TraceSetUNIV, arena)
+    /* <design/message-gc/#lifecycle> */
+    TraceIdMessagesDestroy(arena, ti);
+  TRACE_SET_ITER_END(ti, trace, TraceSetUNIV, arena);
+
+  /* report dropped messages (currently in diagnostic varieties only) */
+  if(arena->droppedMessages > 0) {
+    DIAG_SINGLEF(( "GlobalsPrepareToDestroy_dropped",
+      "arena->droppedMessages = $U", (WriteFU)arena->droppedMessages,
+      NULL ));
+  }
+
   /* .message.queue.empty: Empty the queue of messages before */
   /* proceeding to finish the arena.  It is important that this */
   /* is done before destroying the finalization pool as otherwise */
   /* the message queue would have dangling pointers to messages */
   /* whose memory has been unmapped. */
+  if(MessagePoll(arena)) {
+    DIAG_SINGLEF(( "GlobalsPrepareToDestroy_queue",
+      "Message queue not empty", NULL ));
+  }
   MessageEmpty(arena);
 
   /* throw away the BT used by messages */
@@ -612,19 +649,51 @@ void (ArenaPoll)(Globals globals)
 #else
 void ArenaPoll(Globals globals)
 {
-  double size;
+  Arena arena;
+  Clock start;
+  Count quanta;
+  Size tracedSize;
+  double nextPollThreshold = 0.0;
 
   AVERT(Globals, globals);
 
   if (globals->clamped)
     return;
-  size = globals->fillMutatorSize;
-  if (globals->insidePoll || size < globals->pollThreshold)
+  if (globals->insidePoll)
+    return;
+  if(globals->fillMutatorSize < globals->pollThreshold)
     return;
 
   globals->insidePoll = TRUE;
 
-  (void)ArenaStep(globals, 0.0, 0.0);
+  /* fillMutatorSize has advanced; call TracePoll enough to catch up. */
+  arena = GlobalsArena(globals);
+  start = ClockNow();
+  quanta = 0;
+  while(globals->pollThreshold <= globals->fillMutatorSize) {
+    tracedSize = TracePoll(globals);
+
+    if(tracedSize == 0) {
+      /* No work to do.  Sleep until NOW + a bit. */
+      nextPollThreshold = globals->fillMutatorSize + ArenaPollALLOCTIME;
+    } else {
+      /* We did one quantum of work; consume one unit of 'time'. */
+      quanta += 1;
+      arena->tracedSize += tracedSize;
+      nextPollThreshold = globals->pollThreshold + ArenaPollALLOCTIME;
+    }
+
+    /* Advance pollThreshold; check: enough precision? */
+    AVER(nextPollThreshold > globals->pollThreshold);
+    globals->pollThreshold = nextPollThreshold;
+  }
+
+  /* Don't count time spent checking for work, if there was no work to do. */
+  if(quanta > 0) {
+    arena->tracedTime += (ClockNow() - start) / (double) ClocksPerSec();
+  }
+
+  AVER(globals->fillMutatorSize < globals->pollThreshold);
 
   globals->insidePoll = FALSE;
 }
@@ -636,8 +705,8 @@ void ArenaPoll(Globals globals)
 static Bool arenaShouldCollectWorld(Arena arena,
                                     double interval,
                                     double multiplier,
-                                    Word now,
-                                    Word clocks_per_sec)
+                                    Clock now,
+                                    Clock clocks_per_sec)
 {
   double scanRate;
   Size arenaSize;
@@ -677,11 +746,10 @@ static Bool arenaShouldCollectWorld(Arena arena,
 
 Bool ArenaStep(Globals globals, double interval, double multiplier)
 {
-  double size;
   Size scanned;
   Bool stepped;
-  Word start, end, now;
-  Word clocks_per_sec;
+  Clock start, end, now;
+  Clock clocks_per_sec;
   Arena arena;
 
   AVERT(Globals, globals);
@@ -689,10 +757,10 @@ Bool ArenaStep(Globals globals, double interval, double multiplier)
   AVER(multiplier >= 0.0);
 
   arena = GlobalsArena(globals);
-  clocks_per_sec = mps_clocks_per_sec();
+  clocks_per_sec = ClocksPerSec();
 
-  start = mps_clock();
-  end = start + (Word)(interval * clocks_per_sec);
+  start = ClockNow();
+  end = start + (Clock)(interval * clocks_per_sec);
   AVER(end >= start);
 
   stepped = FALSE;
@@ -708,7 +776,7 @@ Bool ArenaStep(Globals globals, double interval, double multiplier)
   /* loop while there is work to do and time on the clock. */
   do {
     scanned = TracePoll(globals);
-    now = mps_clock();
+    now = ClockNow();
     if (scanned > 0) {
       stepped = TRUE;
       arena->tracedSize += scanned;
@@ -718,10 +786,6 @@ Bool ArenaStep(Globals globals, double interval, double multiplier)
   if (stepped) {
     arena->tracedTime += (now - start) / (double) clocks_per_sec;
   }
-
-  size = globals->fillMutatorSize;
-  globals->pollThreshold = size + ArenaPollALLOCTIME;
-  AVER(globals->pollThreshold > size); /* enough precision? */
 
   return stepped;
 }
@@ -968,7 +1032,7 @@ Res GlobalsDescribe(Globals arenaGlobals, mps_lib_FILE *stream)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2003 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2003, 2008 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

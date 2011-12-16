@@ -1,6 +1,6 @@
 /* mpmst.h: MEMORY POOL MANAGER DATA STRUCTURES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpmst.h#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpmst.h#2 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -66,6 +66,7 @@ typedef struct PoolClassStruct {
   PoolFixMethod fix;            /* referent reachable during tracing */
   PoolFixEmergencyMethod fixEmergency;  /* as fix, no failure allowed */
   PoolReclaimMethod reclaim;    /* reclaim dead objects after tracing */
+  PoolTraceEndMethod traceEnd;  /* do something after all reclaims */
   PoolRampBeginMethod rampBegin;/* begin a ramp pattern */
   PoolRampEndMethod rampEnd;    /* end a ramp pattern */
   PoolFramePushMethod framePush; /* push an allocation frame */
@@ -192,6 +193,8 @@ typedef struct MessageClassStruct {
   Sig sig;                      /* <design/sig/> */
   const char *name;             /* Human readable Class name */
 
+  MessageType type;             /* Message Type */
+
   /* generic methods */
   MessageDeleteMethod delete;   /* terminates a message */
 
@@ -200,8 +203,6 @@ typedef struct MessageClassStruct {
 
   /* methods specific to MessageTypeGC */
   MessageGCLiveSizeMethod gcLiveSize;
-  
-  /* methods specific to MessageTypeGC */
   MessageGCCondemnedSizeMethod gcCondemnedSize;
   MessageGCNotCondemnedSizeMethod gcNotCondemnedSize;
 
@@ -220,8 +221,8 @@ typedef struct MessageClassStruct {
 typedef struct MessageStruct {
   Sig sig;                      /* <design/sig/> */
   Arena arena;                  /* owning arena */
-  MessageType type;             /* Message Type */
   MessageClass class;           /* Message Class Structure */
+  Clock postedClock;            /* mps_clock() at post time, or 0 */
   RingStruct queueRing;         /* Message queue ring */
 } MessageStruct;
 
@@ -447,20 +448,6 @@ typedef struct LDStruct {
   RefSet rs;            /* RefSet of Add'ed references */
 } LDStruct;
 
-/* TraceStartMessage
- *
- * See <design/message-gc/>.
- *
- * Embedded in TraceStruct. */
-
-#define TraceStartMessageSig ((Sig)0x51926535) /* SIG TRaceStartMeSsage */
-
-typedef struct TraceStartMessageStruct {
-  Sig sig;
-  char why[TRACE_START_MESSAGE_WHY_LEN];
-  MessageStruct messageStruct;
-} TraceStartMessageStruct;
-
 
 /* ScanState
  *
@@ -519,6 +506,7 @@ typedef struct TraceStruct {
   Bool firstStretch;            /* in first stretch of band (see accessor) */
   Bool emergency;               /* ran out of memory during trace */
   Chain chain;                  /* chain being incrementally collected */
+  STATISTIC_DECL(Size preTraceArenaReserved); /* ArenaReserved before this trace */
   Size condemned;               /* condemned bytes */
   Size notCondemned;            /* collectable but not condemned */
   Size foundation;              /* initial grey set size */
@@ -547,9 +535,6 @@ typedef struct TraceStruct {
   Size preservedInPlaceSize;    /* bytes preserved in place */
   STATISTIC_DECL(Count reclaimCount); /* segments reclaimed */
   STATISTIC_DECL(Count reclaimSize); /* bytes reclaimed */
-  /* Always allocated message structure.  Implements
-     mps_message_type_gc_start().  See <design/message-gc/> */
-  TraceStartMessageStruct startMessage;
 } TraceStruct;
 
 
@@ -562,8 +547,6 @@ typedef struct ChunkCacheEntryStruct {
   Chunk chunk;
   Addr base;
   Addr limit;
-  Page pageTableBase;
-  Page pageTableLimit;
 } ChunkCacheEntryStruct;
 
 
@@ -585,6 +568,7 @@ typedef struct ArenaClassStruct {
   ArenaFreeMethod free;
   ArenaChunkInitMethod chunkInit;
   ArenaChunkFinishMethod chunkFinish;
+  ArenaCompactMethod compact;
   ArenaDescribeMethod describe;
   Sig sig;
 } ArenaClassStruct;
@@ -682,10 +666,14 @@ typedef struct ArenaStruct {
   /* message fields (<design/message/>, <code/message.c>) */
   RingStruct messageRing;       /* ring of pending messages */
   BT enabledMessageTypes;       /* map of which types are enabled */
+  Count droppedMessages;        /* <design/message-gc/#lifecycle> */
 
   /* finalization fields (<design/finalize/>), <code/poolmrg.c> */
   Bool isFinalPool;             /* indicator for finalPool */
   Pool finalPool;               /* either NULL or an MRG pool */
+
+  /* alert fields <code/trace.c> */
+  mps_alert_collection_fn_t alertCollection;  /* client alert fn or 0 */
 
   /* thread fields (<code/thread.c>) */
   RingStruct threadRing;        /* ring of attached threads */
@@ -705,10 +693,14 @@ typedef struct ArenaStruct {
   TraceStruct trace[TraceLIMIT]; /* trace structures.  See
                                    <design/trace/#intance.limit> */
 
+  /* trace ancillary fields (<code/traceanc.c>) */
+  TraceStartMessage tsMessage[TraceLIMIT];  /* <design/message-gc/> */
+  TraceMessage tMessage[TraceLIMIT];  /* <design/message-gc/> */
+
   /* policy fields */
   double tracedSize;
   double tracedTime;
-  Word lastWorldCollect;
+  Clock lastWorldCollect;
 
   RingStruct greyRing[RankLIMIT]; /* ring of grey segments at each rank */
   STATISTIC_DECL(Count writeBarrierHitCount); /* write barrier hits */
@@ -733,7 +725,7 @@ typedef struct AllocPatternStruct {
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2003, 2006 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2003, 2006, 2008 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

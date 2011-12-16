@@ -1,6 +1,6 @@
 /* teletest.c: TELEMETRY TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/teletest.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/teletest.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .source: The command parser here was taken and adapted from bttest.c.
@@ -13,7 +13,7 @@
 
 #include <stdlib.h>
 
-SRCID(teletest, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/teletest.c#1 $");
+SRCID(teletest, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/teletest.c#1 $");
 
 
 static mps_arena_t arena;
@@ -157,7 +157,7 @@ static void obeyCommand(char *command)
       while ((*p == ' ') && (argCount < shape->int_args)) {
         /* get an argument */
         char *newP;
-	mps_word_t word;
+        mps_word_t word;
         word = (mps_word_t)strtoul(p, &newP, 0);
         args[argCount] = word;
         if (newP == p) { /* strtoul failed */
@@ -168,15 +168,15 @@ static void obeyCommand(char *command)
         ++ argCount;
       }
       if(shape->string_arg) {
-	char *end;
-	while(*p == ' ')
-	  ++p;
+        char *end;
+        while(*p == ' ')
+          ++p;
         for(end = p; *end != '\n'; end++)
-	  NOOP;
+          NOOP;
         *end = '\0';
-	stringArg = p;
+        stringArg = p;
       } else {
-	stringArg = NULL;
+        stringArg = NULL;
       }
       if (argCount < shape->int_args) {
         printf("insufficient arguments to command\n");

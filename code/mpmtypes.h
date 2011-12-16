@@ -1,6 +1,6 @@
 /* mpmtypes.h: MEMORY POOL MANAGER TYPES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpmtypes.h#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpmtypes.h#2 $
  * Copyright (c) 2001-2002, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2001 Global Graphics Software.
  *
@@ -40,6 +40,7 @@ typedef unsigned Shift;                 /* <design/type/#shift> */
 typedef unsigned Serial;                /* <design/type/#serial> */
 typedef Addr Ref;                       /* <design/type/#ref> */
 typedef void *Pointer;                  /* <design/type/#pointer> */
+typedef unsigned long Clock;            /* processor time */
 
 typedef Word RefSet;                    /* design.mps.refset */
 typedef Word ZoneSet;                   /* design.mps.refset */
@@ -76,8 +77,6 @@ typedef PoolClass AbstractBufferPoolClass; /* <code/poolabs.c> */
 typedef PoolClass AbstractSegBufPoolClass; /* <code/poolabs.c> */
 typedef PoolClass AbstractScanPoolClass; /* <code/poolabs.c> */
 typedef PoolClass AbstractCollectPoolClass; /* <code/poolabs.c> */
-typedef struct TraceStartMessageStruct
-  *TraceStartMessage;                   /* <design/message-gc> */
 typedef struct TraceStruct *Trace;      /* <design/trace/> */
 typedef struct ScanStateStruct *ScanState; /* <design/trace/> */
 typedef struct ChainStruct *Chain;      /* <design/trace/> */
@@ -119,17 +118,8 @@ typedef Res (*ArenaAllocMethod)(Addr *baseReturn, Tract *baseTractReturn,
 typedef void (*ArenaFreeMethod)(Addr base, Size size, Pool pool);
 typedef Res (*ArenaChunkInitMethod)(Chunk chunk, BootBlock boot);
 typedef void (*ArenaChunkFinishMethod)(Chunk chunk);
+typedef void (*ArenaCompactMethod)(Arena arena, Trace trace);
 typedef Res (*ArenaDescribeMethod)(Arena arena, mps_lib_FILE *stream);
-
-
-/* Messages
- *
- * See <design/message/>
- */
-
-typedef unsigned MessageType;
-typedef struct MessageStruct *Message;
-typedef struct MessageClassStruct *MessageClass;
 
 
 /* TraceFixMethod */
@@ -209,6 +199,7 @@ typedef Res (*PoolFixMethod)(Pool pool, ScanState ss, Seg seg,
 typedef Res (*PoolFixEmergencyMethod)(Pool pool, ScanState ss,
                                       Seg seg, Ref *refIO);
 typedef void (*PoolReclaimMethod)(Pool pool, Trace trace, Seg seg);
+typedef void (*PoolTraceEndMethod)(Pool pool, Trace trace);
 typedef void (*PoolRampBeginMethod)(Pool pool, Buffer buf, Bool collectAll);
 typedef void (*PoolRampEndMethod)(Pool pool, Buffer buf);
 typedef Res (*PoolFramePushMethod)(AllocFrame *frameReturn,
@@ -226,6 +217,15 @@ typedef Res (*PoolDescribeMethod)(Pool pool, mps_lib_FILE *stream);
 typedef PoolDebugMixin (*PoolDebugMixinMethod)(Pool pool);
 
 
+/* Messages
+ *
+ * See <design/message/>
+ */
+
+typedef unsigned MessageType;
+typedef struct MessageStruct *Message;
+typedef struct MessageClassStruct *MessageClass;
+
 /* Message*Method -- <design/message/> */
 
 typedef void (*MessageDeleteMethod)(Message message);
@@ -236,10 +236,10 @@ typedef Size (*MessageGCCondemnedSizeMethod)(Message message);
 typedef Size (*MessageGCNotCondemnedSizeMethod)(Message message);
 typedef const char * (*MessageGCStartWhyMethod)(Message message);
 
-
 /* Message Types -- <design/message/> and elsewhere */
 
-typedef struct MessageFinalizationStruct *MessageFinalization;
+typedef struct TraceStartMessageStruct *TraceStartMessage;
+typedef struct TraceMessageStruct *TraceMessage;  /* trace end */
 
 
 /* Format*Method -- see design.mps.format-interface */
@@ -427,7 +427,7 @@ enum {
 
 enum {
   MessageTypeFINALIZATION,  /* MPS_MESSAGE_TYPE_FINALIZATION */
-  MessageTypeGC,  /* MPS_MESSAGE_TYPE_GC */
+  MessageTypeGC,  /* MPS_MESSAGE_TYPE_GC = trace end */
   MessageTypeGCSTART,  /* MPS_MESSAGE_TYPE_GC_START */
   MessageTypeLIMIT /* not a message type, the limit of the enum. */
 };

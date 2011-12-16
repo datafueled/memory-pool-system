@@ -1,9 +1,11 @@
 # xcppgc.gmk: BUILD FOR MACOS X (CARBON)/POWERPC/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.108/code/xcppgc.gmk#2 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.109/code/xcppgc.gmk#1 $
 # Copyright (c) 2001-2007 Ravenbrook Limited.  See end of file for license.
 
 PFM = xcppgc
+
+PFMDEFS = -DCONFIG_PF_STRING="xcppgc" -DCONFIG_PF_XCPPGC
 
 MPMPF = lockix.c than.c vmix.c \
         protix.c protxcpp.c prmcan.c span.c

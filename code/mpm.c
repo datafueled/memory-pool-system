@@ -1,6 +1,6 @@
 /* mpm.c: GENERAL MPM SUPPORT
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpm.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpm.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Miscellaneous support for the implementation of the MPM
@@ -15,7 +15,7 @@
 #include <float.h>
 #include <limits.h>
 
-SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpm.c#2 $");
+SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpm.c#2 $");
 
 
 #if defined(AVER_AND_CHECK)
@@ -514,6 +514,12 @@ Res WriteF_firstformat_v(mps_lib_FILE *stream,
           case 'U': {                   /* decimal, see .writef.p */
             WriteFU u = va_arg(args, WriteFU);
             res = WriteWord(stream, (Word)u, 10, 0);
+            if (res != ResOK) return res;
+          } break;
+
+          case '3': {                   /* decimal for thousandths */
+            WriteFU u = va_arg(args, WriteFU);
+            res = WriteWord(stream, (Word)u, 10, 3);
             if (res != ResOK) return res;
           } break;
 

@@ -1,6 +1,6 @@
 /* mv2test.c: POOLMVT STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/mv2test.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/mv2test.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -116,7 +116,7 @@ static double nrnd(void)
   double m = (double)((unsigned)-1);
   double u;
   double v;
-  double twor = 1.7156;		/* 2 * sqrt(2.0 / exp(1.0)) */
+  double twor = 1.7156;  /* 2 * sqrt(2.0 / exp(1.0)) */
   double s = 0.449871;
   double t = -0.386595;
   double a = 0.19600;
@@ -181,7 +181,7 @@ static size_t randomSize(int i)
     x += (double)m;
   } while (x <= 1.0);
 
-  return (size_t)x;	
+  return (size_t)x;
 
 }
 

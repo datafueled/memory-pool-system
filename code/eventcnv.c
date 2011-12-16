@@ -1,7 +1,7 @@
 /* eventcnv.c: Simple event log converter
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/eventcnv.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/eventcnv.c#1 $
  */
 
 #include "config.h"
@@ -23,6 +23,13 @@
 #ifdef MPS_OS_SU
 #include "ossu.h"
 #endif
+
+#ifdef MPS_BUILD_MV
+/* MSVC warning 4996 = stdio / C runtime 'unsafe' */
+/* Objects to: strncpy, sscanf, fopen.  See job001934. */
+#pragma warning( disable : 4996 )
+#endif
+
 
 
 typedef unsigned int uint;

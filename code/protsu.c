@@ -1,6 +1,6 @@
 /* protsu.c: PROTECTION FOR SUNOS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/protsu.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/protsu.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -29,7 +29,7 @@
 #include <signal.h>
 #include <limits.h>
 
-SRCID(protsu, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/protsu.c#1 $");
+SRCID(protsu, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/protsu.c#1 $");
 
 
 /* Fix up unprototyped system calls. */

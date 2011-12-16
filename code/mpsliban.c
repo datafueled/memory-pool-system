@@ -1,6 +1,6 @@
 /* mpsliban.c: RAVENBROOK MEMORY POOL SYSTEM LIBRARY INTERFACE (ANSI)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpsliban.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/mpsliban.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -117,6 +117,12 @@ mps_clock_t mps_clocks_per_sec(void)
   return (unsigned long)CLOCKS_PER_SEC;
 }
 
+
+#ifdef MPS_BUILD_MV
+/* MSVC warning 4996 = stdio / C runtime 'unsafe' */
+/* Objects to: getenv.  See job001934. */
+#pragma warning( disable : 4996 )
+#endif
 
 unsigned long mps_lib_telemetry_control(void)
 {

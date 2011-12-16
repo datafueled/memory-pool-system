@@ -1,6 +1,6 @@
 /* pthreadext.h: POSIX THREAD EXTENSIONS
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.108/code/pthrdext.h#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.109/code/pthrdext.h#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MM developers.
@@ -57,7 +57,7 @@ extern void PThreadextFinish(PThreadext pthreadext);
 /*  PThreadextSuspend -- Suspend a pthreadext and return its context. */
 
 extern Res PThreadextSuspend(PThreadext pthreadext,
-			     MutatorFaultContext *contextReturn);
+                             MutatorFaultContext *contextReturn);
 
 
 /*  PThreadextResume --  Resume a suspended pthreadext */

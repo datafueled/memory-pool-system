@@ -1,6 +1,6 @@
 /* messtest.c: MESSAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/messtest.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/messtest.c#1 $
  * Copyright (c) 2001-2003 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-SRCID(messtest, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/messtest.c#1 $");
+SRCID(messtest, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/messtest.c#1 $");
 
 
 /* Basic infrastructure for creating dummy messages */
@@ -30,6 +30,7 @@ static void dfMessageDelete(Message message)
 static MessageClassStruct DFMessageClassStruct = {
   MessageClassSig,             /* sig */
   "DummyFinal",                /* name */
+  MessageTypeFINALIZATION,     /* Message Type */
   dfMessageDelete,             /* Delete */
   MessageNoFinalizationRef,    /* FinalizationRef */
   MessageNoGCLiveSize,         /* GCLiveSize */   
@@ -45,6 +46,7 @@ static MessageClassStruct DFMessageClassStruct = {
 static MessageClassStruct DGCMessageClassStruct = {
   MessageClassSig,             /* sig */
   "DummyGC",                   /* name */
+  MessageTypeGC,               /* Message Type */
   dfMessageDelete,             /* Delete */
   MessageNoFinalizationRef,    /* FinalizationRef */
   MessageNoGCLiveSize,         /* GCLiveSize */   
@@ -67,7 +69,7 @@ static void topMessageType(MessageType *typeReturn, Arena arena)
 }
 
 
-/* postDummyMessage -- post a dummy finalization message */
+/* postDummyMessage -- post a dummy message */
 
 static void postDummyMessage(Arena arena, MessageClass class,
                              MessageType type)

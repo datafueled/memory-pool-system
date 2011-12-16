@@ -1,6 +1,6 @@
 # commpost.nmk: SECOND COMMON FRAGMENT FOR PLATFORMS USING MV AND NMAKE
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.108/code/commpost.nmk#2 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.109/code/commpost.nmk#1 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # DESCRIPTION
@@ -16,10 +16,10 @@
 
 all: mpmss.exe amcss.exe amsss.exe amssshe.exe segsmss.exe awlut.exe awluthe.exe\
      mpsicv.exe lockutw3.exe lockcov.exe poolncv.exe locv.exe qs.exe apss.exe \
-     finalcv.exe fin1658a.exe finaltest.exe \
+     finalcv.exe finaltest.exe \
      arenacv.exe bttest.exe teletest.exe \
      abqtest.exe cbstest.exe btcv.exe mv2test.exe messtest.exe steptest.exe \
-     locbwcss.exe locusss.exe \
+     locbwcss.exe locusss.exe zcoll.exe zmess.exe \
      eventcnv.exe \
      mps.lib mpsplan.lib
 
@@ -33,12 +33,12 @@ swall: mmsw.lib replaysw.exe
 
 mpmss.exe amcss.exe amcsshe.exe amsss.exe amssshe.exe segsmss.exe awlut.exe awluthe.exe dwstress.exe \
      mpsicv.exe lockutw3.exe lockcov.exe poolncv.exe locv.exe qs.exe apss.exe \
-     finalcv.exe fin1658a.exe finaltest.exe \
+     finalcv.exe finaltest.exe \
      arenacv.exe bttest.exe teletest.exe \
      expt825.exe \
      abqtest.exe cbstest.exe btcv.exe mv2test.exe messtest.exe steptest.exe \
      walkt0.exe locbwcss.exe locusss.exe \
-     exposet0.exe \
+     exposet0.exe zcoll.exe zmess.exe \
      replay.exe replaysw.exe eventcnv.exe \
      mmdw.lib mmsw.lib mps.lib mpsplan.lib mpsplcb.lib \
      mpsdy.dll:
@@ -110,10 +110,6 @@ FORCE:
 $(PFM)\$(VARIETY)\version.obj: FORCE
 
 $(PFM)\$(VARIETY)\finalcv.exe: $(PFM)\$(VARIETY)\finalcv.obj \
-	$(MPMOBJ) $(PLINTHOBJ) $(AMCOBJ) $(FMTTESTOBJ) \
-	$(MRGOBJ) $(TESTLIBOBJ)
-
-$(PFM)\$(VARIETY)\fin1658a.exe: $(PFM)\$(VARIETY)\fin1658a.obj \
 	$(MPMOBJ) $(PLINTHOBJ) $(AMCOBJ) $(FMTTESTOBJ) \
 	$(MRGOBJ) $(TESTLIBOBJ)
 
@@ -212,6 +208,14 @@ $(PFM)\$(VARIETY)\btcv.exe: $(PFM)\$(VARIETY)\btcv.obj \
 $(PFM)\$(VARIETY)\mv2test.exe: $(PFM)\$(VARIETY)\mv2test.obj \
 	$(MPMOBJ) $(PLINTHOBJ) $(TESTLIBOBJ)
 
+$(PFM)\$(VARIETY)\zcoll.exe: $(PFM)\$(VARIETY)\zcoll.obj \
+	$(MPMOBJ) $(PLINTHOBJ) $(AMCOBJ) $(FMTTESTOBJ) \
+	$(MRGOBJ) $(TESTLIBOBJ)
+
+$(PFM)\$(VARIETY)\zmess.exe: $(PFM)\$(VARIETY)\zmess.obj \
+	$(MPMOBJ) $(PLINTHOBJ) $(AMCOBJ) $(FMTTESTOBJ) \
+	$(MRGOBJ) $(TESTLIBOBJ)
+
 $(PFM)\$(VARIETY)\eventcnv.exe: $(PFM)\$(VARIETY)\eventcnv.obj \
 	$(PFM)\$(VARIETY)\eventpro.obj $(PFM)\$(VARIETY)\table.obj
 
@@ -268,9 +272,11 @@ $(PFM)\$(VARIETY)\mps.lib: $(MPMOBJ) $(AMCOBJ) $(LOOBJ) $(SNCOBJ) \
 # about the repetition of the object list.
 $(PFM)\$(VARIETY)\mpsdy.dll: $(PFM)\$(VARIETY)\mpslibcb.obj \
 	$(MPMOBJ) $(AMCOBJ) $(LOOBJ) $(SNCOBJ) \
-	$(MVFFOBJ) $(AMSOBJ) $(AWLOBJ) w3gen.def 
+	$(MVFFOBJ) $(AMSOBJ) $(AWLOBJ) w3gen.def \
+	mpslibcb.def
 	$(ECHO) $@
-	$(LINKER) $(LINKFLAGS) /def:w3gen.def /dll /OUT:$@ \
+	$(LINKER) $(LINKFLAGS) /def:w3gen.def \
+	  /def:mpslibcb.def /dll /OUT:$@ \
 	  $(PFM)\$(VARIETY)\mpslibcb.obj \
 	  $(MPMOBJ) $(AMCOBJ) $(LOOBJ) $(SNCOBJ) \
 	  $(MVFFOBJ) $(AMSOBJ) $(AWLOBJ)

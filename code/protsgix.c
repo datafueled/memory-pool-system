@@ -1,6 +1,6 @@
 /* protsgix.c: PROTECTION (SIGNAL HANDLER) FOR UNIX
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.108/code/protsgix.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.109/code/protsgix.c#1 $
  *  Copyright (c) 2001-2007 Ravenbrook Limited.  See end of file for license.
  *
  * Would ordinarily be part of protix.c (as the code is common to more
@@ -32,7 +32,7 @@
 #include <sys/types.h> /* for getpid */
 #include <unistd.h>    /* for getpid */
 
-SRCID(protsgix, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/protsgix.c#1 $");
+SRCID(protsgix, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/protsgix.c#1 $");
 
 
 /* The previously-installed signal action, as returned by */

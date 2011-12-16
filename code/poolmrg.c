@@ -1,6 +1,6 @@
 /* poolmrg.c: MANUAL RANK GUARDIAN POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/poolmrg.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolmrg.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  * 
@@ -32,7 +32,7 @@
 #include "mpm.h"
 #include "poolmrg.h"
 
-SRCID(poolmrg, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/poolmrg.c#2 $");
+SRCID(poolmrg, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/poolmrg.c#1 $");
 
 
 /* Types */
@@ -440,7 +440,7 @@ static void MRGMessageFinalizationRef(Ref *refReturn,
   AVERT(Arena, arena);
   AVERT(Message, message);
 
-  AVER(message->type == MessageTypeFINALIZATION);
+  AVER(MessageGetType(message) == MessageTypeFINALIZATION);
 
   link = linkOfMessage(message);
   AVER(link->state == MRGGuardianFINAL);
@@ -459,6 +459,7 @@ static void MRGMessageFinalizationRef(Ref *refReturn,
 static MessageClassStruct MRGMessageClassStruct = {
   MessageClassSig,             /* sig */
   "MRGFinal",                  /* name */
+  MessageTypeFINALIZATION,     /* Message Type */
   MRGMessageDelete,            /* Delete */
   MRGMessageFinalizationRef,   /* FinalizationRef */
   MessageNoGCLiveSize,         /* GCLiveSize */   

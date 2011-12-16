@@ -1,6 +1,6 @@
 /* than.c: ANSI THREADS MANAGER
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.108/code/than.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.109/code/than.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  This is a single-threaded implementation of the threads manager.
@@ -14,7 +14,7 @@
 
 #include "mpm.h"
 
-SRCID(than, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/than.c#1 $");
+SRCID(than, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/than.c#1 $");
 
 
 typedef struct ThreadStruct {   /* ANSI fake thread structure */

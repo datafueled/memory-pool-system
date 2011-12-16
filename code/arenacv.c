@@ -1,6 +1,6 @@
 /* arenacv.c: ARENA COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/arenacv.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/arenacv.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .coverage: At the moment, we're only trying to cover the new code
@@ -323,7 +323,7 @@ static void testAllocAndIterate(Arena arena, Pool pool,
       }
       if(offset != 0) {
         allocator->test(&offsetRegion, arena);
-	allocator->free(&offsetRegion);
+        allocator->free(&offsetRegion);
       }
     }
     SegPrefExpress(&pref, SegPrefZoneSet, &zone);
@@ -344,7 +344,7 @@ static void testPageTable(ArenaClass class, ...)
   va_end(args);
 
   die(PoolCreate(&pool, arena, PoolClassMV(),
-		 (Size)65536, (Size)32, (Size)65536),
+                 (Size)65536, (Size)32, (Size)65536),
       "PoolCreate");
 
   pageSize = ArenaAlign(arena);

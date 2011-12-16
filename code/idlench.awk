@@ -1,6 +1,6 @@
 #!/bin/nawk -f
 # idlench.awk: IDENTIFIER LENGTH CHECK
-# $Id: //info.ravenbrook.com/project/mps/version/1.108/code/idlench.awk#1 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.109/code/idlench.awk#1 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # READERSHIP

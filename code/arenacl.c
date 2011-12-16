@@ -1,6 +1,6 @@
 /* arenacl.c: ARENA CLASS USING CLIENT MEMORY
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/arenacl.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/arenacl.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: See <design/arena/#client>.
@@ -17,7 +17,7 @@
 #include "mpm.h"
 #include "mpsacl.h"
 
-SRCID(arenacl, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/arenacl.c#1 $");
+SRCID(arenacl, "$Id: //info.ravenbrook.com/project/mps/version/1.109/code/arenacl.c#1 $");
 
 
 /* ClientArenaStruct -- Client Arena Structure */
@@ -331,10 +331,10 @@ static Res chunkAlloc(Addr *baseReturn, Tract *baseTractReturn,
 
   if (pref->high)
     b = BTFindShortResRangeHigh(&baseIndex, &limitIndex, chunk->allocTable,
-				chunk->allocBase, chunk->pages, pages);
+                                chunk->allocBase, chunk->pages, pages);
   else
     b = BTFindShortResRange(&baseIndex, &limitIndex, chunk->allocTable,
-			    chunk->allocBase, chunk->pages, pages);
+                            chunk->allocBase, chunk->pages, pages);
 
   if (!b)
     return ResRESOURCE;

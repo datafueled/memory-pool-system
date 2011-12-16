@@ -64,7 +64,7 @@ def mpsplatformcode() :
   # Here, we simplify and get it right for Windows and Macs.
   try :
     compiler = {'xc':'gc',
-                'w3':'mv',
+                'w3':'m9',
                }[os]
   except :
     pass
@@ -79,7 +79,7 @@ mpsplatform = mpsplatformcode()
 make = ''
 if mpsplatform[4:6] == 'gc' :
   make = "make -r -f %s.gmk VARIETY=%%s %%s >> %%s" % mpsplatform
-elif mpsplatform[4:6] == 'mv' :
+elif mpsplatform[4:6] == 'm9' :
   make = "nmake /f %s.nmk VARIETY=%%s %%s.exe >>%%s" % mpsplatform
 
 run = ''
@@ -119,6 +119,9 @@ runtestlist([
     "awlut",
     "awluthe",
     "mpsicv",
+    "zcoll",
+    "zmess",
+    "walkt0",
     "messtest",
  ], ["we", "hi", "di", "ci"], testout)
 
@@ -165,4 +168,4 @@ os.system("echo DONE")
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-# $Id: //info.ravenbrook.com/project/mps/version/1.108/tool/test-runner.py#2 $
+# $Id: //info.ravenbrook.com/project/mps/version/1.109/tool/test-runner.py#1 $

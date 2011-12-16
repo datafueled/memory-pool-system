@@ -1,6 +1,6 @@
 /* amsss.c: POOL CLASS AMS STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/amsss.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.109/code/amsss.c#1 $
  * Copyright (c) 2001-2002, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
