@@ -1,6 +1,6 @@
 /* protso.c: PROTECTION FOR SOLARIS
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.104/code/protso.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.105/code/protso.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -28,7 +28,7 @@
 #error "protso.c is Solaris specific, but MPS_OS_SO is not set"
 #endif
 
-SRCID(protso, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/protso.c#1 $");
+SRCID(protso, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/protso.c#1 $");
 
 
 /* Fix up unprototyped system calls.  */

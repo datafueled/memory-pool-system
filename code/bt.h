@@ -1,6 +1,6 @@
 /* bt.h: Bit Table Interface
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/bt.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/bt.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .source: <design/bt/>

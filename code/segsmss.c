@@ -1,6 +1,6 @@
 /* segsmss.c: Segment splitting and merging stress test
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/segsmss.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/segsmss.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *

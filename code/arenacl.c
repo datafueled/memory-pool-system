@@ -1,6 +1,6 @@
 /* arenacl.c: ARENA CLASS USING CLIENT MEMORY
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/arenacl.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/arenacl.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: See <design/arena/#client>.
@@ -17,7 +17,7 @@
 #include "mpm.h"
 #include "mpsacl.h"
 
-SRCID(arenacl, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/arenacl.c#1 $");
+SRCID(arenacl, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/arenacl.c#1 $");
 
 
 /* ClientArenaStruct -- Client Arena Structure */

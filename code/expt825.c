@@ -1,6 +1,6 @@
 /* expt825.c: Test for bug described in job000825
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/expt825.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/expt825.c#1 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -254,7 +254,7 @@ static void *test(void *arg, size_t s)
 }
 
 
-int main(int argc, char **argv)
+int main(void)
 {
   mps_arena_t arena;
   mps_thr_t thread;

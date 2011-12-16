@@ -1,6 +1,6 @@
 /* mps.h: RAVENBROOK MEMORY POOL SYSTEM C INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/mps.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/mps.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -273,7 +273,10 @@ extern mps_bool_t mps_arena_has_addr(mps_arena_t, mps_addr_t);
 
 /* Client memory arenas */
 extern mps_res_t mps_arena_extend(mps_arena_t, mps_addr_t, size_t);
+#if 0
+/* There's no implementation for this function. */
 extern mps_res_t mps_arena_retract(mps_arena_t, mps_addr_t, size_t);
+#endif
 
 
 /* Object Formats */

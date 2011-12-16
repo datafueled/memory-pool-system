@@ -1,6 +1,6 @@
 /* ossu.h: SUNOS ANSI COMPATABILITY HEADER
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.104/code/ossu.h#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.105/code/ossu.h#1 $
  *
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *

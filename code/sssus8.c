@@ -1,6 +1,6 @@
 /* sssus8.c: SPARC STACK SCANNING
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/sssus8.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/sssus8.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -33,7 +33,7 @@
 #include "mpm.h"
 #include <alloca.h>
 
-SRCID(sssus8, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/sssus8.c#1 $");
+SRCID(sssus8, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/sssus8.c#1 $");
 
 
 /* .assume.asm.order */

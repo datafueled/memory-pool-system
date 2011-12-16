@@ -1,6 +1,6 @@
 /* ring.c: RING IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/ring.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/ring.c#1 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  *
  * .intro: This is a portable implementation of Rings.
@@ -16,7 +16,7 @@
 #include "check.h"
 #include "misc.h"
 
-SRCID(ring, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/ring.c#1 $");
+SRCID(ring, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/ring.c#1 $");
 
 
 /* RingCheck, RingCheckSingle -- check the validity of a ring node

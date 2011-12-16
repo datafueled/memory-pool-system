@@ -1,6 +1,6 @@
 /* poolmrg.c: MANUAL RANK GUARDIAN POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/poolmrg.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/poolmrg.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  * 
@@ -32,7 +32,7 @@
 #include "mpm.h"
 #include "poolmrg.h"
 
-SRCID(poolmrg, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/poolmrg.c#1 $");
+SRCID(poolmrg, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/poolmrg.c#1 $");
 
 
 /* Types */

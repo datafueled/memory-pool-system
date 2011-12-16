@@ -1,6 +1,6 @@
 /* proto1.c: PROTECTION FOR DIGITAL UNIX
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.104/code/proto1.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.105/code/proto1.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -27,7 +27,7 @@
 /* for getpid() */
 #include <unistd.h>
 
-SRCID(proto1, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/proto1.c#1 $");
+SRCID(proto1, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/proto1.c#1 $");
 
 
 /* The previously-installed signal action, as returned by */

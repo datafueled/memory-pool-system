@@ -1,6 +1,6 @@
 /* mpsi.c: MEMORY POOL SYSTEM C INTERFACE LAYER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.104/code/mpsi.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.105/code/mpsi.c#1 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -53,7 +53,7 @@
 #include "sac.h"
 #include "chain.h"
 
-SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/version/1.104/code/mpsi.c#1 $");
+SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/version/1.105/code/mpsi.c#1 $");
 
 
 /* mpsi_check -- check consistency of interface mappings
@@ -443,12 +443,11 @@ mps_res_t mps_arena_create_v(mps_arena_t *mps_arena_o,
   return MPS_RES_OK;
 }
 
-#ifdef MPS_PROD_DYLAN
+/* DEPRECATED */
 mps_res_t mps_space_create(mps_space_t *mps_space_o)
 {
   return mps_arena_create(mps_space_o, mps_arena_class_vm(), ARENA_SIZE);
 }
-#endif
 
 
 /* mps_arena_destroy -- destroy an arena object */
@@ -461,12 +460,11 @@ void mps_arena_destroy(mps_arena_t mps_arena)
   ArenaDestroy(arena);
 }
 
-#ifdef MPS_PROD_DYLAN
+/* DEPRECATED */
 void mps_space_destroy(mps_space_t mps_space)
 {
   mps_arena_destroy(mps_space);
 }
-#endif
 
 
 /* mps_arena_has_addr -- is this address managed by this arena? */
