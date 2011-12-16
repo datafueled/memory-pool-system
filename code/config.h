@@ -1,6 +1,6 @@
 /* config.h: MPS CONFIGURATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/config.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/config.h#3 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -21,9 +21,19 @@
 
 /* Variety Configuration */
 
-/* First deal with old-style CONFIG_VAR_* build directives.  These
+/* First translate GG build directives into better ones.
+ */
+
+#ifdef CONFIG_DEBUG
+/* Translate CONFIG_DEBUG to CONFIG_STATS, because that's what it */
+/* means.  It's got nothing to do with debugging!  RHSK 2007-06-29 */
+#define CONFIG_STATS
+#endif
+
+
+/* Then deal with old-style CONFIG_VAR_* build directives.  These
  * must be translated into the new directives CONFIG_ASSERT,
- * CONFIG_DEBUG, and CONFIG_LOG.
+ * CONFIG_STATS, and CONFIG_LOG.
  *
  * One day the old build system may be converted to use the new
  * directives.
@@ -32,31 +42,43 @@
 #if defined(CONFIG_VAR_WI) || defined(CONFIG_VAR_WE) /* White-hot varieties */
 /* no asserts */
 /* ... so CHECKLEVEL_INITIAL is irrelevant */
-/* no debug diagnostic statistic meters */
+/* no statistic meters */
 /* no telemetry log events */
 
 #elif defined(CONFIG_VAR_HI) || defined(CONFIG_VAR_HE) /* Hot varieties */
 #define CONFIG_ASSERT
 #define CHECKLEVEL_INITIAL CheckLevelMINIMAL
-/* no debug diagnostic statistic meters */
+/* no statistic meters */
+/* no telemetry log events */
+
+#elif defined(CONFIG_VAR_DI) /* Diagnostic variety */
+#define CONFIG_ASSERT
+#define CHECKLEVEL_INITIAL CheckLevelMINIMAL
+#define CONFIG_STATS
+/* For diagnostics, choose a DIAG_WITH_... output method.
+ * (We need to choose because the DIAG output system is under 
+ * development.  RHSK 2007-05-21).
+ */
+#define DIAG_WITH_STREAM_AND_WRITEF
+/* #define DIAG_WITH_PRINTF */
 /* no telemetry log events */
 
 #elif defined(CONFIG_VAR_CI) || defined(CONFIG_VAR_CE) /* Cool varieties */
 #define CONFIG_ASSERT
 /* ... let PRODUCT determine CHECKLEVEL_INITIAL */
-#define CONFIG_DEBUG
+#define CONFIG_STATS
 /* no telemetry log events */
 
 #elif defined(CONFIG_VAR_TI)    /* Telemetry, Internal; variety.ti */
 #define CONFIG_ASSERT
 /* ... let PRODUCT determine CHECKLEVEL_INITIAL */
-#define CONFIG_DEBUG
+#define CONFIG_STATS
 #define CONFIG_LOG
 
 #elif defined(CONFIG_VAR_II)    /* Ice, Internal; variety.ii (HotLog) */
 #define CONFIG_ASSERT
 #define CHECKLEVEL_INITIAL CheckLevelMINIMAL
-/* no debug diagnostic statistic meters */
+/* no statistic meters */
 #define CONFIG_LOG
 #endif
 
@@ -75,14 +97,19 @@
 #endif
 
 
-#if defined(CONFIG_DEBUG)
-/* DEBUG = DIAGNOSTICS = STATISTICs = METERs */
-/* WARNING: this changes the size and fields of MPS structs */
-#define DIAGNOSTICS
-#define MPS_DEBUG_STRING "debug"
+#if defined(CONFIG_STATS)
+/* CONFIG_STATS = STATISTICS = METERs */
+/* Note: the STATISTICS define used to be called "DIAGNOSTICS" (even */
+/* though it controls the STATISTIC system), but the term */
+/* "diagnostic" means something else now: see design/diag/. */
+/* RHSK 2007-06-28 */
+/* WARNING: this may change the size and fields of MPS structs */
+/* (...but see STATISTIC_DECL, which is invariant) */
+#define STATISTICS
+#define MPS_STATS_STRING "stats"
 #else
-#define DIAGNOSTICS_NONE
-#define MPS_DEBUG_STRING "nondebug"
+#define STATISTICS_NONE
+#define MPS_STATS_STRING "nonstats"
 #endif
 
 
@@ -97,7 +124,7 @@
 
 
 #define MPS_VARIETY_STRING \
-  MPS_ASSERT_STRING "." MPS_LOG_STRING "." MPS_DEBUG_STRING
+  MPS_ASSERT_STRING "." MPS_LOG_STRING "." MPS_STATS_STRING
 
 
 /* Platform Configuration */
@@ -226,6 +253,26 @@
 #define VMANPageALIGNMENT ((Align)4096)
 #define VMJunkBYTE ((unsigned char)0xA9)
 
+/* Protection Configuration see <code/prot*.c>
+
+   For each architecture/OS that uses protix.c or protsgix.c, we need to
+   define what signal number to use, and what si_code value to check.
+*/
+
+#if defined(MPS_OS_O1) || defined(MPS_OS_SO)
+#define PROT_SIGNAL (SIGSEGV)
+#elif defined(MPS_OS_FR) || defined(MPS_OS_XC)
+#define PROT_SIGNAL (SIGBUS)
+#endif
+
+#if defined(MPS_OS_XC)
+#define PROT_SIGINFO_GOOD(info) (1)
+#elif defined(MPS_OS_O1)
+#define PROT_SIGINFO_GOOD(info) ((info)->si_code == SEGV_ACCERR)
+#elif defined(MPS_OS_FR)
+#define PROT_SIGINFO_GOOD(info) ((info)->si_code == BUS_PAGE_FAULT)
+#endif
+
 
 /* Tracer Configuration -- see <code/trace.c> */
 
@@ -255,6 +302,20 @@
 /* Assert Buffer */
 
 #define ASSERT_BUFFER_SIZE      ((Size)512)
+
+
+/* Diagnostics Buffer */
+
+#ifdef DIAG_WITH_STREAM_AND_WRITEF
+/* DIAG_BUFFER_SIZE: 10 screenfuls: 10x80x25 = 20000 */
+#define DIAG_BUFFER_SIZE      ((Size)20000)
+#else
+#define DIAG_BUFFER_SIZE      ((Size)1)
+#endif
+
+#define DIAG_PREFIX_TAGSTART "MPS."
+#define DIAG_PREFIX_LINE     " "
+#define DIAG_PREFIX_TAGEND   ""
 
 
 /* memory operator configuration

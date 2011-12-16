@@ -1,6 +1,6 @@
 /* libcbt: MPS LIBRARY CALLBACK TEST
  *
- * $Header: //info.ravenbrook.com/project/mps/version/1.107/code/libcbt.c#1 $
+ * $Header: //info.ravenbrook.com/project/mps/version/1.108/code/libcbt.c#1 $
  * Copyright (C) 2005 Ravenbrook Limited.  See end of file for license.
  *
  * This is a simple test of the MPS Library Callback interface

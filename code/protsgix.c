@@ -1,32 +1,38 @@
-/* protfri3.c: PROTECTION FOR FREEBSD (INTEL 386)
+/* protsgix.c: PROTECTION (SIGNAL HANDLER) FOR UNIX
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.107/code/protfri3.c#1 $
- *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.108/code/protsgix.c#1 $
+ *  Copyright (c) 2001-2007 Ravenbrook Limited.  See end of file for license.
+ *
+ * Would ordinarily be part of protix.c (as the code is common to more
+ * than one Unix-like operating system), but PowerPC Darwin requires a
+ * different implementation of this module.
  *
  * SOURCES
  *
- * .source.i486: Intel486 Microprocessor Family Programmer's
- * Reference Manual
- *
  * .source.man: sigaction(2): FreeBSD System Calls Manual.
+ *
+ * .source.merge: A blend from primarily the FreeBSD version (protfri3.c)
+ * and the OSF/1 (DIGITAL UNIX) version (proto1.c); influenced by other
+ * Unix versions.
  */
 
-#include "prmcfr.h"
+#include "mpm.h"
 
-#ifndef MPS_OS_FR
-#error "protfri3.c is FreeBSD-specific, but MPS_OS_FR is not set"
+#if !defined(MPS_OS_XC) && !defined(MPS_OS_FR) && !defined(MPS_OS_O1)
+#error "protsgix.c is Unix-specific, currently for MPS_OS_O1 FR or XC"
 #endif
-#if !defined(MPS_ARCH_I3) && !defined(MPS_ARCH_I4)
-#error "protfri3.c is Intel-specific, but MPS_ARCH_I3 or MPS_ARCH_I4 is not set"
+#if defined(MPS_OS_XC) && defined(MPS_ARCH_PP)
+#error "protsgix.c does not work on Darwin on PowerPC.  Use protxcpp.c"
 #endif
 #ifndef PROTECTION
-#error "protfri3.c implements protection, but PROTECTION is not set"
+#error "protsgix.c implements protection, but PROTECTION is not set"
 #endif
 
-#include <signal.h>
-#include <machine/trap.h>
+#include <signal.h>    /* for many functions */
+#include <sys/types.h> /* for getpid */
+#include <unistd.h>    /* for getpid */
 
-SRCID(protfri3, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/protfri3.c#1 $");
+SRCID(protsgix, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/protsgix.c#1 $");
 
 
 /* The previously-installed signal action, as returned by */
@@ -37,13 +43,15 @@ static struct sigaction sigNext;
 /* sigHandle -- protection signal handler
  *
  *  This is the signal handler installed by ProtSetup to deal with
- *  protection faults.  It is installed on the SIGBUS signal.  It
+ *  protection faults.  It is installed on the PROT_SIGNAL (a macro
+ *  defined according to the platform in config.h) signal.  It
  *  decodes the protection fault details from the signal context and
  *  passes them to ArenaAccess, which attempts to handle the fault and
  *  remove its cause.  If the fault is handled, then the handler
  *  returns and execution resumes.  If it isn't handled, then
  *  sigHandle does its best to pass the signal on to the previously
- *  installed signal handler (sigNext).
+ *  installed signal handler (sigNext); which it does by signalling
+ *  itself using kill(2).
  *
  *  .sigh.args: The sigaction manual page .source.man documents three
  *  different handler prototypes: ANSI C sa_handler, traditional BSD
@@ -54,8 +62,11 @@ static struct sigaction sigNext;
  *  are: signal number, pointer to signal info structure, pointer to
  *  signal context structure.
  *
- *  .sigh.context: We only know how to handle signals with code
- *  BUS_PAGE_FAULT, where info->si_addr gives the fault address.
+ *  .sigh.context: We use the PROT_SIGINFO_GOOD macro to (usually) check
+ *  the info->si_code.  The macro is platform dependent and defined in
+ *  config.h.  We assume that info->si_addr is the fault address.  This
+ *  assumption turns out to fail for PowerPC Darwin (we use protxcpp.c
+ *  there).
  *
  *  .sigh.mode: The fault type (read/write) does not appear to be
  *  available to the signal handler (see mail archive).
@@ -63,9 +74,15 @@ static struct sigaction sigNext;
 
 static void sigHandle(int sig, siginfo_t *info, void *context)  /* .sigh.args */
 {
-  AVER(sig == SIGBUS);
+  int e;
+  /* sigset renamed to asigset due to clash with global on Darwin. */
+  sigset_t asigset, oldset;
+  struct sigaction sa;
 
-  if(info->si_code == BUS_PAGE_FAULT) {  /* .sigh.context */
+  AVER(sig == PROT_SIGNAL);
+
+  /* .sigh.context */
+  if(PROT_SIGINFO_GOOD(info)) {
     AccessSet mode;
     Addr base, limit;
 
@@ -84,37 +101,24 @@ static void sigHandle(int sig, siginfo_t *info, void *context)  /* .sigh.args */
   /* The exception was not handled by any known protection structure, */
   /* so throw it to the previously installed handler. */
 
-  /* @@@@ This is really weak. */
-  /* Need to implement rest of the contract of sigaction */
-  /* We might also want to set SA_RESETHAND in the flags and explicitly */
-  /* reinstall the handler from withint itself so the SIG_DFL/SIG_IGN */
-  /* case can work properly by just returning. */
-  switch ((int)sigNext.sa_handler) {
-  case (int)SIG_DFL:
-  case (int)SIG_IGN:
-    abort();
-    NOTREACHED;
-    break;
-  default:
-    if ((int)sigNext.sa_handler & SA_SIGINFO) {
-      (*sigNext.sa_sigaction)(sig, info, context);
-    } else {
-      /* @@@@ what if the previous handler is BSD-style? */
-        /* We don't have a struct sigcontext to pass to it.
-           The second argument (the code) is just info->si_code
-           but the third argument (the sigcontext) we would have to
-           fake from the ucontext.  We could do that. */
-      (*sigNext.sa_handler)(sig);
-    }
-    break;
-  }
+  e = sigaction(PROT_SIGNAL, &sigNext, &sa);
+  AVER(e == 0);
+  sigemptyset(&asigset);
+  sigaddset(&asigset, PROT_SIGNAL);
+  e = sigprocmask(SIG_UNBLOCK, &asigset, &oldset);
+  AVER(e == 0);
+  kill(getpid(), PROT_SIGNAL);
+  e = sigprocmask(SIG_SETMASK, &oldset, NULL);
+  AVER(e == 0);
+  e = sigaction(PROT_SIGNAL, &sa, NULL);
+  AVER(e == 0);
 }
 
 
 /*  ProtSetup -- global protection setup
  *
- *  Under FreeBSD, the global setup involves installing a signal
- *  handler on SIGBUS to catch and handle page faults (see
+ *  Under Unix, the global setup involves installing a signal
+ *  handler on PROT_SIGNAL to catch and handle page faults (see
  *  sigHandle).  The previous handler is recorded so that it can be
  *  reached from sigHandle if it fails to handle the fault.
  *
@@ -132,14 +136,14 @@ void ProtSetup(void)
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = SA_SIGINFO;
 
-  result = sigaction(SIGBUS, &sa, &sigNext);
+  result = sigaction(PROT_SIGNAL, &sa, &sigNext);
   AVER(result == 0);
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2007 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

@@ -1,6 +1,6 @@
 /* meter.h: METER INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/meter.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/meter.h#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .sources: mps.design.metrics.
@@ -44,12 +44,12 @@ extern void MeterEmit(Meter meter);
 /* Hack: owner is typically only used for MeterInit */
 #define METER_ACC(meter, delta) \
   STATISTIC(MeterAccumulate(&(meter), delta))
-#if defined(DIAGNOSTICS)
+#if defined(STATISTICS)
 #define METER_WRITE(meter, stream) MeterWrite(&(meter), stream)
-#elif defined(DIAGNOSTICS_NONE)
+#elif defined(STATISTICS_NONE)
 #define METER_WRITE(meter, stream) (ResOK)
 #else
-#error "Diagnostics not configured."
+#error "No statistics configured."
 #endif
 #define METER_EMIT(meter) STATISTIC(MeterEmit(meter))
 

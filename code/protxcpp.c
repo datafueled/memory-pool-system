@@ -1,6 +1,6 @@
 /* protxcpp.c: PROTECTION FOR MAC OS X ON POWERPC
  *
- *  $Header$
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.108/code/protxcpp.c#1 $
  *  Copyright (c) 2001,2005 Ravenbrook Limited.  See end of file for license.
  *
  *  Most of this was copied from protso.c and modified.
@@ -31,7 +31,7 @@
 #include <signal.h>
 #include <sys/ucontext.h>
 
-SRCID(protxcpp, "$Id$");
+SRCID(protxcpp, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/protxcpp.c#1 $");
 
 /* The previously-installed signal action, as returned by */
 /* sigaction(3).  See ProtSetup. */
@@ -124,7 +124,7 @@ static void sigHandle(int sig, siginfo_t *info, void *contextArg)
  */
 
 /* This function itself probably isn't architecture specific, but it
- * references the sigHandle which is currently statis and which is
+ * references the sigHandle which is currently static and which is
  * architecture specific. */
 void ProtSetup(void)
 {

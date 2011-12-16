@@ -1,6 +1,6 @@
 /* mpmst.h: MEMORY POOL MANAGER DATA STRUCTURES
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/mpmst.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpmst.h#2 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -511,9 +511,12 @@ typedef struct TraceStruct {
   Sig sig;                      /* <design/sig/> */
   TraceId ti;                   /* index into TraceSets */
   Arena arena;                  /* owning arena */
+  int why;                      /* why the trace began */
   ZoneSet white;                /* zones in the white set */
   ZoneSet mayMove;              /* zones containing possibly moving objs */
   TraceState state;             /* current state of trace */
+  Rank band;                    /* current band */
+  Bool firstStretch;            /* in first stretch of band (see accessor) */
   Bool emergency;               /* ran out of memory during trace */
   Chain chain;                  /* chain being incrementally collected */
   Size condemned;               /* condemned bytes */

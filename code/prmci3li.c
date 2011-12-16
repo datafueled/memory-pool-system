@@ -1,6 +1,6 @@
 /* prmci3li.c: PROTECTION MUTATOR CONTEXT INTEL 386 (LINUX)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/prmci3li.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/prmci3li.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This module implements the part of the protection module
@@ -25,7 +25,7 @@
 #include "prmcli.h"
 #include "prmci3.h"
 
-SRCID(prmci3li, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/prmci3li.c#1 $");
+SRCID(prmci3li, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/prmci3li.c#2 $");
 
 
 /* Prmci3AddressHoldingReg -- return an address of a register in a context */
@@ -42,17 +42,17 @@ MRef Prmci3AddressHoldingReg(MutatorFaultContext context, unsigned int regnum)
   /* .source.i486 */
   /* .assume.regref */
   switch (regnum) {
-  case 0: return (MRef)&scp->eax;
-  case 1: return (MRef)&scp->ecx;
-  case 2: return (MRef)&scp->edx;
-  case 3: return (MRef)&scp->ebx;
-  case 4: return (MRef)&scp->esp;
-  case 5: return (MRef)&scp->ebp;
-  case 6: return (MRef)&scp->esi;
-  case 7: return (MRef)&scp->edi;
+    case 0: return (MRef)&scp->eax;
+    case 1: return (MRef)&scp->ecx;
+    case 2: return (MRef)&scp->edx;
+    case 3: return (MRef)&scp->ebx;
+    case 4: return (MRef)&scp->esp;
+    case 5: return (MRef)&scp->ebp;
+    case 6: return (MRef)&scp->esi;
+    case 7: return (MRef)&scp->edi;
   }
   NOTREACHED;
-  return (MRef)NULL;  /* Keep compiler happy. */
+  return (MRef)NULL;  /* Avoids compiler warning. */
 }
 
 

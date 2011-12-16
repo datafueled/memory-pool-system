@@ -40,4 +40,4 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ---
 
-$Id: //info.ravenbrook.com/project/mps/version/1.107/license.txt#1 $
+$Id: //info.ravenbrook.com/project/mps/version/1.108/license.txt#1 $

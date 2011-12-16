@@ -1,6 +1,6 @@
 /* fmtdytst.c: DYLAN FORMAT TEST CODE
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/fmtdytst.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/fmtdytst.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MPS developers, Dylan developers.
@@ -81,6 +81,16 @@ static mps_res_t dylan_make_wrapper_wrapper(void)
   return MPS_RES_OK;
 }
 
+
+/* dylan_init -- turn raw memory into initialised dylan-vector (or pad)
+ *
+ * If the raw memory is large enough, initialises it to a dylan-vector,
+ * whose slots are initialised to either dylan-ints, or valid refs, at 
+ * random.
+ * Caller must supply an array of (at least 1) valid refs to copy, via
+ * the "refs" and "nr_refs" arguments.
+ * (Makes a pad if the raw memory is too small to hold a dylan-vector)
+ */
 
 mps_res_t dylan_init(mps_addr_t addr, size_t size,
                      mps_addr_t *refs, size_t nr_refs)

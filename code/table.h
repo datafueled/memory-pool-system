@@ -1,7 +1,7 @@
 /* table.h: Interface for a dictionary
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/table.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/table.h#1 $
  */
 
 #ifndef table_h

@@ -1,12 +1,12 @@
 # xcppgc.gmk: BUILD FOR MACOS X (CARBON)/POWERPC/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/version/1.107/code/xcppgc.gmk#2 $
-# Copyright (c) 2001,2005 Ravenbrook Limited.  See end of file for license.
+# $Id: //info.ravenbrook.com/project/mps/version/1.108/code/xcppgc.gmk#2 $
+# Copyright (c) 2001-2007 Ravenbrook Limited.  See end of file for license.
 
 PFM = xcppgc
 
-MPMPF = lockan.c than.c vmxc.c \
-        protxc.c protxcpp.c prmcan.c span.c
+MPMPF = lockix.c than.c vmix.c \
+        protix.c protxcpp.c prmcan.c span.c
 MPMS = ssxcpp.s
 SWPF = than.c vmxc.c protsw.c prmcan.c ssan.c
 
@@ -18,23 +18,12 @@ include gc.gmk
 
 CC = cc -arch ppc
 
-# Suppress some warnings (last checked in DP3).
-#   .cabs: -Wstrict-prototypes cannot be used because the math.h header has a
-#   traditional declaration of cabs.
-#   .sputc: -Wno-unused is needed, because stdio.h declares __sputc as an
-#   inline function.
-#   .types: sys/types.h uses 'long long' even under -ansi.
-CFLAGSCOMPILER := $(subst -Wstrict-prototypes,,$(CFLAGSCOMPILER)) \
-                  -Wno-unused -Wno-long-long -no-cpp-precomp
-CFLAGSDEBUG := $(subst -g -ggdb3,-g3,$(CFLAGSDEBUG))
-CFLAGSOPT := $(subst -g -ggdb3,-g3,$(CFLAGSOPT))
-
 include comm.gmk
 
 
 # C. COPYRIGHT AND LICENSE
 #
-# Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+# Copyright (C) 2001-2007 Ravenbrook Limited <http://www.ravenbrook.com/>.
 # All rights reserved.  This is an open source license.  Contact
 # Ravenbrook for commercial licensing options.
 # 

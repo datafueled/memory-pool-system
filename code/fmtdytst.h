@@ -1,6 +1,6 @@
 /* fmtdytst.h: DYLAN OBJECT FORMAT TESTING
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/fmtdy.h#7 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/fmtdytst.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 

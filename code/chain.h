@@ -1,6 +1,6 @@
 /* chain.h: GENERATION CHAINS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/chain.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/chain.h#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -51,6 +51,12 @@ typedef struct PoolGenStruct {
   RingStruct genRing;
   Size totalSize;     /* total size of segs in gen in this pool */
   Size newSize;       /* size allocated since last GC */
+  /* newSize when TraceCreate is called.  This is for diagnostic */
+  /* purposes only.  It's used in a DIAG message emitted in TraceStart; */
+  /* at that time, newSize has already been diminished by Whiten so we */
+  /* can't use that value.  This will not work well with multiple */
+  /* traces. */
+  Size newSizeAtCreate;
 } PoolGenStruct;
 
 

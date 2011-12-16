@@ -1,6 +1,6 @@
 /* prmcfr.h:  PROTECTION MUTATOR CONTEXT (FREEBSD)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/prmcfr.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/prmcfr.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MPS developers.
@@ -11,7 +11,7 @@
 
 #include "mpm.h"
 
-#include <signal.h>
+#include <ucontext.h>
 
 typedef struct MutatorFaultContextStruct { /* Protection fault context data */
   ucontext_t *ucontext;

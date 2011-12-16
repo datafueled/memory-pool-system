@@ -53,13 +53,14 @@
 
 <h2><a id="section-2" name="section-2">2. Articles</a></h2>
 
-<p>Recommended:</p>
+<p>Recommended; some relevance to client developers:</p>
 <ul>
-
   <li><a href="glossary.html">glossary of MPS terminology</a></li>
 
   <li><a href="refman_add.html">Reference Manual Addenda (corrections and additions)</a></li>
 
+  <li>the available <a href="pool_classes.html">pool classes</a></li>
+  
   <li><a href="modes.html">modes of use of MPS</a></li>
 
   <li><a href="gc.html">Garbage Collection</a> 
@@ -67,27 +68,36 @@
 
   <li><a href="apguide.html">Allocation Point User's Guide</a></li>
 
-  <li><a href="c-stack.html">The C-Stack, both generally and as used by the MPS</a></li>
+  <li><a href="c-stack.html">the C-Stack</a>, both generally and as used by the MPS</li>
 
 </ul>
 
 
-<p>Sketchy:</p>
+<p>MPS Internals:</p>
 <ul>
-  <li>The available <a href="pool_classes.html">pool classes</a>.</li>
-</ul>
-
-
-<p>Internal or arcane:</p>
-<ul>
-
   <li><a href="timeline.html">rough timeline of MPS development</a></li>
 
   <li><a href="gc_story.html">the story of a garbage collection</a></li>
 
+  <li><a href="trace.html">how a trace (collection, etc) works</a></li>
+
   <li><a href="apinternals.html">discussion of Allocation Point internals</a></li>
 
+  <li><a href="describe.html">Describe methods and inheritance</a></li>
+
+  <li><a href="access.html">access: what happens when the mutator hits a (read or write) shield?</a></li>
+
+</ul>
+
+
+
+<p>Sketchy, very incomplete, or arcane:</p>
+<ul>
   <li><a href="unmanaged.html">issues with unmanaged workspace</a></li>
+
+  <li><a href="poolamc.html">guide to poolamc.c</a></li>
+
+  <li><a href="theorem.html">theorem: collected statements about the MPS that are, or perhaps should be, true</a></li>
 
 </ul>
 
@@ -115,7 +125,7 @@
     <sup><a id="not-publicly-available" title="this document is not publicly available">&empty;</a></sup>
   </dt>
   <dd>
-    <p>marks a link to a document that is not publicly available</p>
+    <p>This mark indicates a link to a document that is not publicly available</p>
     
     <p>Often, this will be a historical document that, along with 
     useful general information, contains some confidential 
@@ -132,7 +142,7 @@
     <a id="within-article" title="link within this article">&darr;</a>
   </dt>
   <dd>
-    <p>marks a link to another section in the same document</p>
+    <p>This mark indicates a link to another section in the same document</p>
     
     <p>If you intend to read the whole document, you can skip these 
     links and you will not miss out on any material.</p>
@@ -160,11 +170,17 @@
   2006-11-27  RHSK  Article: Timeline
   2006-11-28  RHSK  Article: RefMan Addenda
   2006-11-30  RHSK  Article: Story of a GC
+  2007-01-12  RHSK  Article: Trace
+  2007-01-18  RHSK  Article: PoolAMC
+  2007-03-01  RHSK  Article: Theorem
+  2007-04-26  RHSK  New categories on this index page.
+  2007-03-01  RHSK  Article: Describe methods
+  2007-09-27  RHSK  Article: access: when the mutator hits a shield
 </pre>
 
 <h2><a id="section-C" name="section-C">C. Copyright and License</a></h2>
 
-<p> This document is copyright &copy; 2006 <a href="http://www.ravenbrook.com/">Ravenbrook Limited</a>.  All rights reserved.  This is an open source license.  Contact Ravenbrook for commercial licensing options. </p>
+<p> This document is copyright &copy; 2006-2007 <a href="http://www.ravenbrook.com/">Ravenbrook Limited</a>.  All rights reserved.  This is an open source license.  Contact Ravenbrook for commercial licensing options. </p>
 
 <p> Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met: </p>
 
@@ -185,7 +201,7 @@
 
 <div class="banner">
 
-<p><code>$Id: //info.ravenbrook.com/project/mps/version/1.107/manual/wiki/index.html#2 $</code></p>
+<p><code>$Id: //info.ravenbrook.com/project/mps/version/1.108/manual/wiki/index.html#2 $</code></p>
 
 <p>
 <a href="/">Ravenbrook</a>

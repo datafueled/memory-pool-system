@@ -1,13 +1,16 @@
-/* lockfr.c: RECURSIVE LOCKS FOR POSIX SYSTEMS
+/* lockix.c: RECURSIVE LOCKS FOR POSIX SYSTEMS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/lockfr.c#1 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/lockix.c#1 $
+ * Copyright (c) 2001,2007 Ravenbrook Limited.  See end of file for license.
+ *
+ * .posix: The implementation uses a POSIX interface, and should be reusable
+ * for many Unix-like operating systems.
  *
  * .freebsd: This implementation supports FreeBSD (platform
  * MPS_OS_FR).
  *
- * .posix: In fact, the implementation should be reusable for most POSIX
- * implementations, but may need some customization for each.
+ * .darwin: This implementation supports Darwin (OS X) (platform
+ * MPS_OS_XC).
  *
  * .design: These locks are implemented using mutexes.
  *
@@ -19,7 +22,11 @@
  *
  * .claims: During use the claims field is updated to remember the
  * number of claims acquired on a lock.  This field must only be
- * modified while we hold the mutex.  */
+ * modified while we hold the mutex.
+ *
+ * .from: This version was copied from the FreeBSD version (lockfr.c)
+ * which was itself a cleaner version of the Linux version (lockli.c).
+ */
 
 #include <pthread.h>
 #include <semaphore.h>
@@ -30,11 +37,11 @@
 #include "config.h"
 
 
-#ifndef MPS_OS_FR
-#error "lockfr.c is FreeBSD specific but MPS_OS_FR not defined"
+#if !defined(MPS_OS_FR) && !defined(MPS_OS_XC)
+#error "lockix.c is Unix specific, currently for MPS_OS_FR XC."
 #endif
 
-SRCID(lockfr, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/lockfr.c#1 $");
+SRCID(lockix, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/lockix.c#1 $");
 
 
 /* LockStruct -- the MPS lock structure

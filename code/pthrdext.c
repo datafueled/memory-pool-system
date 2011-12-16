@@ -1,6 +1,6 @@
 /* pthreadext.c: POSIX THREAD EXTENSIONS
  *
- *  $Id: //info.ravenbrook.com/project/mps/version/1.107/code/pthrdext.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/version/1.108/code/pthrdext.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Provides extension to Pthreads.
@@ -18,7 +18,7 @@
 #if defined(MPS_OS_LI)
 /* open sesame magic */
 #define _BSD_SOURCE 1
-#define _POSIX_C_SOURCE 1
+#define _XOPEN_SOURCE 500
 #endif
 
 #include <pthread.h>
@@ -31,7 +31,7 @@
 
 #include "pthrdext.h"
 
-SRCID(pthreadext, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/pthrdext.c#1 $");
+SRCID(pthreadext, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/pthrdext.c#1 $");
 
 
 /* PTHREADEXT_SIGSUSPEND, PTHREADEXT_SIGRESUME -- signals used

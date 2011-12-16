@@ -1,6 +1,6 @@
 /* seg.c: SEGMENTS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/seg.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/seg.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: The design for this module is <design/seg/>.
@@ -29,7 +29,7 @@
 #include "tract.h"
 #include "mpm.h"
 
-SRCID(seg, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/seg.c#1 $");
+SRCID(seg, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/seg.c#1 $");
 
 
 /* SegGCSeg -- convert generic Seg to GCSeg */
@@ -1560,14 +1560,20 @@ static Res gcSegDescribe(Seg seg, mps_lib_FILE *stream)
   res = super->describe(seg, stream);
   if (res != ResOK) return res;
 
-  if (gcseg->buffer != NULL) {
-    res = BufferDescribe(gcseg->buffer, stream);
-    if (res != ResOK) return res;
-  }
   res = WriteF(stream,
                "  summary $W\n", (WriteFW)gcseg->summary,
                NULL);
-  return res;
+  if (res != ResOK) return res;
+
+  if (gcseg->buffer == NULL) {
+    res = WriteF(stream, "  buffer: NULL\n", NULL);
+  }
+  else {
+    res = BufferDescribe(gcseg->buffer, stream);
+  }
+  if (res != ResOK) return res;
+
+  return ResOK;
 }
 
 

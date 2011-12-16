@@ -1,6 +1,6 @@
 /* poolams.c: AUTOMATIC MARK & SWEEP POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/poolams.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/poolams.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -20,7 +20,7 @@
 #include "mpm.h"
 #include <stdarg.h>
 
-SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/poolams.c#1 $");
+SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/poolams.c#2 $");
 
 
 #define AMSSig          ((Sig)0x519A3599) /* SIGnature AMS */
@@ -1597,6 +1597,8 @@ static Res AMSDescribe(Pool pool, mps_lib_FILE *stream)
   if (stream == NULL) return ResFAIL;
 
   res = WriteF(stream,
+               "AMS $P {\n", (WriteFP)ams,
+               "  pool $P ($U)\n",
                (WriteFP)pool, (WriteFU)pool->serial,
                "  size $W\n",
                (WriteFW)ams->size,
@@ -1619,6 +1621,11 @@ static Res AMSDescribe(Pool pool, mps_lib_FILE *stream)
     res = SegDescribe(AMSSeg2Seg(amsseg), stream);
     if (res != ResOK) return res;
   }
+
+  res = WriteF(stream, "} AMS $P\n",(WriteFP)ams, NULL);
+  if (res != ResOK)
+    return res;
+
   return ResOK;
 }
 

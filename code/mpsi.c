@@ -1,6 +1,6 @@
 /* mpsi.c: MEMORY POOL SYSTEM C INTERFACE LAYER
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/mpsi.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpsi.c#1 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -53,7 +53,7 @@
 #include "sac.h"
 #include "chain.h"
 
-SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/mpsi.c#1 $");
+SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpsi.c#1 $");
 
 
 /* mpsi_check -- check consistency of interface mappings

@@ -1,6 +1,6 @@
 /* mpsw3.h: RAVENBROOK MEMORY POOL SYSTEM C INTERFACE, WINDOWS PART
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/mpsw3.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpsw3.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: customers, MPS developers.

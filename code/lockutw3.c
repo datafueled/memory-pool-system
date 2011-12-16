@@ -1,6 +1,6 @@
 /* lockutw3.c: LOCK UTILIZATION TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/lockutw3.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/lockutw3.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 

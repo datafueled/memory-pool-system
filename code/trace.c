@@ -1,7 +1,8 @@
 /* trace.c: GENERIC TRACER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/trace.c#1 $
- * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/trace.c#3 $
+ * Copyright (c) 2001-2003, 2006, 2007 Ravenbrook Limited.
+ * See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
  * .design: <design/trace/>.  */
@@ -10,10 +11,15 @@
 #include "mpm.h"
 #include <limits.h> /* for LONG_MAX */
 
-SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/trace.c#1 $");
+SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/trace.c#3 $");
 
 /* Forward declarations */
 static void TraceStartMessageInit(Arena arena, TraceStartMessage tsMessage);
+Rank traceBand(Trace);
+Bool traceBandAdvance(Trace);
+Bool traceBandFirstStretch(Trace);
+void traceBandFirstStretchDone(Trace);
+DIAG_DECL( static void traceFindGrey_diag(Bool found, Rank rank); )
 
 /* Types */
 
@@ -218,22 +224,16 @@ static void TraceStartMessageInit(Arena arena, TraceStartMessage tsMessage)
   return;
 }
 
-/* traceStartWhyToString
+
+/* traceStartWhyToString -- why-code to text
  *
- * Converts a TraceStartWhy* code into a string description.
- * s specifies the beginning of the buffer to write the string
- * into, len specifies the length of the buffer.
- * The string written into will be NUL terminated (truncated if
- * necessary). */
-static void traceStartWhyToString(char *s, size_t len, int why)
+ * Converts a TraceStartWhy* code into a constant string describing 
+ * why a trace started.
+ */
+ 
+static const char *traceStartWhyToString(int why)
 {
   const char *r;
-  size_t i;
-
-  AVER(s);
-  /* len can be anything, including 0. */
-  AVER(TraceStartWhyBASE <= why);
-  AVER(why < TraceStartWhyLIMIT);
 
   switch(why) {
   case TraceStartWhyCHAIN_GEN0CAP:
@@ -262,6 +262,32 @@ static void traceStartWhyToString(char *s, size_t len, int why)
     r = "Unknown reason (internal error).";
     break;
   }
+
+  return r;
+}
+
+
+/* traceStartWhyToTextBuffer
+ *
+ * Converts a TraceStartWhy* code into a string describing why a trace
+ * started, and copies that into the text buffer the caller provides.
+ * s specifies the beginning of the buffer to write the string
+ * into, len specifies the length of the buffer.
+ * The string written into will be NUL terminated (truncated if
+ * necessary).
+ */
+
+static void traceStartWhyToTextBuffer(char *s, size_t len, int why)
+{
+  const char *r;
+  size_t i;
+
+  AVER(s);
+  /* len can be anything, including 0. */
+  AVER(TraceStartWhyBASE <= why);
+  AVER(why < TraceStartWhyLIMIT);
+
+  r = traceStartWhyToString(why);
 
   for(i=0; i<len; ++i) {
     s[i] = r[i];
@@ -316,7 +342,7 @@ void ScanStateInit(ScanState ss, TraceSet ts, Arena arena,
 
   ss->fix = TraceFix;
   TRACE_SET_ITER(ti, trace, ts, arena)
-    if (trace->emergency) {
+    if(trace->emergency) {
       ss->fix = TraceFixEmergency;
     }
   TRACE_SET_ITER_END(ti, trace, ts, arena);
@@ -386,41 +412,104 @@ Bool TraceCheck(Trace trace)
   CHECKL(ZoneSetSub(trace->mayMove, trace->white));
   /* Use trace->state to check more invariants. */
   switch(trace->state) {
-  case TraceINIT:
-    /* @@@@ What can be checked here? */
-    break;
+    case TraceINIT:
+      /* @@@@ What can be checked here? */
+      break;
 
-  case TraceUNFLIPPED:
-    CHECKL(!TraceSetIsMember(trace->arena->flippedTraces, trace));
-    /* @@@@ Assert that mutator is grey for trace. */
-    break;
+    case TraceUNFLIPPED:
+      CHECKL(!TraceSetIsMember(trace->arena->flippedTraces, trace));
+      /* @@@@ Assert that mutator is grey for trace. */
+      break;
 
-  case TraceFLIPPED:
-    CHECKL(TraceSetIsMember(trace->arena->flippedTraces, trace));
-    /* @@@@ Assert that mutator is black for trace. */
-    break;
+    case TraceFLIPPED:
+      CHECKL(TraceSetIsMember(trace->arena->flippedTraces, trace));
+      /* @@@@ Assert that mutator is black for trace. */
+      break;
 
-  case TraceRECLAIM:
-    CHECKL(TraceSetIsMember(trace->arena->flippedTraces, trace));
-    /* @@@@ Assert that grey set is empty for trace. */
-    break;
+    case TraceRECLAIM:
+      CHECKL(TraceSetIsMember(trace->arena->flippedTraces, trace));
+      /* @@@@ Assert that grey set is empty for trace. */
+      break;
 
-  case TraceFINISHED:
-    CHECKL(TraceSetIsMember(trace->arena->flippedTraces, trace));
-    /* @@@@ Assert that grey and white sets is empty for trace. */
-    break;
+    case TraceFINISHED:
+      CHECKL(TraceSetIsMember(trace->arena->flippedTraces, trace));
+      /* @@@@ Assert that grey and white sets is empty for trace. */
+      break;
 
-  default:
-    NOTREACHED;
+    default:
+      NOTREACHED;
+  }
+  /* Valid values for band depend on state. */
+  if(trace->state == TraceFLIPPED) {
+    CHECKL(RankCheck(trace->band));
   }
   CHECKL(BoolCheck(trace->emergency));
-  if (trace->chain != NULL)
+  if(trace->chain != NULL) {
     CHECKU(Chain, trace->chain);
+  }
   /* @@@@ checks for counts missing */
   CHECKD(TraceStartMessage, &trace->startMessage);
   return TRUE;
 }
 
+/* traceBand - current band of the trace.
+ *
+ * The current band is the band currently being discovered.  Each band
+ * corresponds to a rank.  The R band is all objects that are reachable
+ * only by tracing references of rank R or earlier _and_ are not in some
+ * earlier band (thus, the bands are disjoint).  Whilst a particular
+ * band is current all the objects that become marked are the objects in
+ * that band.
+ */
+Rank traceBand(Trace trace)
+{
+  AVERT(Trace, trace);
+
+  return trace->band;
+}
+
+/* traceBandAdvance - advance to next band.
+ *
+ * Advances (increments) the current band to the next band and returns TRUE
+ * if possible;
+ * otherwise, there are no more bands, so resets the band state and
+ * returns FALSE.
+ */
+Bool traceBandAdvance(Trace trace)
+{
+  AVER(trace->state == TraceFLIPPED);
+
+  ++trace->band;
+  trace->firstStretch = TRUE;
+  if(trace->band >= RankLIMIT) {
+    trace->band = RankAMBIG;
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/* traceBandFirstStretch - whether in first stretch or not.
+ *
+ * For a band R (see traceBand) the first stretch is defined as all the
+ * scanning work done up until the first point where we run out of grey
+ * rank R segments (and either scan something of an earlier rank or
+ * change bands).
+ *
+ * This function returns TRUE whilst we are in the first stretch, FALSE
+ * otherwise.
+ *
+ * Entering the first stretch is automatically performed by
+ * traceBandAdvance, but finishing it is detected in traceFindGrey.
+ */
+Bool traceBandFirstStretch(Trace trace)
+{
+  return trace->firstStretch;
+}
+
+void traceBandFirstStretchDone(Trace trace)
+{
+  trace->firstStretch = FALSE;
+}
 
 /* traceUpdateCounts - dumps the counts from a ScanState into the Trace */
 
@@ -428,25 +517,25 @@ static void traceUpdateCounts(Trace trace, ScanState ss,
                               traceAccountingPhase phase)
 {
   switch(phase) {
-  case traceAccountingPhaseRootScan:
-    trace->rootScanSize += ss->scannedSize;
-    trace->rootCopiedSize += ss->copiedSize;
-    STATISTIC(++trace->rootScanCount);
-    break;
-
-  case traceAccountingPhaseSegScan:
-    trace->segScanSize += ss->scannedSize; /* see .workclock */
-    trace->segCopiedSize += ss->copiedSize;
-    STATISTIC(++trace->segScanCount);
-    break;
-
-  case traceAccountingPhaseSingleScan:
-    STATISTIC(trace->singleScanSize += ss->scannedSize);
-    STATISTIC(trace->singleCopiedSize += ss->copiedSize);
-    break;
-
-  default:
-    NOTREACHED;
+    case traceAccountingPhaseRootScan: {
+      trace->rootScanSize += ss->scannedSize;
+      trace->rootCopiedSize += ss->copiedSize;
+      STATISTIC(++trace->rootScanCount);
+      break;
+    }
+    case traceAccountingPhaseSegScan: {
+      trace->segScanSize += ss->scannedSize; /* see .workclock */
+      trace->segCopiedSize += ss->copiedSize;
+      STATISTIC(++trace->segScanCount);
+      break;
+    }
+    case traceAccountingPhaseSingleScan: {
+      STATISTIC(trace->singleScanSize += ss->scannedSize);
+      STATISTIC(trace->singleCopiedSize += ss->copiedSize);
+      break;
+    }
+    default:
+      NOTREACHED;
   }
   STATISTIC(trace->fixRefCount += ss->fixRefCount);
   STATISTIC(trace->segRefCount += ss->segRefCount);
@@ -529,15 +618,15 @@ Res TraceAddWhite(Trace trace, Seg seg)
   /* Give the pool the opportunity to turn the segment white. */
   /* If it fails, unwind. */
   res = PoolWhiten(pool, trace, seg);
-  if (res != ResOK)
+  if(res != ResOK)
     return res;
 
   /* Add the segment to the approximation of the white set the */
   /* pool made it white. */
-  if (TraceSetIsMember(SegWhite(seg), trace)) {
+  if(TraceSetIsMember(SegWhite(seg), trace)) {
     trace->white = ZoneSetUnion(trace->white, ZoneSetOfSeg(trace->arena, seg));
     /* if the pool is a moving GC, then condemned objects may move */
-    if (pool->class->attr & AttrMOVINGGC) {
+    if(pool->class->attr & AttrMOVINGGC) {
       trace->mayMove = ZoneSetUnion(trace->mayMove,
                                     ZoneSetOfSeg(trace->arena, seg));
     }
@@ -572,7 +661,7 @@ Res TraceCondemnZones(Trace trace, ZoneSet condemnedSet)
 
   arena = trace->arena;
 
-  if (SegFirst(&seg, arena)) {
+  if(SegFirst(&seg, arena)) {
     Addr base;
     do {
       base = SegBase(seg);
@@ -586,10 +675,10 @@ Res TraceCondemnZones(Trace trace, ZoneSet condemnedSet)
       /* the requested zone set.  Otherwise, we would bloat the */
       /* foundation to no gain.  Note that this doesn't exclude */
       /* any segments from which the condemned set was derived, */
-      if ((SegPool(seg)->class->attr & AttrGC) != 0
+      if((SegPool(seg)->class->attr & AttrGC) != 0
           && ZoneSetSuper(condemnedSet, ZoneSetOfSeg(arena, seg))) {
         res = TraceAddWhite(trace, seg);
-        if (res != ResOK)
+        if(res != ResOK)
           return res;
       }
     } while (SegNext(&seg, arena, base));
@@ -650,7 +739,7 @@ static void traceScanRoot(TraceSet ts, Rank rank, Arena arena, Root root)
   Res res;
 
   res = traceScanRootRes(ts, rank, arena, root);
-  if (res != ResOK) {
+  if(res != ResOK) {
     AVER(ResIsAllocFailure(res));
     traceSetSignalEmergency(ts, arena);
     res = traceScanRootRes(ts, rank, arena, root);
@@ -682,7 +771,7 @@ static Res rootFlip(Root root, void *p)
 
   AVER(RootRank(root) <= RankEXACT); /* see .root.rank */
 
-  if (RootRank(root) == rf->rank)
+  if(RootRank(root) == rf->rank)
     traceScanRoot(rf->ts, rf->rank, rf->arena, root);
 
   return ResOK;
@@ -712,7 +801,7 @@ static void traceFlip(Trace trace)
   /* Update location dependency structures. */
   /* mayMove is a conservative approximation of the zones of objects */
   /* which may move during this collection. */
-  if (trace->mayMove != ZoneSetEMPTY) {
+  if(trace->mayMove != ZoneSetEMPTY) {
     LDAge(arena, trace->mayMove);
   }
 
@@ -746,7 +835,7 @@ static void traceFlip(Trace trace)
   for(rank = 0; rank < RankLIMIT; ++rank)
     RING_FOR(node, ArenaGreyRing(arena, rank), nextNode) {
       Seg seg = SegOfGreyRing(node);
-      if (TraceSetInter(SegGrey(seg), arena->flippedTraces) == TraceSetEMPTY
+      if(TraceSetInter(SegGrey(seg), arena->flippedTraces) == TraceSetEMPTY
           && TraceSetIsMember(SegGrey(seg), trace))
         ShieldRaise(arena, seg, AccessREAD);
     }
@@ -767,6 +856,33 @@ static void traceFlip(Trace trace)
   return;
 }
 
+/* traceCopySizes -- preserve size information for later use
+ *
+ * A PoolGen's newSize is important information that we want to emit in
+ * a diagnostic message at TraceStart.  In order to do that we must copy
+ * the information before Whiten changes it.  This function does that.
+ */
+
+static void traceCopySizes(Trace trace)
+{
+  Ring node, nextNode;
+  Index i;
+  Arena arena = trace->arena;
+
+  RING_FOR(node, &arena->chainRing, nextNode) {
+    Chain chain = RING_ELT(Chain, chainRing, node);
+
+    for(i = 0; i < chain->genCount; ++i) {
+      Ring n, nn;
+      GenDesc desc = &chain->gens[i];
+      RING_FOR(n, &desc->locusRing, nn) {
+        PoolGen gen = RING_ELT(PoolGen, genRing, n);
+        gen->newSizeAtCreate = gen->newSize;
+      }
+    }
+  }
+  return;
+}
 
 /* TraceCreate -- create a Trace object
  *
@@ -802,10 +918,15 @@ found:
   AVER(trace->sig == SigInvalid);       /* <design/arena/#trace.invalid> */
 
   trace->arena = arena;
+  trace->why = why;
+  TraceStartMessageInit(arena, &trace->startMessage);
+  traceStartWhyToTextBuffer(trace->startMessage.why,
+                            sizeof trace->startMessage.why, why);
   trace->white = ZoneSetEMPTY;
   trace->mayMove = ZoneSetEMPTY;
   trace->ti = ti;
   trace->state = TraceINIT;
+  trace->band = RankAMBIG;      /* Required to be the earliest rank. */
   trace->emergency = FALSE;
   trace->chain = NULL;
   trace->condemned = (Size)0;   /* nothing condemned yet */
@@ -836,9 +957,6 @@ found:
   trace->preservedInPlaceSize = (Size)0;  /* see .message.data */
   STATISTIC(trace->reclaimCount = (Count)0);
   STATISTIC(trace->reclaimSize = (Size)0);
-  TraceStartMessageInit(arena, &trace->startMessage);
-  traceStartWhyToString(trace->startMessage.why,
-    sizeof trace->startMessage.why, why);
   trace->sig = TraceSig;
   arena->busyTraces = TraceSetAdd(arena->busyTraces, trace);
   AVERT(Trace, trace);
@@ -848,6 +966,8 @@ found:
   /* buffers under our feet. */
   /* @@@@ This is a short-term fix for request.dylan.160098. */
   ShieldSuspend(arena);
+
+  traceCopySizes(trace);
 
   *traceReturn = trace;
   return ResOK;
@@ -868,7 +988,7 @@ void TraceDestroy(Trace trace)
   AVERT(Trace, trace);
   AVER(trace->state == TraceFINISHED);
 
-  if (trace->chain == NULL) {
+  if(trace->chain == NULL) {
     Ring chainNode, nextChainNode;
 
     /* Notify all the chains. */
@@ -928,7 +1048,7 @@ static void tracePostMessage(Trace trace)
 
   arena = trace->arena;
   res = ControlAlloc(&p, arena, sizeof(TraceMessageStruct), FALSE);
-  if (res == ResOK) {
+  if(res == ResOK) {
     message = (TraceMessage)p;
     TraceMessageInit(arena, message);
     message->liveSize = trace->forwardedSize + trace->preservedInPlaceSize;
@@ -952,14 +1072,14 @@ static void traceReclaim(Trace trace)
 
   EVENT_P(TraceReclaim, trace);
   arena = trace->arena;
-  if (SegFirst(&seg, arena)) {
+  if(SegFirst(&seg, arena)) {
     Addr base;
     do {
       base = SegBase(seg);
       /* There shouldn't be any grey stuff left for this trace. */
       AVER_CRITICAL(!TraceSetIsMember(SegGrey(seg), trace));
 
-      if (TraceSetIsMember(SegWhite(seg), trace)) {
+      if(TraceSetIsMember(SegWhite(seg), trace)) {
         AVER_CRITICAL((SegPool(seg)->class->attr & AttrGC) != 0);
         STATISTIC(++trace->reclaimCount);
         PoolReclaim(SegPool(seg), trace, seg);
@@ -978,7 +1098,7 @@ static void traceReclaim(Trace trace)
           UNUSED(nonWhiteSeg); /* <code/mpm.c#check.unused> */
         }
       }
-    } while (SegNext(&seg, arena, base));
+    } while(SegNext(&seg, arena, base));
   }
 
   trace->state = TraceFINISHED;
@@ -989,9 +1109,48 @@ static void traceReclaim(Trace trace)
 
 /* traceFindGrey -- find a grey segment
  *
- * This function finds a segment which is grey for the trace given and
- * which does not have a higher rank than any other such segment (i.e.,
- * a next segment to scan).  */
+ * This function finds the next segment to scan.  It does this according
+ * to the current band of the trace.  See design/trace/
+ *
+ * This code also performs various checks about the ranks of the object
+ * graph.  Explanations of the checks would litter the code, so the
+ * explanations are here, and the code references these.
+ *
+ * .check.ambig.not: RankAMBIG segments never appear on the grey ring.
+ * The current tracer cannot support ambiguous reference except as
+ * roots, so it's a buf if we ever find any.  This behaviour is not set
+ * in stone, it's possible to imagine changing the tracer so that we can
+ * support ambiguous objects one day.  For example, a fully conservative
+ * non-moving mode.
+ *
+ * .check.band.begin: At the point where we start working on a new band
+ * of Rank R, there are no grey objects at earlier ranks.  If there
+ * were, we would've found them whilst the current band was the previous
+ * band.  We don't check this, but I rely on this fact in the next
+ * check, .check.weak.no-preserve.
+ *
+ * .check.weak.band: Weak references cannot cause objects to be
+ * newly preserved (marked).  Because of .check.band.begin all the
+ * scanning work performed when the current band is a weak rank will be
+ * scanning objects at that rank.  There is currently only one weak
+ * rank, RankWEAK.
+ *
+ * .check.final.one-pass: Because all the RankFINAL references are
+ * allocated in PoolMRG and effectively treated as roots, all the
+ * RankFINAL references will be scanned in one push (possibly split up,
+ * incrementally).  Once they have been scanned, no new RankFINAL
+ * references will be discovered (the mutator is not permitted to
+ * allocate RankFINAL references wherever they like).  In fact because
+ * of various coincidences (no Ambig segments so band Exact never
+ * discovers an Ambig segment and then more Exact segments; the only
+ * other rank is weak so never discovers any new segments) it is the
+ * case that for any band R there is an initial burst of scanning
+ * segments at rank R then after that we see no more rank R segments
+ * whilst working in this band.  That's what we check, although we
+ * expect to have to change the check if we introduce more ranks, or
+ * start changing the semantics of them.  A flag is used to implement
+ * this check.
+ */
 
 static Bool traceFindGrey(Seg *segReturn, Rank *rankReturn,
                           Arena arena, TraceId ti)
@@ -1005,22 +1164,111 @@ static Bool traceFindGrey(Seg *segReturn, Rank *rankReturn,
 
   trace = ArenaTrace(arena, ti);
 
-  for(rank = 0; rank < RankLIMIT; ++rank) {
-    RING_FOR(node, ArenaGreyRing(arena, rank), nextNode) {
-      Seg seg = SegOfGreyRing(node);
-      AVERT(Seg, seg);
-      AVER(SegGrey(seg) != TraceSetEMPTY);
-      AVER(RankSetIsMember(SegRankSet(seg), rank));
-      if (TraceSetIsMember(SegGrey(seg), trace)) {
-        *segReturn = seg; *rankReturn = rank;
-        return TRUE;
+  while(1) {
+    Rank band = traceBand(trace);
+
+    /* Within the R band we look for segments of rank R first,  */
+    /* then succesively earlier ones.  Slight hack: We never    */
+    /* expect to find any segments of RankAMBIG, so we use      */
+    /* this as a terminating condition for the loop.            */
+    for(rank = band; rank > RankAMBIG; --rank) {
+      RING_FOR(node, ArenaGreyRing(arena, rank), nextNode) {
+        Seg seg = SegOfGreyRing(node);
+
+        AVERT(Seg, seg);
+        AVER(SegGrey(seg) != TraceSetEMPTY);
+        AVER(RankSetIsMember(SegRankSet(seg), rank));
+
+        if(TraceSetIsMember(SegGrey(seg), trace)) {
+          /* .check.band.weak */
+          AVER(band != RankWEAK || rank == band);
+          if(rank != band) {
+            traceBandFirstStretchDone(trace);
+          } else {
+            /* .check.final.one-pass */
+            AVER(traceBandFirstStretch(trace));
+          }
+          *segReturn = seg;
+          *rankReturn = rank;
+          DIAG( traceFindGrey_diag(TRUE, rank); );
+          return TRUE;
+        }
       }
     }
+    /* .check.ambig.not */
+    AVER(RingIsSingle(ArenaGreyRing(arena, RankAMBIG)));
+    if(!traceBandAdvance(trace)) {
+      /* No grey segments for this trace. */
+      DIAG( traceFindGrey_diag(FALSE, rank); );
+      return FALSE;
+    }
   }
-
-  return FALSE; /* There are no grey segments for this trace. */
 }
 
+
+/* diagnostic output for traceFindGrey */
+DIAG_DECL( 
+static void traceFindGrey_diag(Bool found, Rank rank)
+{
+  char this;
+  static char prev = '.';
+  static int segcount;
+  static char report_array[20];
+  static char *report_lim;
+  int report_maxchars = sizeof(report_array) - 2; /* '.' + '\0' */
+
+  this = (char)(!found ? '.'
+                : (rank == RankAMBIG) ? 'A'
+                : (rank == RankEXACT) ? 'E'
+                : (rank == RankFINAL) ? 'F'
+                : (rank == RankWEAK) ? 'W'
+                : '?');
+
+  if(prev == '.') {
+    /* First seg of new trace */
+    prev = this;
+    segcount = 0;
+    report_lim = report_array;
+  }
+
+  if(this == prev) {
+    segcount += 1;
+  } else {
+    /* Change of rank: add prev rank and segcount to report */
+    if((report_lim - report_array) + 2 > report_maxchars) {
+      /* no space to add 2 chars */
+      report_array[0] = '!';
+    } else {
+      /* prev rank */
+      *report_lim++ = prev;
+      /* prev rank's segcount [0..9, a..z (x10), or *] */
+      if(segcount < 10) {
+        *report_lim++ = (char)('0' + segcount);
+      } else if(segcount < 260) {
+        *report_lim++ = (char)(('a' - 1) + (segcount / 10));
+      } else {
+        *report_lim++ = '*';
+      }
+    }
+    /* begin new rank */
+    prev = this;
+    segcount = 1;
+  }
+  
+  if(!found) {
+    /* No more grey in this trace: output report */
+    AVER(this == '.');
+    AVER(segcount == 1);  /* single failed attempt to find a seg */
+    *report_lim++ = this;
+    *report_lim++ = '\0';
+    DIAG_SINGLEF(( "traceFindGrey",
+                   "rank sequence: $S\n",
+                   (WriteFS)report_array,
+                   NULL ));
+  }
+  return;
+}
+)
 
 /* ScanStateSetSummary -- set the summary of scanned references
  *
@@ -1075,12 +1323,12 @@ static Res traceScanSegRes(TraceSet ts, Rank rank, Arena arena, Seg seg)
 
   white = traceSetWhiteUnion(ts, arena);
 
-  /* only scan a segment if it refers to the white set */
-  if (ZoneSetInter(white, SegSummary(seg)) == ZoneSetEMPTY) {
+  /* Only scan a segment if it refers to the white set. */
+  if(ZoneSetInter(white, SegSummary(seg)) == ZoneSetEMPTY) {
     PoolBlacken(SegPool(seg), ts, seg);
-    /* setup result code to return later */
+    /* Setup result code to return later. */
     res = ResOK;
-  } else {  /* scan it */
+  } else {      /* scan it */
     ScanStateStruct ss;
     ScanStateInit(&ss, ts, arena, rank, white);
 
@@ -1100,17 +1348,20 @@ static Res traceScanSegRes(TraceSet ts, Rank rank, Arena arena, Seg seg)
          TRACE_SET_ITER(ti, trace, ts, arena)
            whiteSegRefCount += trace->whiteSegRefCount;
          TRACE_SET_ITER_END(ti, trace, ts, arena);
-         if (whiteSegRefCount == 0)
+         if(whiteSegRefCount == 0)
            TRACE_SET_ITER(ti, trace, ts, arena)
              ++trace->pointlessScanCount;
            TRACE_SET_ITER_END(ti, trace, ts, arena);
       });
 
-    /* following is true whether or not scan was total */
+    /* Following is true whether or not scan was total. */
     /* See <design/scan/#summary.subset>. */
+    /* .verify.segsummary: were the seg contents, as found by this 
+     * scan, consistent with the recorded SegSummary?
+     */
     AVER(RefSetSub(ss.unfixedSummary, SegSummary(seg)));
 
-    if (res != ResOK || !wasTotal) {
+    if(res != ResOK || !wasTotal) {
       /* scan was partial, so... */
       /* scanned summary should be ORed into segment summary. */
       SegSetSummary(seg, RefSetUnion(SegSummary(seg), ScanStateSummary(&ss)));
@@ -1123,7 +1374,7 @@ static Res traceScanSegRes(TraceSet ts, Rank rank, Arena arena, Seg seg)
     ScanStateFinish(&ss);
   }
 
-  if (res == ResOK) {
+  if(res == ResOK) {
     /* The segment is now black only if scan was successful. */
     /* Remove the greyness from it. */
     SegSetGrey(seg, TraceSetDiff(SegGrey(seg), ts));
@@ -1143,11 +1394,11 @@ static void traceScanSeg(TraceSet ts, Rank rank, Arena arena, Seg seg)
   Res res;
 
   res = traceScanSegRes(ts, rank, arena, seg);
-  if (res != ResOK) {
+  if(res != ResOK) {
     AVER(ResIsAllocFailure(res));
     traceSetSignalEmergency(ts, arena);
     res = traceScanSegRes(ts, rank, arena, seg);
-    /* should be OK in emergency mode */
+    /* Should be OK in emergency mode. */
   }
   AVER(ResOK == res);
 
@@ -1176,7 +1427,7 @@ void TraceSegAccess(Arena arena, Seg seg, AccessSet mode)
 
   EVENT_PPU(TraceAccess, arena, seg, mode);
 
-  if ((mode & SegSM(seg) & AccessREAD) != 0) {     /* read barrier? */
+  if((mode & SegSM(seg) & AccessREAD) != 0) {   /* read barrier? */
     /* Pick set of traces to scan for: */
     TraceSet traces = arena->flippedTraces;
 
@@ -1197,13 +1448,13 @@ void TraceSegAccess(Arena arena, Seg seg, AccessSet mode)
         ++trace->readBarrierHitCount;
       TRACE_SET_ITER_END(ti, trace, traces, arena);
     });
-  } else { /* write barrier */
+  } else {              /* write barrier */
     STATISTIC(++arena->writeBarrierHitCount);
   }
 
   /* The write barrier handling must come after the read barrier, */
   /* because the latter may set the summary and raise the write barrier. */
-  if ((mode & SegSM(seg) & AccessWRITE) != 0)      /* write barrier? */
+  if((mode & SegSM(seg) & AccessWRITE) != 0)      /* write barrier? */
     SegSetSummary(seg, RefSetUNIV);
 
   /* The segment must now be accessible. */
@@ -1229,10 +1480,10 @@ Res TraceFix(ScanState ss, Ref *refIO)
   EVENT_PPAU(TraceFix, ss, refIO, ref, ss->rank);
 
   TRACT_OF_ADDR(&tract, ss->arena, ref);
-  if (tract) {
-    if (TraceSetInter(TractWhite(tract), ss->traces) != TraceSetEMPTY) {
+  if(tract) {
+    if(TraceSetInter(TractWhite(tract), ss->traces) != TraceSetEMPTY) {
       Seg seg;
-      if (TRACT_SEG(&seg, tract)) {
+      if(TRACT_SEG(&seg, tract)) {
         Res res;
         STATISTIC(++ss->segRefCount);
         STATISTIC(++ss->whiteSegRefCount);
@@ -1242,8 +1493,17 @@ Res TraceFix(ScanState ss, Ref *refIO)
         /* Could move the rank switch here from the class-specific */
         /* fix methods. */
         res = PoolFix(pool, ss, seg, refIO);
-        if (res != ResOK)
+        if(res != ResOK) {
+          /* Fix protocol (de facto): if Fix fails, ref must be unchanged */
+          /* Justification for this restriction:
+           * A: it simplifies;
+           * B: it's reasonable (given what may cause Fix to fail);
+           * C: the code (here) already assumes this: it returns without 
+           *    updating ss->fixedSummary.  RHSK 2007-03-21.
+           */
+          AVER(*refIO == ref);
           return res;
+        }
       }
     } else {
       /* Tract isn't white. Don't compute seg for non-statistical */
@@ -1251,7 +1511,7 @@ Res TraceFix(ScanState ss, Ref *refIO)
       STATISTIC_STAT
         ({
           Seg seg;
-          if (TRACT_SEG(&seg, tract)) {
+          if(TRACT_SEG(&seg, tract)) {
             ++ss->segRefCount;
             EVENT_P(TraceFixSeg, seg);
           }
@@ -1287,10 +1547,10 @@ Res TraceFixEmergency(ScanState ss, Ref *refIO)
   EVENT_PPAU(TraceFix, ss, refIO, ref, ss->rank);
 
   TRACT_OF_ADDR(&tract, ss->arena, ref);
-  if (tract) {
-    if (TraceSetInter(TractWhite(tract), ss->traces) != TraceSetEMPTY) {
+  if(tract) {
+    if(TraceSetInter(TractWhite(tract), ss->traces) != TraceSetEMPTY) {
       Seg seg;
-      if (TRACT_SEG(&seg, tract)) {
+      if(TRACT_SEG(&seg, tract)) {
         STATISTIC(++ss->segRefCount);
         STATISTIC(++ss->whiteSegRefCount);
         EVENT_P(TraceFixSeg, seg);
@@ -1304,7 +1564,7 @@ Res TraceFixEmergency(ScanState ss, Ref *refIO)
       STATISTIC_STAT
         ({
           Seg seg;
-          if (TRACT_SEG(&seg, tract)) {
+          if(TRACT_SEG(&seg, tract)) {
             ++ss->segRefCount;
             EVENT_P(TraceFixSeg, seg);
           }
@@ -1336,7 +1596,7 @@ static Res traceScanSingleRefRes(TraceSet ts, Rank rank, Arena arena,
   EVENT_UUPA(TraceScanSingleRef, ts, rank, arena, (Addr)refIO);
 
   white = traceSetWhiteUnion(ts, arena);
-  if (ZoneSetInter(SegSummary(seg), white) == ZoneSetEMPTY) {
+  if(ZoneSetInter(SegSummary(seg), white) == ZoneSetEMPTY) {
     return ResOK;
   }
 
@@ -1377,10 +1637,10 @@ void TraceScanSingleRef(TraceSet ts, Rank rank, Arena arena,
   AVER(refIO != NULL);
 
   res = traceScanSingleRefRes(ts, rank, arena, seg, refIO);
-  if (res != ResOK) {
+  if(res != ResOK) {
     traceSetSignalEmergency(ts, arena);
     res = traceScanSingleRefRes(ts, rank, arena, seg, refIO);
-    /* ought to be OK in emergency mode now */
+    /* Ought to be OK in emergency mode now. */
   }
   AVER(ResOK == res);
 
@@ -1409,12 +1669,12 @@ Res TraceScanArea(ScanState ss, Addr *base, Addr *limit)
   TRACE_SCAN_BEGIN(ss) {
     p = base;
   loop:
-    if (p >= limit) goto out;
+    if(p >= limit) goto out;
     ref = *p++;
-    if (!TRACE_FIX1(ss, ref))
+    if(!TRACE_FIX1(ss, ref))
       goto loop;
     res = TRACE_FIX2(ss, p-1);
-    if (res == ResOK)
+    if(res == ResOK)
       goto loop;
     return res;
   out:
@@ -1457,12 +1717,12 @@ Res TraceScanAreaMasked(ScanState ss, Addr *base, Addr *limit, Word mask)
   TRACE_SCAN_BEGIN(ss) {
     p = base;
   loop:
-    if (p >= limit) goto out;
+    if(p >= limit) goto out;
     ref = *p++;
-    if (((Word)ref & mask) != 0) goto loop;
-    if (!TRACE_FIX1(ss, ref)) goto loop;
+    if(((Word)ref & mask) != 0) goto loop;
+    if(!TRACE_FIX1(ss, ref)) goto loop;
     res = TRACE_FIX2(ss, p-1);
-    if (res == ResOK)
+    if(res == ResOK)
       goto loop;
     return res;
   out:
@@ -1490,7 +1750,7 @@ static Res traceCondemnAll(Trace trace)
 
     AVERT(Chain, chain);
     res = ChainCondemnAll(chain, trace);
-    if (res != ResOK)
+    if(res != ResOK)
       goto failBegin;
     haveWhiteSegs = TRUE;
   }
@@ -1534,11 +1794,40 @@ static Res rootGrey(Root root, void *p)
   AVERT(Root, root);
   AVERT(Trace, trace);
 
-  if (ZoneSetInter(RootSummary(root), trace->white) != ZoneSetEMPTY) {
+  if(ZoneSetInter(RootSummary(root), trace->white) != ZoneSetEMPTY) {
     RootGrey(root, trace);
   }
 
   return ResOK;
+}
+
+
+static void TraceStartGenDesc_diag(GenDesc desc, int i)
+{
+  Ring n, nn;
+
+  if(i < 0) {
+    DIAG_WRITEF(( DIAG_STREAM,
+      "         GenDesc [top]",
+      NULL ));
+  } else {
+    DIAG_WRITEF(( DIAG_STREAM,
+      "         GenDesc [$U]", i,
+      NULL ));
+  }
+  DIAG_WRITEF(( DIAG_STREAM,
+    " $P capacity: $U KiB, mortality $D\n",
+    (void *)desc, desc->capacity, desc->mortality,
+    "         ZoneSet:$B\n", desc->zones,
+    NULL ));
+  RING_FOR(n, &desc->locusRing, nn) {
+    DIAG_DECL( PoolGen gen = RING_ELT(PoolGen, genRing, n); )
+    DIAG_WRITEF(( DIAG_STREAM,
+      "           PoolGen $U ($S)", gen->nr, gen->pool->class->name,
+      " totalSize $U", gen->totalSize,
+      " newSize $U\n", gen->newSizeAtCreate,
+      NULL ));
+  }
 }
 
 void TraceStart(Trace trace, double mortality, double finishingTime)
@@ -1579,7 +1868,7 @@ void TraceStart(Trace trace, double mortality, double finishingTime)
   /* of segments are scannable.  Perhaps we should choose */
   /* dynamically which method to use. */
 
-  if (SegFirst(&seg, arena)) {
+  if(SegFirst(&seg, arena)) {
     Addr base;
     do {
       base = SegBase(seg);
@@ -1589,7 +1878,7 @@ void TraceStart(Trace trace, double mortality, double finishingTime)
       /* A segment can only be grey if it contains some references. */
       /* This is indicated by the rankSet begin non-empty.  Such */
       /* segments may only belong to scannable pools. */
-      if (SegRankSet(seg) != RankSetEMPTY) {
+      if(SegRankSet(seg) != RankSetEMPTY) {
         /* Segments with ranks may only belong to scannable pools. */
         AVER((SegPool(seg)->class->attr & AttrSCAN) != 0);
 
@@ -1597,20 +1886,63 @@ void TraceStart(Trace trace, double mortality, double finishingTime)
         /* to the white set.  This is done by seeing if the summary */
         /* of references in the segment intersects with the */
         /* approximation to the white set. */
-        if (ZoneSetInter(SegSummary(seg), trace->white) != ZoneSetEMPTY) {
+        if(ZoneSetInter(SegSummary(seg), trace->white) != ZoneSetEMPTY) {
+          /* Note: can a white seg get greyed as well?  At this point */
+          /* we still assume it may.  (This assumption runs out in */
+          /* PoolTrivGrey). */
           PoolGrey(SegPool(seg), trace, seg);
-          if (TraceSetIsMember(SegGrey(seg), trace)) {
+          if(TraceSetIsMember(SegGrey(seg), trace)) {
             trace->foundation += size;
-	  }
+          }
         }
 
-        if ((SegPool(seg)->class->attr & AttrGC)
+        if((SegPool(seg)->class->attr & AttrGC)
             && !TraceSetIsMember(SegWhite(seg), trace)) {
           trace->notCondemned += size;
-	}
+        }
       }
     } while (SegNext(&seg, arena, base));
   }
+
+  DIAG_FIRSTF(( "TraceStart",
+    "because code $U: $S\n",
+    trace->why, traceStartWhyToString(trace->why),
+    NULL ));
+
+  DIAG( ArenaDescribe(arena, DIAG_STREAM); );
+
+  DIAG_MOREF((
+    "       white set:$B\n",
+    trace->white,
+    NULL ));
+
+  {
+    /* @@ */
+    /* Iterate over all chains, all GenDescs within a chain, */
+    /* (and all PoolGens within a GenDesc).  */
+    Ring node, nextNode;
+    Index i;
+
+    RING_FOR(node, &arena->chainRing, nextNode) {
+      Chain chain = RING_ELT(Chain, chainRing, node);
+      DIAG_WRITEF(( DIAG_STREAM,
+        "       Chain $P\n", (void *)chain,
+        NULL ));
+
+      for(i = 0; i < chain->genCount; ++i) {
+        GenDesc desc = &chain->gens[i];
+        TraceStartGenDesc_diag(desc, i);
+      }
+    }
+
+    /* Now do topgen GenDesc (and all PoolGens within it). */
+    DIAG_WRITEF(( DIAG_STREAM,
+      "       topGen\n",
+      NULL ));
+    TraceStartGenDesc_diag(&arena->topGen, -1);
+  }
+  
+  DIAG_END( "TraceStart" );
 
   res = RootsIterate(ArenaGlobals(arena), rootGrey, (void *)trace);
   AVER(res == ResOK);
@@ -1623,15 +1955,17 @@ void TraceStart(Trace trace, double mortality, double finishingTime)
     double nPolls = finishingTime / ArenaPollALLOCTIME;
 
     /* There must be at least one poll. */
-    if (nPolls < 1.0)
+    if(nPolls < 1.0)
       nPolls = 1.0;
     /* We use casting to long to truncate nPolls down to the nearest */
     /* integer, so try to make sure it fits. */
-    if (nPolls >= (double)LONG_MAX)
+    if(nPolls >= (double)LONG_MAX)
       nPolls = (double)LONG_MAX;
     /* rate equals scanning work per number of polls available */
     trace->rate = (trace->foundation + sSurvivors) / (long)nPolls + 1;
   }
+
+  /* @@ DIAG for rate of scanning here. */
 
   STATISTIC_STAT(EVENT_PWWWWDD(TraceStatCondemn, trace,
                                trace->condemned, trace->notCondemned,
@@ -1662,30 +1996,32 @@ static void traceQuantum(Trace trace)
   pollEnd = traceWorkClock(trace) + trace->rate;
   do {
     switch(trace->state) {
-    case TraceUNFLIPPED:
-      /* all traces are flipped in TraceStart at the moment */
-      NOTREACHED;
-      break;
-    case TraceFLIPPED: {
-      Arena arena = trace->arena;
-      Seg seg;
-      Rank rank;
+      case TraceUNFLIPPED:
+        /* all traces are flipped in TraceStart at the moment */
+        NOTREACHED;
+        break;
+      case TraceFLIPPED: {
+        Arena arena = trace->arena;
+        Seg seg;
+        Rank rank;
 
-      if (traceFindGrey(&seg, &rank, arena, trace->ti)) {
-        AVER((SegPool(seg)->class->attr & AttrSCAN) != 0);
-        traceScanSeg(TraceSetSingle(trace), rank, arena, seg);
-      } else
-        trace->state = TraceRECLAIM;
-    } break;
-    case TraceRECLAIM:
-      traceReclaim(trace);
-      break;
-    default:
-      NOTREACHED;
-      break;
+        if(traceFindGrey(&seg, &rank, arena, trace->ti)) {
+          AVER((SegPool(seg)->class->attr & AttrSCAN) != 0);
+          traceScanSeg(TraceSetSingle(trace), rank, arena, seg);
+        } else {
+          trace->state = TraceRECLAIM;
+        }
+        break;
+      }
+      case TraceRECLAIM:
+        traceReclaim(trace);
+        break;
+      default:
+        NOTREACHED;
+        break;
     }
-  } while (trace->state != TraceFINISHED
-           && (trace->emergency || traceWorkClock(trace) < pollEnd));
+  } while(trace->state != TraceFINISHED
+          && (trace->emergency || traceWorkClock(trace) < pollEnd));
 }
 
 /* traceStartCollectAll: start a trace which condemns everything in
@@ -1706,11 +2042,11 @@ static Res traceStartCollectAll(Trace *traceReturn, Arena arena, int why)
   res = TraceCreate(&trace, arena, why);
   AVER(res == ResOK); /* succeeds because no other trace is busy */
   res = traceCondemnAll(trace);
-  if (res != ResOK) /* should try some other trace, really @@@@ */
+  if(res != ResOK) /* should try some other trace, really @@@@ */
     goto failCondemn;
   finishingTime = ArenaAvail(arena)
                   - trace->condemned * (1.0 - TraceTopGenMortality);
-  if (finishingTime < 0) {
+  if(finishingTime < 0) {
     /* Run out of time, should really try a smaller collection. @@@@ */
     finishingTime = 0.0;
   }
@@ -1737,7 +2073,7 @@ Size TracePoll(Globals globals)
   arena = GlobalsArena(globals);
 
   scannedSize = (Size)0;
-  if (arena->busyTraces == TraceSetEMPTY) {
+  if(arena->busyTraces == TraceSetEMPTY) {
     /* If no traces are going on, see if we need to start one. */
     Size sFoundation, sCondemned, sSurvivors, sConsTrace;
     double tTracePerScan; /* tTrace/cScan */
@@ -1756,9 +2092,9 @@ Size TracePoll(Globals globals)
     sConsTrace = (Size)(sSurvivors + tTracePerScan * TraceWorkFactor);
     dynamicDeferral = (double)ArenaAvail(arena) - (double)sConsTrace;
 
-    if (dynamicDeferral < 0.0) { /* start full GC */
+    if(dynamicDeferral < 0.0) { /* start full GC */
       res = traceStartCollectAll(&trace, arena, TraceStartWhyDYNAMICCRITERION);
-      if (res != ResOK)
+      if(res != ResOK)
         goto failStart;
       scannedSize = traceWorkClock(trace);
     } else { /* Find the nursery most over its capacity. */
@@ -1772,19 +2108,19 @@ Size TracePoll(Globals globals)
 
         AVERT(Chain, chain);
         time = ChainDeferral(chain);
-        if (time < firstTime) {
+        if(time < firstTime) {
           firstTime = time; firstChain = chain;
         }
       }
 
       /* If one was found, start collection on that chain. */
-      if (firstTime < 0) {
+      if(firstTime < 0) {
         double mortality;
 
         res = TraceCreate(&trace, arena, TraceStartWhyCHAIN_GEN0CAP);
         AVER(res == ResOK);
         res = ChainCondemnAuto(&mortality, firstChain, trace);
-        if (res != ResOK) /* should try some other trace, really @@@@ */
+        if(res != ResOK) /* should try some other trace, really @@@@ */
           goto failCondemn;
         trace->chain = firstChain;
         ChainStartGC(firstChain, trace);
@@ -1795,15 +2131,17 @@ Size TracePoll(Globals globals)
   } /* (arena->busyTraces == TraceSetEMPTY) */
 
   /* If there is a trace, do one quantum of work. */
-  if (arena->busyTraces != TraceSetEMPTY) {
+  if(arena->busyTraces != TraceSetEMPTY) {
     Size oldScanned;
+
     trace = ArenaTrace(arena, (TraceId)0);
     AVER(arena->busyTraces == TraceSetSingle(trace));
     oldScanned = traceWorkClock(trace);
     traceQuantum(trace);
     scannedSize = traceWorkClock(trace) - oldScanned;
-    if (trace->state == TraceFINISHED)
+    if(trace->state == TraceFINISHED) {
       TraceDestroy(trace);
+    }
   }
   return scannedSize;
 
@@ -1848,12 +2186,13 @@ void ArenaPark(Globals globals)
 
   globals->clamped = TRUE;
 
-  while (arena->busyTraces != TraceSetEMPTY) {
+  while(arena->busyTraces != TraceSetEMPTY) {
     /* Poll active traces to make progress. */
     TRACE_SET_ITER(ti, trace, arena->busyTraces, arena)
       traceQuantum(trace);
-      if (trace->state == TraceFINISHED)
+      if(trace->state == TraceFINISHED) {
         TraceDestroy(trace);
+      }
     TRACE_SET_ITER_END(ti, trace, arena->busyTraces, arena);
   }
 }
@@ -1934,21 +2273,21 @@ void ArenaExposeRemember(Globals globals, int remember)
     do {
       base = SegBase(seg);
       if(IsSubclassPoly(ClassOfSeg(seg), GCSegClassGet())) {
-	if(remember) {
-	  RefSet summary;
+        if(remember) {
+          RefSet summary;
 
-	  summary = SegSummary(seg);
-	  if(summary != RefSetUNIV) {
-	    Res res = arenaRememberSummaryOne(globals, base, summary);
-	    if(res != ResOK) {
-	      /* If we got an error then stop trying to remember any
-	      protections. */
-	      remember = 0;
-	    }
-	  }
-	}
-	SegSetSummary(seg, RefSetUNIV);
-	AVER(SegSM(seg) == AccessSetEMPTY);
+          summary = SegSummary(seg);
+          if(summary != RefSetUNIV) {
+            Res res = arenaRememberSummaryOne(globals, base, summary);
+            if(res != ResOK) {
+              /* If we got an error then stop trying to remember any
+              protections. */
+              remember = 0;
+            }
+          }
+        }
+        SegSetSummary(seg, RefSetUNIV);
+        AVER(SegSM(seg) == AccessSetEMPTY);
       }
     } while(SegNext(&seg, arena, base));
   }
@@ -1972,17 +2311,17 @@ void ArenaRestoreProtection(Globals globals)
       Bool b;
 
       if(block->the[i].base == (Addr)0) {
-	AVER(block->the[i].summary == RefSetUNIV);
-	continue;
+        AVER(block->the[i].summary == RefSetUNIV);
+        continue;
       }
       b = SegOfAddr(&seg, arena, block->the[i].base);
       if(b && SegBase(seg) == block->the[i].base) {
         AVER(IsSubclassPoly(ClassOfSeg(seg), GCSegClassGet()));
-	SegSetSummary(seg, block->the[i].summary);
+        SegSetSummary(seg, block->the[i].summary);
       } else {
-	/* Either seg has gone or moved, both of which are
-	   client errors. */
-	NOTREACHED;
+        /* Either seg has gone or moved, both of which are */
+        /* client errors. */
+        NOTREACHED;
       }
     }
   }
@@ -2024,7 +2363,7 @@ Res ArenaStartCollect(Globals globals, int why)
 
   ArenaPark(globals);
   res = traceStartCollectAll(&trace, arena, why);
-  if (res != ResOK)
+  if(res != ResOK)
     goto failStart;
   ArenaRelease(globals);
   return ResOK;
@@ -2042,7 +2381,7 @@ Res ArenaCollect(Globals globals, int why)
 
   AVERT(Globals, globals);
   res = ArenaStartCollect(globals, why);
-  if (res != ResOK)
+  if(res != ResOK)
     return res;
 
   ArenaPark(globals);
@@ -2051,7 +2390,8 @@ Res ArenaCollect(Globals globals, int why)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2003, 2006 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2003, 2006, 2007 Ravenbrook Limited
+ * <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

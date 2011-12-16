@@ -48,8 +48,172 @@ This document is not confidential.
 
 2. WHAT'S NEW; STATUS
 
-This is release 1.107.0, made on 2006-12-13.
-Changes from release 1.106.2:
+This is release 1.108.2, made on 2008-05-01.
+Changes from release 1.108.1:
+
+Functional changes to MPS code:
+
+<http://www.ravenbrook.com/project/mps/issue/job001784/>
+Defect discovered:
+  - when using an auto_header format (mps_fmt_create_auto_header) 
+    with AMC pools (mps_class_amc), the MPS leaks a small amount of 
+    memory on each collection.
+Impact:
+  - the leak is likely to be a few bytes per collection, and at most 
+    one byte per page (typically 2^12 bytes) of the address-space 
+    currently in use for objects in AMC pools;
+  - the leak is of temporary memory that the MPS uses to process 
+    ambiguous references (typically references on the stack and in 
+    registers), so a larger stack when a collection starts will 
+    tend to cause a larger leak;
+  - the leaked bytes are widely-spaced single bytes which therefore 
+    also cause fragmentation;
+  - the leaked bytes are not reclaimed until the client calls 
+    mps_arena_destroy().
+Fixed: correctly release all of this temporary memory.
+
+<http://www.ravenbrook.com/project/mps/issue/job001809/>
+Defect discovered:
+  - AMC pools (mps_class_amc) temporarily retain the memory that was
+    used for a dead object, if there is an ambiguous reference (such 
+    as a value on the stack) that happens to point at the interior of 
+    the (dead) object.
+Impact:
+  - if the (dead) object was small- or medium-sized, this temporary 
+    retention is unlikely to cause a problem;
+  - if the (dead) object was very large, then this retention is more
+    likely, and will retain a large amount of memory;
+  - if many large objects are allocated, this retention can cause 
+    memory to be exhausted when it should not be.
+Fix:
+  - it is usually possible for AMC pools to free the memory 
+    immediately (that is, during the collection that identifies the 
+    object as being dead), and AMC pools now do so;
+Future work:
+  - occasionally, there are adjacently located objects that are 
+    ambiguously referenced and are not dead;
+  - in this case it is not possible to free the memory immediately, 
+    and so temporary retention still occurs (this is not expected to 
+    be very common).
+  - however, the MPS could prevent this by avoiding locating small 
+    objects adjacent to very large objects, see:
+      <http://www.ravenbrook.com/project/mps/issue/job001811/>
+
+<http://www.ravenbrook.com/project/mps/issue/job001737/>
+Further changes to arena growth (see notes below for version 1.108.1).
+When the arena cannot grow by the desired increment, the MPS 
+attempts successively smaller increments, but with a more fine-grained 
+search than in version 1.108.1, thereby achieveing an increment that 
+more closely matches the largest available chunk of remaining 
+address-space.
+New interface function mps_arena_vm_growth().  This function allows
+the client more control over how a VM arena (mps_arena_class_vm) 
+grows.  The interface is under development and is likely to change; 
+please contact us if you would like further details.
+
+
+[
+Historical: changes in release 1.108.1 (2007-12-21).
+
+Functional changes to MPS code:
+
+<http://www.ravenbrook.com/project/mps/issue/job001737/>
+Limitation:
+  - if a VM arena (of mps_arena_class_vm) needed to be extended, 
+    and the attempt to extend it was refused by the OS (usually 
+    because the requested address-space was not available), MPS 
+    would not try a smaller extension.
+Fixed: MPS now tries to extend the arena by successively smaller 
+    amounts, until the extension succeeds.
+
+<http://www.ravenbrook.com/project/mps/issue/job001706/>
+Defect discovered:
+  - internal memory-protection state in AMC pools (mps_class_amc) 
+    was incorrect for a brief period of time during a collection, 
+    which could (theoretically) have caused an assert and failure.
+However:
+  - during this brief period, the MPS protection cache masks the 
+    defect.  As a result, we believe this defect is unlikely to be 
+    observed in practice (and we have no evidence that it has 
+    ever occurred in practice).
+Fixed: maintain memory-protection state correctly in AMC pools.
+
+Other changes:
+
+<http://www.ravenbrook.com/project/mps/issue/job001714/>
+  - in the Mac OS X (PowerPC) build, remove outdated compiler flags.
+
+The MPS diagnostic system -- which produces diagnostic output for the 
+purpose of helping MPS programmers and client-code programmers -- is 
+undergoing improvement.  Some early documentation is at
+ <http://www.ravenbrook.com/project/mps/master/design/diag>
+There is a new build variety "di" that emits diagnostics.
+
+Note: for further details of this release (including a 'live' report 
+of defects found after these release-notes were written), and details 
+of earlier and later releases, please see:
+  <http://www.ravenbrook.com/project/mps/release/>
+]
+
+[
+Historical: changes in release 1.108.0 (2007-07-05).
+
+Functional changes to MPS code:
+
+<http://www.ravenbrook.com/project/mps/issue/job001548/>
+Defect discovered:
+  - an assert could, rarely, be incorrectly triggered when a pool 
+    of mps_class_amc is in a constrained memory condition.
+Fixed: in this rare case, calculate a certain value correctly, 
+    such that the assert which checks it is not incorrectly 
+    triggered.
+
+<http://www.ravenbrook.com/project/mps/issue/job001658/>
+Defect discovered:
+  - finalization messages could suffer an unnecessary delay, of 
+    several full collections (in the worst case), if there were 
+    more than 1024 finalization-registered objects;
+Fixed: the number of finalization-registered objects should 
+    no longer cause such a delay, so more finalization messages 
+    are likely to be produced by a single collection.
+
+<http://www.ravenbrook.com/project/mps/issue/job001147/>
+  - on Mac OS X (PowerPC and Intel), MPS now has memory-protection 
+    code, so collections are much faster.
+
+<http://www.ravenbrook.com/project/mps/issue/job001619/>
+  - on Mac OS X (Intel), MPS now has stack-scanner code, so the 
+    stack may be declared an ambiguous root.  (Note: there was 
+    already a stack-scanner for Mac OS X PowerPC).
+
+<http://www.ravenbrook.com/project/mps/issue/job001622/>
+  - on Mac OS X (PowerPC and Intel), MPS now has locking code, so 
+    multiple client threads may use the MPS.  (But note: the thread 
+    module has not been implemented for Mac OS X, so threads may 
+    not yet have their stacks as roots, I think.  See:
+    <http://www.ravenbrook.com/project/mps/issue/job001621/>).
+    
+<http://www.ravenbrook.com/project/mps/issue/job001556/>
+Defect discovered:
+  - a macro used only in asserts was incorrect; this could have made 
+    some checks ineffective.
+Fixed: corrected the macro.
+
+Other changes:
+
+<http://www.ravenbrook.com/project/mps/issue/job001624/>
+  - now builds on FreeBSD 5.5.
+
+<http://www.ravenbrook.com/project/mps/issue/job001637/>
+  - now builds on Linux.
+
+<http://www.ravenbrook.com/project/mps/issue/job001617/>
+  - on Mac OS X (Intel) default "all" build works (fix broken 
+    compile of amsss stress test).
+]
+
+[
+Historical: changes in release 1.107.0 (2006-12-13):
 
 Functional changes to MPS code:
 
@@ -83,7 +247,7 @@ Other changes:
 
 Some work-in-progress MPS documentation is available; see:
   manual/wiki/index.html
-
+]
 
 [
 Historical: changes in release 1.106.2 (2006-04-11):
@@ -110,11 +274,6 @@ Fixed <http://www.ravenbrook.com/project/mps/issue/job001367/>
       example/hello-world/index.txt
 ]
 
-See:
-  <http://www.ravenbrook.com/project/mps/release/>
-for further details of this release (including defects found), and 
-details of earlier and later releases.  
-
 For more information about the status and progress of the MPS project, 
 consult the project home-page: <http://www.ravenbrook.com/project/mps/>.
 
@@ -125,12 +284,12 @@ The MPS Kit is a complete set of sources and documentation to enable
 third parties to use, modify, and adapt the MPS.
 
 For Windows, the kit is distributed as the self-extracting archive
-"mps-kit-1.107.0.exe", and also as the ZIP archive
-"mps-kit-1.107.0.zip", which may be unpacked using WinZip.
+"mps-kit-1.108.0.exe", and also as the ZIP archive
+"mps-kit-1.108.0.zip", which may be unpacked using WinZip.
 
 For Unix and Mac OS X, the integration kit is distributed as the tarball
-"mps-kit-1.107.0.tar.gz".  Unpack it using the command "gunzip -c
-mps-kit-1.107.0.tar.gz | tar xvf -", or by dropping the file onto
+"mps-kit-1.108.0.tar.gz".  Unpack it using the command "gunzip -c
+mps-kit-1.108.0.tar.gz | tar xvf -", or by dropping the file onto
 StuffIt Expander under Mac OS X.
 
 The top-level file "index.html" in the sources indexes many other files,
@@ -185,35 +344,33 @@ others you will need to get and install it.  (It's available free from
 <ftp://ftp.gnu.org/gnu/make/>.)  On Windows platforms the NMAKE tool is
 used.  This comes with Microsoft Visual C++.
 
-The MPS can also be built on Mac OS 7 through Mac OS 9 using MPW or
-Metrowerks Codewarrior, but neither of these builds have been maintained
-for some time, and probably no longer work.  We've included the
-makefiles/project files as a starting point.
+The MPS uses a 6 character platform code to express a combination of
+OS/CPU architecture/compiler toolchain.  Each 6 character code breaks
+down into 3 groups of 2 characters, like this:
+
+  OSARCT
+
+Where OS denotes the operating system, AR denotes the CPU architecture,
+and CT denotes compiler toolchain.  Table 1 lists the platforms that we
+have regular access to and on which the MPS works well.
+
 
               Table 1. MPS makefiles and platforms
 
   Makefile        OS              Architecture    Compiler
 
   fri4gc.gmk      FreeBSD         Intel IA32      GCC
-  iam4cc.gmk      Irix 6 N32      MIPS IV         CC
-  lii3eg.gmk      Linux           Intel IA32      EGCS
   lii4gc.gmk      Linux           Intel IA32      GCC
-  lippgc.gmk      Linux           POWER(32)       GCC
-  o1alcc.gmk      OSF/1           Alpha           Digital C
-  o1algc.gmk      OSF/1           Alpha           GCC
-  sos8cx.gmk      Solaris         SPARC V8        CXREF
-  sos8gc.gmk      Solaris         SPARC V8        GCC
-  sos8gp.gmk      Solaris         SPARC V8        GCC with profiling
-  sos9sc.gmk      Solaris         SPARC V9        SunPro C
-  sus8gc.gmk      SunOS           SPARC V8        GCC
   xcppgc.gmk      Mac OS X        PowerPC         GCC
-
-  w3almv.nmk      Windows         Alpha           Microsoft C
   w3i3mv.nmk      Windows         Intel IA32      Microsoft C
-  w3ppmv.nmk      Windows         PowerPC         Microsoft C
 
-  s7ppac/Makefile Mac OS 7-9      PowerPC         Apple Mr C
-  s7ppmw.sit      Mac OS 7-9      PowerPC         Metrowerks Codewarrior
+Historically the MPS has worked on a much wider variety of platforms and
+still would if we had access to them.  The MPS has worked on various
+combinations of operating systems, IRIX / OSF/1 (Tru64) / Solaris / SunOS /
+Class Mac OS, CPU architectures, MIPS / PowerPC / ALPHA / SPARC v8 /
+SPARC v9, and compiler toolchains, Metrowerks Codewarrior / SunPro C /
+Digital C.  The full list of platforms that were supported historically
+is available in manual/build-notes/ .
 
 To build all MPS targets on Unix-like platforms, change to the "code"
 directory and type:
@@ -334,12 +491,16 @@ B. DOCUMENT HISTORY
 2006-04-14  RHSK  Merge updates from version/1.106 back to master.
 2006-06-29  RHSK  Note fixed job001421, job001455.
 2006-12-13  RHSK  Release 1.107.0
+2007-07-05  RHSK  Release 1.108.0
+2007-12-21  RHSK  Release 1.108.1
+2008-05-01  RHSK  Release 1.108.2
 
 
 C. COPYRIGHT AND LICENSE
 
-Copyright (C) 2001-2002, 2006 Ravenbrook Limited.  All rights reserved.
-<http://www.ravenbrook.com/>.  This is an open source license.  
+Copyright (C) 2001-2002, 2006-2007, 2008 Ravenbrook Limited.  
+All rights reserved.  <http://www.ravenbrook.com/>.  
+This is an open source license.  
 Contact Ravenbrook for commercial licensing options.
 
 Redistribution and use in source and binary forms, with or without
@@ -376,4 +537,4 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-$Id: //info.ravenbrook.com/project/mps/version/1.107/readme.txt#3 $
+$Id: //info.ravenbrook.com/project/mps/version/1.108/readme.txt#4 $

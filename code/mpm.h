@@ -1,6 +1,6 @@
 /* mpm.h: MEMORY POOL MANAGER DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/mpm.h#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/mpm.h#3 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -143,11 +143,19 @@ extern Shift SizeFloorLog2(Size size);
 /* Formatted Output -- see <design/writef/>, <code/mpm.c> */
 
 extern Res WriteF(mps_lib_FILE *stream, ...);
+extern Res WriteF_v(mps_lib_FILE *stream, va_list args);
+extern Res WriteF_firstformat_v(mps_lib_FILE *stream,
+                                const char *firstformat, va_list args);
+
+extern int Stream_fputc(int c, mps_lib_FILE *stream);
+extern int Stream_fputs(const char *s, mps_lib_FILE *stream);
+
 
 
 /* Miscellaneous support -- see <code/mpm.c> */
 
 extern size_t StringLength(const char *s);
+extern Bool StringEqual(const char *s1, const char *s2);
 
 
 /* Version Determination
@@ -358,7 +366,8 @@ extern void TraceDestroy(Trace trace);
 
 extern Res TraceAddWhite(Trace trace, Seg seg);
 extern Res TraceCondemnZones(Trace trace, ZoneSet condemnedSet);
-extern void TraceStart(Trace trace, double mortality, double finishingTime);
+extern void TraceStart(Trace trace, double mortality,
+                       double finishingTime);
 extern Size TracePoll(Globals globals);
 
 extern void TraceSegAccess(Arena arena, Seg seg, AccessSet mode);
@@ -492,6 +501,7 @@ extern void ControlFinish(Arena arena);
 extern Res ControlAlloc(void **baseReturn, Arena arena, size_t size,
                         Bool withReservoirPermit);
 extern void ControlFree(Arena arena, void *base, size_t size);
+extern Res ControlDescribe(Arena arena, mps_lib_FILE *stream);
 
 
 /* Peek/Poke
@@ -910,7 +920,7 @@ extern Size VMMapped(VM vm);
 extern void StackProbe(Size depth);
 
 
-/* STATISTIC -- gather diagnostics (in some varieties)
+/* STATISTIC -- gather statistics (in some varieties)
  *
  * The argument of STATISTIC is an expression; the expansion followed by
  * a semicolon is syntactically a statement.
@@ -919,7 +929,7 @@ extern void StackProbe(Size depth);
  * a semicolon is syntactically a statement.
  *
  * STATISTIC_WRITE is inserted in WriteF arguments to output the values
- * of diagnostic fields.
+ * of statistic fields.
  *
  * .statistic.whitehot: The implementation of STATISTIC for
  * non-statistical varieties passes the parameter to DISCARD to ensure
@@ -927,13 +937,13 @@ extern void StackProbe(Size depth);
  * passed as part of a comma-expression so that its type is not
  * important.  This permits an expression of type void.  */
 
-#if defined(DIAGNOSTICS)
+#if defined(STATISTICS)
 
 #define STATISTIC(gather) BEGIN (gather); END
 #define STATISTIC_STAT(gather) BEGIN gather; END
 #define STATISTIC_WRITE(format, arg) (format), (arg),
 
-#elif defined(DIAGNOSTICS_NONE)
+#elif defined(STATISTICS_NONE)
 
 #define STATISTIC(gather) DISCARD(((gather), 0))
 #define STATISTIC_STAT(gather) DISCARD_STAT(gather)
@@ -941,7 +951,96 @@ extern void StackProbe(Size depth);
 
 #else
 
-#error "No diagnostics configured."
+#error "No statistics configured."
+
+#endif
+
+
+/* ------------ DIAG_WITH_STREAM_AND_WRITEF --------------- */
+
+Bool DiagIsOn(void);
+mps_lib_FILE *DiagStream(void);
+
+
+/* Diag*F functions -- formatted diagnostic output
+ *
+ * Note: do not call these directly; use the DIAG_*F macros below.
+ */
+
+extern void DiagSingleF(const char *tag, ...);
+extern void DiagFirstF(const char *tag, ...);
+extern void DiagMoreF(const char *format, ...);
+extern void DiagEnd(const char *tag);
+
+
+#if defined(DIAG_WITH_STREAM_AND_WRITEF)
+
+/* Diagnostic Calculation and Output */
+#define DIAG_DECL(decl) decl
+#define DIAG_STREAM (DiagStream())
+#define DIAG(s) BEGIN \
+    s \
+  END
+
+
+/* DIAG_*F macros -- formatted diagnostic output
+ *
+ * Note: when invoking these macros, the value passed as macro 
+ * argument "args" might contain commas; it must therefore be 
+ * enclosed in parentheses.  That makes these macros unclean in 
+ * all sorts of ways.
+ */
+
+#define DIAG_WRITEF(args) DIAG( \
+  if(DiagIsOn()) { \
+    WriteF args; \
+  } \
+)
+#define DIAG_SINGLEF(args) DIAG( \
+  DiagSingleF args; \
+)
+#define DIAG_FIRSTF(args) DIAG( \
+  DiagFirstF args; \
+)
+#define DIAG_MOREF(args) DIAG( \
+  DiagMoreF args; \
+)
+
+/* Note: extra parens *not* required when invoking DIAG_END */
+#define DIAG_END(tag) DIAG( \
+  DiagEnd(tag); \
+)
+
+
+#else
+
+/* Diagnostic Calculation and Output */
+#define DIAG_DECL(decl)
+#define DIAG(s) BEGIN END
+#define DIAG_WRITEF(args) BEGIN END
+
+/* DIAG_*F macros */
+#define DIAG_SINGLEF(args) BEGIN END
+#define DIAG_FIRSTF(args) BEGIN END
+#define DIAG_MOREF(args) BEGIN END
+#define DIAG_END(tag) BEGIN END
+
+#endif
+
+/* ------------ DIAG_WITH_PRINTF --------------- */
+
+#if defined(DIAG_WITH_PRINTF)
+
+#include <stdio.h>
+
+#define DIAG_PRINTF(args) BEGIN\
+  printf args ; \
+  END
+
+#else
+
+#define DIAG_PRINTF(args) BEGIN\
+  END
 
 #endif
 

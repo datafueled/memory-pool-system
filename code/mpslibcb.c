@@ -1,6 +1,6 @@
 /* mpslibcb.c: RAVENBROOK MEMORY POOL SYSTEM LIBRARY INTERFACE (CALLBACK)
  *
- * $Header: //info.ravenbrook.com/project/mps/version/1.107/code/mpslibcb.c#1 $
+ * $Header: //info.ravenbrook.com/project/mps/version/1.108/code/mpslibcb.c#1 $
  * Copyright (c) 2005 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: The purpose of this code is

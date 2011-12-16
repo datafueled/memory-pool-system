@@ -1,16 +1,28 @@
-/* vmli.c: VIRTUAL MEMORY MAPPING FOR LINUX
+/* vmix.c: VIRTUAL MEMORY MAPPING FOR UNIX (ISH)
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/vmli.c#1 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/vmix.c#2 $
+ * Copyright (c) 2001,2007 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is the implementation of the virtual memory mapping
- * interface (vm.h) for Linux.  It was created by copying vmo1.c (the
- * DIGITAL UNIX implementation) as that seemed to be closest.
+ * interface (vm.h) for Unix-like operating systems.  It was created
+ * by copying vmfr.c (the FreeBSD) implementation (as that seemed to
+ * use the most standards conforming interfaces).  vmfr.c was itself
+ * copied from vli.c (Linux) which was itself copied from vmo1.c (OSF/1
+ * / DIGITAL UNIX / Tru64).
  *
- * .design: See <design/vm/>.  .design.linux: mmap(2) is used to
+ * .deployed: Currently used on Darwin (OS X) and FreeBSD.
+ *
+ * .design: See <design/vm/>.  .design.mmap: mmap(2) is used to
  * reserve address space by creating a mapping with page access none.
  * mmap(2) is used to map pages onto store by creating a copy-on-write
- * (MAP_PRIVATE) mapping with the flag MAP_ANONYMOUS.
+ * (MAP_PRIVATE) mapping with the flag MAP_ANON.
+ *
+ * .non-standard: Note that the MAP_ANON flag is non-standard; it is
+ * available on Darwin and FreeBSD.  .non-standard.linux: Linux
+ * seems to use MAP_ANONYMOUS instead.  Some Linux systems make MAP_ANON
+ * available and deprecate it.  .non-standard.sesame: On Linux getting
+ * a definition of MAP_ANON requires a macro to be defined prior to
+ * <sys/mman.h>.
  *
  * .assume.not-last: The implementation of VMCreate assumes that
  * mmap() will not choose a region which contains the last page
@@ -21,41 +33,32 @@
  * get from mmap.  The others are either caused by invalid params
  * or features we don't use.  See mmap(2) for details.
  *
- * .assume.off_t: We assume that the Size type (defined by the MM) fits
- * in the off_t type (define by the system (POSIX?)).  In fact we test
- * the more stringent requirement that they are the same size.  This
- * assumption is made in VMUnmap.
- *
  * .remap: Possibly this should use mremap to reduce the number of
  * distinct mappings.  According to our current testing, it doesn't
  * seem to be a problem.
  */
 
-/* Use all extensions */
-#define _GNU_SOURCE 1
-
-/* for open(2) */
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <fcntl.h>
+/* .non-standard.sesame */
+#define _BSD_SOURCE 1
 
 /* for mmap(2), munmap(2) */
+#include <sys/types.h>
 #include <sys/mman.h>
 
 /* for errno(2) */
 #include <errno.h>
 
-/* for sysconf(2), close(2) */
+/* for getpagesize(3) */
 #include <unistd.h>
 
 #include "mpm.h"
 
 
-#ifndef MPS_OS_LI
-#error "vmli.c is LINUX specific, but MPS_OS_LI is not set"
+#if !defined(MPS_OS_FR) && !defined(MPS_OS_XC) && !defined(MPS_OS_LI)
+#error "vmix.c is Unix-like specific, currently MPS_OS_FR XC LI"
 #endif
 
-SRCID(vmli, "$Id: //info.ravenbrook.com/project/mps/version/1.107/code/vmli.c#1 $");
+SRCID(vmix, "$Id: //info.ravenbrook.com/project/mps/version/1.108/code/vmix.c#2 $");
 
 
 /* VMStruct -- virtual memory structure */
@@ -75,8 +78,6 @@ typedef struct VMStruct {
 
 Align VMAlign(VM vm)
 {
-  AVERT(VM, vm);
-
   return vm->align;
 }
 
@@ -103,20 +104,19 @@ Res VMCreate(VM *vmReturn, Size size)
 {
   Align align;
   VM vm;
-  long pagesize;
+  int pagesize;
   void *addr;
   Res res;
 
   AVER(vmReturn != NULL);
 
-  /* sysconf code copied wholesale from vmso.c */
   /* Find out the page size from the OS */
-  pagesize = sysconf(_SC_PAGESIZE);
+  pagesize = getpagesize();
   /* check the actual returned pagesize will fit in an object of */
   /* type Align. */
   AVER(pagesize > 0);
   AVER((unsigned long)pagesize <= (unsigned long)(Align)-1);
-  /* Note implicit conversion from "long" to "Align". */
+  /* Note implicit conversion from "int" to "Align". */
   align = pagesize;
   AVER(SizeIsP2(align));
   size = SizeAlignUp(size, align);
@@ -126,8 +126,11 @@ Res VMCreate(VM *vmReturn, Size size)
   /* Map in a page to store the descriptor on. */
   addr = mmap(0, (size_t)SizeAlignUp(sizeof(VMStruct), align),
               PROT_READ | PROT_WRITE,
-              MAP_ANONYMOUS | MAP_PRIVATE,
+              MAP_ANON | MAP_PRIVATE,
               -1, 0);
+  /* On Darwin the MAP_FAILED return value is not documented, but does
+   * work.  MAP_FAILED _is_ documented by POSIX.
+   */
   if(addr == MAP_FAILED) {
     int e = errno;
     AVER(e == ENOMEM); /* .assume.mmap.err */
@@ -139,7 +142,7 @@ Res VMCreate(VM *vmReturn, Size size)
 
   /* See .assume.not-last. */
   addr = mmap(0, (size_t)size,
-              PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE,
+              PROT_NONE, MAP_ANON | MAP_PRIVATE,
               -1, 0);
   if(addr == MAP_FAILED) {
     int e = errno;
@@ -251,7 +254,7 @@ Res VMMap(VM vm, Addr base, Addr limit)
 
   if(mmap((void *)base, (size_t)size,
           PROT_READ | PROT_WRITE | PROT_EXEC,
-          MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED,
+          MAP_ANON | MAP_PRIVATE | MAP_FIXED,
           -1, 0)
      == MAP_FAILED) {
     AVER(errno == ENOMEM); /* .assume.mmap.err */
@@ -278,13 +281,12 @@ void VMUnmap(VM vm, Addr base, Addr limit)
   AVER(limit <= vm->limit);
   AVER(AddrIsAligned(base, vm->align));
   AVER(AddrIsAligned(limit, vm->align));
-  AVER(sizeof(off_t) == sizeof(Size));  /* .assume.off_t */
 
   size = AddrOffset(base, limit);
 
   /* see <design/vmo1/#fun.unmap.offset> */
   addr = mmap((void *)base, (size_t)size,
-              PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED,
+              PROT_NONE, MAP_ANON | MAP_PRIVATE | MAP_FIXED,
               -1, 0);
   AVER(addr == (void *)base);
 
@@ -296,7 +298,7 @@ void VMUnmap(VM vm, Addr base, Addr limit)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2007 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

@@ -1,6 +1,6 @@
 /* walkt0.c: WALK TEST 0
  *
- * $Id$
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/walkt0.c#1 $
  * Copyright (C) 1998,2003 Ravenbrook Limited.  See end of file for license.
  *
  * Loosely based on <code/steptest.c>.

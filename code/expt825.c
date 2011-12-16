@@ -1,6 +1,6 @@
 /* expt825.c: Test for bug described in job000825
  *
- * $Id: //info.ravenbrook.com/project/mps/version/1.107/code/expt825.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/version/1.108/code/expt825.c#1 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
