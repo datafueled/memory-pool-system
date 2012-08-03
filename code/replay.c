@@ -1,7 +1,7 @@
 /* replay.c: Allocation replayer
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/replay.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/replay.c#10 $
  */
 
 #include "config.h"
@@ -21,6 +21,17 @@
 #include "mpstd.h"
 #ifdef MPS_OS_SU
 #include "ossu.h"
+#endif
+
+
+#ifdef MPS_PF_W3I6MV
+#define PRIuLONGEST "llu"
+#define PRIXPTR     "016llX"
+typedef unsigned long long ulongest_t;
+#else
+#define PRIuLONGEST "lu"
+#define PRIXPTR     "08lX"
+typedef unsigned long ulongest_t;
 #endif
 
 
@@ -46,7 +57,7 @@ static void error(const char *format, ...)
   va_list args;
 
   fflush(stdout); /* sync */
-  fprintf(stderr, "%s: @%lu ", prog, (ulong)eventTime);
+  fprintf(stderr, "%s: @%"PRIuLONGEST" ", prog, (ulongest_t)eventTime);
   va_start(args, format);
   vfprintf(stderr, format, args);
   fprintf(stderr, "\n");

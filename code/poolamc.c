@@ -1,6 +1,6 @@
 /* poolamc.c: AUTOMATIC MOSTLY-COPYING MEMORY POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#31 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#34 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -12,7 +12,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#31 $");
+SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#34 $");
 
 /* PType enumeration -- distinguishes AMCGen and AMCNailboard */
 enum {AMCPTypeGen = 1, AMCPTypeNailboard};
@@ -536,7 +536,7 @@ static Bool amcNailboardCheck(amcNailboard board)
   /* We know that shift corresponds to pool->align. */
   CHECKL(BoolCheck(board->newMarks));
   CHECKL(board->distinctNails <= board->nails);
-  CHECKL(1uL << board->markShift
+  CHECKL((Align)1 << board->markShift
          == PoolAlignment(amcGenPool(board->gen)));
   /* weak check for BTs @@@@ */
   CHECKL(board->mark != NULL);
@@ -1583,7 +1583,6 @@ static Res amcScanNailed(Bool *totalReturn, ScanState ss, Pool pool,
 static Res AMCScan(Bool *totalReturn, ScanState ss, Pool pool, Seg seg)
 {
   Addr base, limit;
-  Arena arena;
   Format format;
   AMC amc;
   Res res;
@@ -1597,7 +1596,6 @@ static Res AMCScan(Bool *totalReturn, ScanState ss, Pool pool, Seg seg)
 
 
   format = pool->format;
-  arena = pool->arena;
 
   if(amcSegHasNailboard(seg)) {
     return amcScanNailed(totalReturn, ss, pool, seg, amc);
@@ -2219,28 +2217,28 @@ static void AMCTraceEnd(Pool pool, Trace trace)
 
   if(amc->pageretstruct[ti].pRet >= pRetMin) {
     DIAG_SINGLEF(( "AMCTraceEnd_pageret",
-      " $U", ArenaEpoch(pool->arena),
-      " $U", trace->why,
-      " $S", trace->emergency ? "Emergency" : "-",
-      " $U", amc->pageretstruct[ti].pCond,
-      " $U", amc->pageretstruct[ti].pRet, ",",
-      " $U", amc->pageretstruct[ti].pCS,
-      " $U", amc->pageretstruct[ti].pRS, ",",
-      " $U", amc->pageretstruct[ti].sCM,
-      " $U", amc->pageretstruct[ti].pCM,
-      " $U", amc->pageretstruct[ti].sRM,
-      " $U", amc->pageretstruct[ti].pRM,
-      " $U", amc->pageretstruct[ti].pRM1,
-      " $U", amc->pageretstruct[ti].pRMrr,
-      " $U", amc->pageretstruct[ti].pRMr1, ",",
-      " $U", amc->pageretstruct[ti].sCL,
-      " $U", amc->pageretstruct[ti].pCL,
-      " $U", amc->pageretstruct[ti].sRL,
-      " $U", amc->pageretstruct[ti].pRL,
-      " $U", amc->pageretstruct[ti].pRLr,
-      " (page = $Ub,", ArenaAlign(pool->arena), 
-      " Large >= $Up,", AMCLargeSegPAGES, 
-      " pRetMin $U)", pRetMin,
+      " $U", (WriteFU)ArenaEpoch(pool->arena),
+      " $U", (WriteFU)trace->why,
+      " $S", (WriteFS)(trace->emergency ? "Emergency" : "-"),
+      " $U", (WriteFU)amc->pageretstruct[ti].pCond,
+      " $U", (WriteFU)amc->pageretstruct[ti].pRet, ",",
+      " $U", (WriteFU)amc->pageretstruct[ti].pCS,
+      " $U", (WriteFU)amc->pageretstruct[ti].pRS, ",",
+      " $U", (WriteFU)amc->pageretstruct[ti].sCM,
+      " $U", (WriteFU)amc->pageretstruct[ti].pCM,
+      " $U", (WriteFU)amc->pageretstruct[ti].sRM,
+      " $U", (WriteFU)amc->pageretstruct[ti].pRM,
+      " $U", (WriteFU)amc->pageretstruct[ti].pRM1,
+      " $U", (WriteFU)amc->pageretstruct[ti].pRMrr,
+      " $U", (WriteFU)amc->pageretstruct[ti].pRMr1, ",",
+      " $U", (WriteFU)amc->pageretstruct[ti].sCL,
+      " $U", (WriteFU)amc->pageretstruct[ti].pCL,
+      " $U", (WriteFU)amc->pageretstruct[ti].sRL,
+      " $U", (WriteFU)amc->pageretstruct[ti].pRL,
+      " $U", (WriteFU)amc->pageretstruct[ti].pRLr,
+      " (page = $Ub,", (WriteFU)ArenaAlign(pool->arena), 
+      " Large >= $Up,", (WriteFU)AMCLargeSegPAGES, 
+      " pRetMin $U)", (WriteFU)pRetMin,
       NULL ));
   }
 
@@ -2251,7 +2249,7 @@ static void AMCTraceEnd(Pool pool, Trace trace)
 /* AMCWalk -- Apply function to (black) objects in segment */
 
 static void AMCWalk(Pool pool, Seg seg, FormattedObjectsStepMethod f,
-                    void *p, unsigned long s)
+                    void *p, size_t s)
 {
   Addr object, nextObject, limit;
   AMC amc;
@@ -2301,7 +2299,7 @@ static void AMCWalk(Pool pool, Seg seg, FormattedObjectsStepMethod f,
 /* amcWalkAll -- Apply a function to all (black) objects in a pool */
 
 static void amcWalkAll(Pool pool, FormattedObjectsStepMethod f,
-                       void *p, unsigned long s)
+                       void *p, size_t s)
 {
   Arena arena;
   Ring ring, next, node;
@@ -2466,7 +2464,7 @@ typedef struct mps_amc_apply_closure_s {
 } mps_amc_apply_closure_s;
 
 static void mps_amc_apply_iter(Addr addr, Format format, Pool pool,
-                               void *p, unsigned long s)
+                               void *p, size_t s)
 {
   mps_amc_apply_closure_s *closure = p;
   /* Can't check addr */

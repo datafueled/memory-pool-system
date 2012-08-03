@@ -1,6 +1,6 @@
 /* mpm.h: MEMORY POOL MANAGER DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.h#30 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.h#32 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -213,7 +213,7 @@ extern void PoolFixEmergency(Pool pool, ScanState ss, Seg seg, Addr *refIO);
 extern void PoolReclaim(Pool pool, Trace trace, Seg seg);
 extern void PoolTraceEnd(Pool pool, Trace trace);
 extern void PoolWalk(Pool pool, Seg seg, FormattedObjectsStepMethod f,
-                     void *v, unsigned long s);
+                     void *v, size_t s);
 extern void PoolFreeWalk(Pool pool, FreeBlockStepMethod f, void *p);
 extern Res PoolTrivInit(Pool pool, va_list arg);
 extern void PoolTrivFinish(Pool pool);
@@ -262,7 +262,7 @@ extern Res PoolNoFramePop(Pool pool, Buffer buf, AllocFrame frame);
 extern Res PoolTrivFramePop(Pool pool, Buffer buf, AllocFrame frame);
 extern void PoolNoFramePopPending(Pool pool, Buffer buf, AllocFrame frame);
 extern void PoolNoWalk(Pool pool, Seg seg, FormattedObjectsStepMethod step,
-                       void *p, unsigned long s);
+                       void *p, size_t s);
 extern void PoolNoFreeWalk(Pool pool, FreeBlockStepMethod f, void *p);
 extern PoolDebugMixin PoolNoDebugMixin(Pool pool);
 extern BufferClass PoolNoBufferClass(void);
@@ -405,11 +405,14 @@ extern double TraceWorkFactor;
 
 #define TRACE_SCAN_BEGIN(ss) \
   BEGIN \
-    Shift SCANzoneShift = (ss)->zoneShift; \
-    ZoneSet SCANwhite = (ss)->white; \
-    RefSet SCANsummary = (ss)->unfixedSummary; \
-    Word SCANt; \
-    {
+    /* Check range on zoneShift before casting to Shift. */ \
+    AVER((ss)->zoneShift < MPS_WORD_WIDTH); \
+    { \
+      Shift SCANzoneShift = (Shift)(ss)->zoneShift; \
+      ZoneSet SCANwhite = (ss)->white; \
+      RefSet SCANsummary = (ss)->unfixedSummary; \
+      Word SCANt; \
+      {
 
 /* Equivalent to <code/mps.h> MPS_FIX1 */
 
@@ -431,8 +434,9 @@ extern double TraceWorkFactor;
 /* Equivalent to <code/mps.h> MPS_SCAN_END */
 
 #define TRACE_SCAN_END(ss) \
+      } \
+      (ss)->unfixedSummary = SCANsummary; \
     } \
-    (ss)->unfixedSummary = SCANsummary; \
   END
 
 extern Res TraceScanArea(ScanState ss, Addr *base, Addr *limit);

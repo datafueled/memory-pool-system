@@ -1,6 +1,6 @@
 /* mps.h: RAVENBROOK MEMORY POOL SYSTEM C INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mps.h#23 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mps.h#26 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -14,6 +14,21 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <limits.h>
+
+
+/* Platform Dependencies
+ *
+ * We went for over ten years without any platform ifdefs in this header.
+ * Then Microsoft made unsigned long shorter than a pointer on Win64.  Ugh.
+ */
+
+#ifndef MPS_T_WORD
+#if defined(_MSC_VER) && defined(_WIN32) && defined(_WIN64) && defined(_M_X64)
+#define MPS_T_WORD      unsigned __int64
+#else
+#define MPS_T_WORD      unsigned long       /* won't be true on W3I6MV */
+#endif
+#endif /* MPS_T_WORD */
 
 
 /* Abstract Types */
@@ -39,7 +54,7 @@ typedef struct mps_frame_s
 
 /* Concrete Types */
 
-typedef unsigned long mps_word_t; /* pointer-sized word */
+typedef MPS_T_WORD mps_word_t;  /* pointer-sized word */
 typedef int mps_bool_t;         /* boolean (int) */
 typedef int mps_res_t;          /* result code (int) */
 typedef unsigned mps_shift_t;   /* shift amount (unsigned int) */
@@ -626,8 +641,8 @@ extern mps_res_t mps_fix(mps_ss_t, mps_addr_t *);
     {
 
 #define MPS_FIX1(ss, ref) \
-  (_mps_wt = 1uL << ((mps_word_t)(ref) >> _mps_w0 \
-                     & (sizeof(mps_word_t) * CHAR_BIT - 1)), \
+  (_mps_wt = (mps_word_t)1 << ((mps_word_t)(ref) >> _mps_w0 \
+                               & (sizeof(mps_word_t) * CHAR_BIT - 1)), \
    _mps_w2 |= _mps_wt, \
    _mps_w1 & _mps_wt)
 

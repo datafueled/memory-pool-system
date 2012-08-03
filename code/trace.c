@@ -1,6 +1,6 @@
 /* trace.c: GENERIC TRACER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/trace.c#36 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/trace.c#38 $
  * Copyright (c) 2001-2003, 2006, 2007 Ravenbrook Limited.
  * See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
@@ -11,7 +11,7 @@
 #include "mpm.h"
 #include <limits.h> /* for LONG_MAX */
 
-SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/master/code/trace.c#36 $");
+SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/master/code/trace.c#38 $");
 
 /* Forward declarations */
 Rank traceBand(Trace);
@@ -123,7 +123,7 @@ Bool TraceIdCheck(TraceId ti)
 
 Bool TraceSetCheck(TraceSet ts)
 {
-  CHECKL(ts < (1uL << TraceLIMIT));
+  CHECKL(ts < ((ULongest)1 << TraceLIMIT));
   UNUSED(ts); /* <code/mpm.c#check.unused> */
   return TRUE;
 }
@@ -309,7 +309,7 @@ static void traceSetSignalEmergency(TraceSet ts, Arena arena)
   Trace trace;
 
   DIAG_SINGLEF(( "traceSetSignalEmergency",
-    "traceSet: $B", ts, NULL ));
+    "traceSet: $B", (WriteFB)ts, NULL ));
 
   TRACE_SET_ITER(ti, trace, ts, arena)
     trace->emergency = TRUE;
@@ -1517,30 +1517,35 @@ static Res rootGrey(Root root, void *p)
 }
 
 
-static void TraceStartGenDesc_diag(GenDesc desc, int i)
+static void TraceStartGenDesc_diag(GenDesc desc, Bool top, Index i)
 {
   Ring n, nn;
+  
+#if !defined(DIAG_WITH_STREAM_AND_WRITEF)
+  UNUSED(i);
+#endif
 
-  if(i < 0) {
+  if(top) {
     DIAG_WRITEF(( DIAG_STREAM,
       "         GenDesc [top]",
       NULL ));
   } else {
     DIAG_WRITEF(( DIAG_STREAM,
-      "         GenDesc [$U]", i,
+      "         GenDesc [$U]", (WriteFU)i,
       NULL ));
   }
   DIAG_WRITEF(( DIAG_STREAM,
     " $P capacity: $U KiB, mortality $D\n",
-    (void *)desc, desc->capacity, desc->mortality,
-    "         ZoneSet:$B\n", desc->zones,
+    (WriteFP)desc, (WriteFU)desc->capacity, (WriteFD)desc->mortality,
+    "         ZoneSet:$B\n", (WriteFB)desc->zones,
     NULL ));
   RING_FOR(n, &desc->locusRing, nn) {
     DIAG_DECL( PoolGen gen = RING_ELT(PoolGen, genRing, n); )
     DIAG_WRITEF(( DIAG_STREAM,
-      "           PoolGen $U ($S)", gen->nr, gen->pool->class->name,
-      " totalSize $U", gen->totalSize,
-      " newSize $U\n", gen->newSizeAtCreate,
+      "           PoolGen $U ($S)", 
+      (WriteFU)gen->nr, (WriteFS)gen->pool->class->name,
+      " totalSize $U", (WriteFU)gen->totalSize,
+      " newSize $U\n", (WriteFU)gen->newSizeAtCreate,
       NULL ));
   }
 }
@@ -1606,14 +1611,14 @@ void TraceStart(Trace trace, double mortality, double finishingTime)
 
   DIAG_FIRSTF(( "TraceStart",
     "because code $U: $S\n",
-    trace->why, TraceStartWhyToString(trace->why),
+    (WriteFU)trace->why, (WriteFS)TraceStartWhyToString(trace->why),
     NULL ));
 
   DIAG( ArenaDescribe(arena, DIAG_STREAM); );
 
   DIAG_MOREF((
     "       white set:$B\n",
-    trace->white,
+    (WriteFB)trace->white,
     NULL ));
 
   {
@@ -1626,12 +1631,12 @@ void TraceStart(Trace trace, double mortality, double finishingTime)
     RING_FOR(node, &arena->chainRing, nextNode) {
       Chain chain = RING_ELT(Chain, chainRing, node);
       DIAG_WRITEF(( DIAG_STREAM,
-        "       Chain $P\n", (void *)chain,
+        "       Chain $P\n", (WriteFP)chain,
         NULL ));
 
       for(i = 0; i < chain->genCount; ++i) {
         GenDesc desc = &chain->gens[i];
-        TraceStartGenDesc_diag(desc, i);
+        TraceStartGenDesc_diag(desc, FALSE, i);
       }
     }
 
@@ -1639,7 +1644,7 @@ void TraceStart(Trace trace, double mortality, double finishingTime)
     DIAG_WRITEF(( DIAG_STREAM,
       "       topGen\n",
       NULL ));
-    TraceStartGenDesc_diag(&arena->topGen, -1);
+    TraceStartGenDesc_diag(&arena->topGen, TRUE, 0);
   }
   
   DIAG_END( "TraceStart" );

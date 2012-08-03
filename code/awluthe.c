@@ -1,6 +1,6 @@
 /* awluthe.c: POOL CLASS AWL UNIT TEST WITH OBJECT HEADERS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/awluthe.c#3 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/awluthe.c#5 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -44,9 +44,9 @@ static mps_word_t wrapper_wrapper[] = {
   UNINIT,                       /* wrapper */
   UNINIT,                       /* class */
   0,                            /* Extra word */
-  4uL<<2|2,                     /* F */
-  2uL<<(MPS_WORD_WIDTH - 8),    /* V */
-  1uL<<2|1,                     /* VL */
+  (mps_word_t)4<<2|2,                     /* F */
+  (mps_word_t)2<<(MPS_WORD_WIDTH - 8),    /* V */
+  (mps_word_t)1<<2|1,                     /* VL */
   1                             /* patterns */
 };
 
@@ -56,7 +56,7 @@ static mps_word_t string_wrapper[] = {
   UNINIT,                       /* class */
   0,                            /* extra word */
   0,                            /* F */
-  2uL<<(MPS_WORD_WIDTH - 8)|3uL<<3|4,   /* V */
+  (mps_word_t)2<<(MPS_WORD_WIDTH - 8)|(mps_word_t)3<<3|4,   /* V */
   1                             /* VL */
 };
 
@@ -64,8 +64,8 @@ static mps_word_t table_wrapper[] = {
   UNINIT,                       /* wrapper */
   UNINIT,                       /* class */
   0,                            /* extra word */
-  1uL<<2|1,                     /* F */
-  2uL<<(MPS_WORD_WIDTH - 8)|2,  /* V */
+  (mps_word_t)1<<2|1,                     /* F */
+  (mps_word_t)2<<(MPS_WORD_WIDTH - 8)|2,  /* V */
   1                             /* VL */
 };
 
@@ -211,9 +211,7 @@ static void test(mps_ap_t leafap, mps_ap_t exactap, mps_ap_t weakap,
 
   for(j = 0; j < ITERATIONS; ++j) {
     for(i = 0; i < TABLE_SLOTS; ++i) {
-      mps_word_t *string;
-
-      string = alloc_string("spong", leafap);
+      (void)alloc_string("spong", leafap);
     }
   }
 

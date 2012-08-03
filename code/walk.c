@@ -1,13 +1,13 @@
 /* walk.c: OBJECT WALKER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/walk.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/walk.c#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "mpm.h"
 #include "mps.h"
 
-SRCID(walk, "$Id: //info.ravenbrook.com/project/mps/master/code/walk.c#10 $");
+SRCID(walk, "$Id: //info.ravenbrook.com/project/mps/master/code/walk.c#11 $");
 
 
 /* Heap Walking
@@ -36,7 +36,7 @@ static Bool FormattedObjectsStepClosureCheck(FormattedObjectsStepClosure c)
 
 
 static void ArenaFormattedObjectsStep(Addr object, Format format, Pool pool,
-                                      void *p, Size s)
+                                      void *p, size_t s)
 {
   FormattedObjectsStepClosure c;
   /* Can't check object */
@@ -56,7 +56,7 @@ static void ArenaFormattedObjectsStep(Addr object, Format format, Pool pool,
  * So called because it walks all formatted objects in an arena.  */
 
 static void ArenaFormattedObjectsWalk(Arena arena, FormattedObjectsStepMethod f,
-                                      void *p, Size s)
+                                      void *p, size_t s)
 {
   Seg seg;
   FormattedObjectsStepClosure c;
@@ -186,7 +186,7 @@ static Bool rootsStepClosureCheck(rootsStepClosure rsc)
 static void rootsStepClosureInit(rootsStepClosure rsc,
                                  Globals arena, Trace trace,
                                  TraceFixMethod rootFix,
-                                 mps_roots_stepper_t f, void *p, Size s)
+                                 mps_roots_stepper_t f, void *p, size_t s)
 {
   ScanState ss;
 

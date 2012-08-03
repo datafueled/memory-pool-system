@@ -1,6 +1,6 @@
 /* global.c: ARENA-GLOBAL INTERFACES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#23 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#24 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#23 $");
+SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#24 $");
 
 
 /* All static data objects are declared here. See .static */
@@ -39,10 +39,6 @@ static RingStruct arenaRing;       /* <design/arena/#static.ring> */
 /* forward declarations */
 void arenaEnterLock(Arena, int);
 void arenaLeaveLock(Arena, int);
-
-/* ArenaControlPool -- get the control pool */
-
-#define ArenaControlPool(arena) MVPool(&(arena)->controlPoolStruct)
 
 
 /* arenaClaimRingLock, arenaReleaseRingLock -- lock/release the arena ring

@@ -1,6 +1,6 @@
 /* zcoll.c: Collection test
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/zcoll.c#5 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/zcoll.c#9 $
  * Copyright (c) 2008 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -92,13 +92,13 @@ static void *stack_start;
 static mps_thr_t stack_thr;
 
 
-static unsigned long cols(size_t bytes)
+static ulongest_t cols(size_t bytes)
 {
   double M;  /* Mebibytes */
-  unsigned long cM;  /* hundredths of a Mebibyte */
+  ulongest_t cM;  /* hundredths of a Mebibyte */
 
-  M = (double)bytes / (1UL<<20);
-  cM = (unsigned long)(M * 100 + 0.5);  /* round to nearest */
+  M = (double)bytes / ((ulongest_t)1<<20);
+  cM = (ulongest_t)(M * 100.0 + 0.5);  /* round to nearest */
   return cM;
 }
 
@@ -107,12 +107,12 @@ static unsigned long cols(size_t bytes)
  */
 static void showStatsAscii(size_t notcon, size_t con, size_t live, size_t alimit)
 {
-  int n = cols(notcon);
-  int c = cols(notcon + con);
-  int l = cols(notcon + live);  /* a fraction of con */
-  int a = cols(alimit);
-  int count;
-  int i;
+  ulongest_t n = cols(notcon);
+  ulongest_t c = cols(notcon + con);
+  ulongest_t l = cols(notcon + live);  /* a fraction of con */
+  ulongest_t a = cols(alimit);
+  ulongest_t count;
+  ulongest_t i;
   
   /* if we can show alimit within 200 cols, do so */
   count = (a < 200) ? a + 1 : c;
@@ -139,9 +139,9 @@ static void showStatsAscii(size_t notcon, size_t con, size_t live, size_t alimit
  * Output:  (Megabytes)  0m209
  */
 #if 0
-#define bPerM (1UL << 20)  /* Mebibytes */
+#define bPerM ((size_t)1 << 20)  /* Mebibytes */
 #else
-#define bPerM (1000000UL)  /* Megabytes */
+#define bPerM ((size_t)1000000)  /* Megabytes */
 #endif
 static void print_M(size_t bytes)
 {
@@ -152,7 +152,7 @@ static void print_M(size_t bytes)
   Mfrac = (double)(bytes % bPerM);
   Mfrac = (Mfrac / bPerM);
 
-  printf("%1lum%03.f", M, Mfrac * 1000);
+  printf("%1"PRIuLONGEST"m%03.f", (ulongest_t)M, Mfrac * 1000);
 }
 
 
@@ -280,21 +280,21 @@ static void get(mps_arena_t arena)
  *   - how the mutator accesses objects (barrier hits).
  */
 
-enum {
-  CatalogRootIndex = 0,
-  CatalogSig = 0x0000CA2A,  /* CATAlog */
-  CatalogFix = 1,
-  CatalogVar = 10,
-  PageSig =    0x0000BA9E,  /* PAGE */
-  PageFix = 1,
-  PageVar = 100,
-  ArtSig =     0x0000A621,  /* ARTIcle */
-  ArtFix = 1,
-  ArtVar = 100,
-  PolySig =    0x0000B071,  /* POLYgon */
-  PolyFix = 1,
-  PolyVar = 100
-};
+
+#define CatalogRootIndex 0
+#define CatalogSig MPS_WORD_CONST(0x0000CA2A)  /* CATAlog */
+#define CatalogFix 1
+#define CatalogVar 10
+#define PageSig    MPS_WORD_CONST(0x0000BA9E)  /* PAGE */
+#define PageFix 1
+#define PageVar 100
+#define ArtSig     MPS_WORD_CONST(0x0000A621)  /* ARTIcle */
+#define ArtFix 1
+#define ArtVar 100
+#define PolySig    MPS_WORD_CONST(0x0000B071)  /* POLYgon */
+#define PolyFix 1
+#define PolyVar 100
+
 
 static void CatalogCheck(void)
 {
@@ -326,7 +326,7 @@ static void CatalogCheck(void)
       if(w == DYLAN_INT(0))
         break;
       Art = (void *)w;
-      Insist(DYLAN_VECTOR_SLOT(Art, 0) = DYLAN_INT(ArtSig));
+      Insist(DYLAN_VECTOR_SLOT(Art, 0) == DYLAN_INT(ArtSig));
       Arts += 1;
 
       for(k = 0; k < ArtVar; k += 1) {
@@ -335,7 +335,7 @@ static void CatalogCheck(void)
         if(w == DYLAN_INT(0))
           break;
         Poly = (void *)w;
-        Insist(DYLAN_VECTOR_SLOT(Poly, 0) = DYLAN_INT(PolySig));
+        Insist(DYLAN_VECTOR_SLOT(Poly, 0) == DYLAN_INT(PolySig));
         Polys += 1;
       }
     }
@@ -424,8 +424,8 @@ static void CatalogDo(mps_arena_t arena, mps_ap_t ap)
 static void* MakeThing(mps_arena_t arena, mps_ap_t ap, size_t size)
 {
   mps_word_t v;
-  unsigned long words;
-  unsigned long slots;
+  ulongest_t words;
+  ulongest_t slots;
 
   words = (size + (sizeof(mps_word_t) - 1) ) / sizeof(mps_word_t);
   if(words < 2)
@@ -440,8 +440,8 @@ static void* MakeThing(mps_arena_t arena, mps_ap_t ap, size_t size)
 
 static void BigdropSmall(mps_arena_t arena, mps_ap_t ap, size_t big, char small_ref)
 {
-  static unsigned long keepCount = 0;
-  unsigned long i;
+  static unsigned keepCount = 0;
+  unsigned i;
   
   mps_arena_park(arena);
   for(i = 0; i < 100; i++) {
@@ -474,7 +474,7 @@ static unsigned long df(unsigned randm, unsigned number)
 static void Make(mps_arena_t arena, mps_ap_t ap, unsigned randm, unsigned keep1in, unsigned keepTotal, unsigned keepRootspace, unsigned sizemethod)
 {
   unsigned keepCount = 0;
-  unsigned long objCount = 0;
+  unsigned objCount = 0;
   
   Insist(keepRootspace <= myrootExactCOUNT);
 
@@ -523,7 +523,7 @@ static void Make(mps_arena_t arena, mps_ap_t ap, unsigned randm, unsigned keep1i
   }
   printf("  ...made and kept: %u objects, storing cyclically in "
          "first %u roots "
-         "(actually created %lu objects, in accord with "
+         "(actually created %u objects, in accord with "
          "keep-1-in %u).\n",
          keepCount, keepRootspace, objCount, keep1in);
 }
@@ -531,7 +531,7 @@ static void Make(mps_arena_t arena, mps_ap_t ap, unsigned randm, unsigned keep1i
 
 static void Rootdrop(char rank_char)
 {
-  unsigned long i;
+  unsigned i;
   
   if(rank_char == 'A') {
     for(i = 0; i < myrootAmbigCOUNT; ++i) {
@@ -552,6 +552,10 @@ static void stackwipe(void)
 {
   unsigned iw;
   unsigned long aw[stackwipedepth];
+  
+  /* Do some pointless work that the compiler won't optimise away, so that
+     this function wipes over the stack by filling stuff into the "aw"
+     array. */
   
   /* http://xkcd.com/710/ */
   /* I don't want my friends to stop calling; I just want the */
@@ -634,13 +638,14 @@ static void testscriptC(mps_arena_t arena, mps_ap_t ap, const char *script)
         break;
       }
       case 'B': {
-        size_t big = 0;
+        ulongest_t big = 0;
         char small_ref = ' ';
-        si = sscanf(script, "BigdropSmall(big %lu, small %c)%n",
-                       &big, &small_ref, &sb);
+        si = sscanf(script, "BigdropSmall(big %"SCNuLONGEST", small %c)%n",
+                    &big, &small_ref, &sb);
         checksi(si, 2, script, scriptAll);
         script += sb;
-        printf("  BigdropSmall(big %lu, small %c)\n", big, small_ref);
+        printf("  BigdropSmall(big %"PRIuLONGEST", small %c)\n",
+               big, small_ref);
         BigdropSmall(arena, ap, big, small_ref);
         break;
       }
@@ -808,7 +813,7 @@ static void testscriptA(const char *script)
   printf("  Create arena, size = %lu.\n", arenasize);
 
   /* arena */
-  die(mps_arena_create(&arena, mps_arena_class_vm(), arenasize),
+  die(mps_arena_create(&arena, mps_arena_class_vm(), (size_t)arenasize),
       "arena_create");
 
   /* thr: used to stop/restart multiple threads */

@@ -1,6 +1,6 @@
 /* testlib.h: TEST LIBRARY INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/testlib.h#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/testlib.h#17 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -75,6 +75,34 @@
 #endif /* MPS_BUILD_MV */
 
 
+/* ulongest_t -- longest unsigned integer type
+ *
+ * Define a longest unsigned integer type for testing and printing.  We'd
+ * like to use C99's uintmax_t and PRIuMAX here, but the MPS is in C89
+ * and C99 isn't supported by Microsoft.
+ *
+ * We avoid using the ones defined in mpstd.h because we want the tests to
+ * root out any incompatible assumptions by breaking.
+ */
+
+#ifdef MPS_PF_W3I6MV
+#define PRIuLONGEST "llu"
+#define SCNuLONGEST "llu"
+#define PRIXLONGEST "llX"
+#define PRIwWORD "16"
+typedef unsigned long long ulongest_t;
+#define MPS_WORD_CONST(n) (n##ull)
+#else
+#define PRIuLONGEST "lu"
+#define SCNuLONGEST "lu"
+#define PRIXLONGEST "lX"
+#define PRIwWORD "8"
+typedef unsigned long ulongest_t;
+#define MPS_WORD_CONST(n) (n##ul)
+#endif
+#define PRIXPTR     "0"PRIwWORD PRIXLONGEST
+
+
 /* testlib_unused -- declares that a variable is unused
  *
  * It should be used to prevent compiler warnings about unused
@@ -133,7 +161,10 @@ extern void verror(const char *format, va_list args);
 #define Insist(cond) insist1(cond, #cond)
 
 #define insist1(cond, condstring) \
-  cdie(cond, condstring "\n" __FILE__ "\n" STR(__LINE__))
+  if(cond) \
+    NOOP; \
+  else \
+    cdie(cond, condstring "\n" __FILE__ "\n" STR(__LINE__))
 
 
 /* rnd -- random number generator

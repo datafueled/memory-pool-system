@@ -1,6 +1,6 @@
 /* amcsshe.c: POOL CLASS AMC STRESS TEST WITH HEADER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/amcsshe.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/amcsshe.c#14 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  */
@@ -41,7 +41,7 @@ static mps_gen_param_s testChain[genCOUNT] = {
 
 
 /* objNULL needs to be odd so that it's ignored in exactRoots. */
-#define objNULL           ((mps_addr_t)0xDECEA5ED)
+#define objNULL           ((mps_addr_t)MPS_WORD_CONST(0xDECEA5ED))
 
 
 static mps_pool_t pool;
@@ -88,9 +88,9 @@ static void report(mps_arena_t arena)
     not_condemned = mps_message_gc_not_condemned_size(arena, message);
 
     printf("\nCollection %d finished:\n", ++nCollections);
-    printf("live %lu\n", (unsigned long)live);
-    printf("condemned %lu\n", (unsigned long)condemned);
-    printf("not_condemned %lu\n", (unsigned long)not_condemned);
+    printf("live %"PRIuLONGEST"\n", (ulongest_t)live);
+    printf("condemned %"PRIuLONGEST"\n", (ulongest_t)condemned);
+    printf("not_condemned %"PRIuLONGEST"\n", (ulongest_t)not_condemned);
 
     mps_message_discard(arena, message);
 

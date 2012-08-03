@@ -1,7 +1,7 @@
 /* eventrep.c: Allocation replayer routines
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/eventrep.c#8 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventrep.c#9 $
  */
 
 #include "config.h"
@@ -31,6 +31,17 @@
 #include "mpstd.h"
 #ifdef MPS_OS_SU
 #include "ossu.h"
+#endif
+
+
+#ifdef MPS_PF_W3I6MV
+#define PRIuLONGEST "llu"
+#define PRIXPTR     "016llX"
+typedef unsigned long long ulongest_t;
+#else
+#define PRIuLONGEST "lu"
+#define PRIXPTR     "08lX"
+typedef unsigned long ulongest_t;
 #endif
 
 
@@ -114,7 +125,7 @@ static void error(const char *format, ...)
   va_list args;
 
   fflush(stdout); /* sync */
-  fprintf(stderr, "Failed @%lu ", (ulong)eventTime);
+  fprintf(stderr, "Failed @%"PRIuLONGEST" ", (ulongest_t)eventTime);
   va_start(args, format);
   vfprintf(stderr, format, args);
   fprintf(stderr, "\n");

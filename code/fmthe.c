@@ -1,6 +1,6 @@
 /* fmthe.c: DYLAN-LIKE OBJECT FORMAT WITH HEADERS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/fmthe.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/fmthe.c#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -125,7 +125,7 @@ static mps_addr_t dylan_header_isfwd(mps_addr_t object)
 
 static void dylan_header_pad(mps_addr_t addr, size_t fullSize)
 {
-  *(int*)addr = padHeader(fullSize);
+  *(int*)addr = (int)padHeader(fullSize);
 }
 
 

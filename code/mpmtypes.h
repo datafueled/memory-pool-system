@@ -1,6 +1,6 @@
 /* mpmtypes.h: MEMORY POOL MANAGER TYPES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#20 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#22 $
  * Copyright (c) 2001-2002, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2001 Global Graphics Software.
  *
@@ -18,6 +18,7 @@
 #include "config.h"     /* this must come first: it defines target options */
 #include "misc.h"       /* miscellaneous non-specific bits and bobs */
 #include "mpslib.h"
+#include "mpstd.h"      /* for MPS_T_ULONGEST */
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -41,6 +42,7 @@ typedef unsigned Serial;                /* <design/type/#serial> */
 typedef Addr Ref;                       /* <design/type/#ref> */
 typedef void *Pointer;                  /* <design/type/#pointer> */
 typedef unsigned long Clock;            /* processor time */
+typedef MPS_T_ULONGEST ULongest;        /* <design/type/#ulongest> */
 
 typedef Word RefSet;                    /* design.mps.refset */
 typedef Word ZoneSet;                   /* design.mps.refset */
@@ -131,7 +133,7 @@ typedef Res (*TraceFixMethod)(ScanState ss, Ref *refIO);
 
 /* This type is used by the PoolClass method Walk */
 typedef void (*FormattedObjectsStepMethod)(Addr obj, Format fmt, Pool pool,
-                                           void *v, unsigned long s);
+                                           void *v, size_t s);
 
 /* This type is used by the PoolClass method Walk */
 typedef void (*FreeBlockStepMethod)(Addr base, Addr limit, Pool pool, void *p);
@@ -210,7 +212,7 @@ typedef void (*PoolFramePopPendingMethod)(Pool pool, Buffer buf,
                                           AllocFrame frame);
 typedef void (*PoolWalkMethod)(Pool pool, Seg seg,
                                FormattedObjectsStepMethod f,
-                               void *v, unsigned long s);
+                               void *v, size_t s);
 typedef void (*PoolFreeWalkMethod)(Pool pool, FreeBlockStepMethod f, void *p);
 typedef BufferClass (*PoolBufferClassMethod)(void);
 typedef Res (*PoolDescribeMethod)(Pool pool, mps_lib_FILE *stream);
@@ -441,8 +443,8 @@ typedef Addr WriteFA;
 typedef Pointer WriteFP;
 typedef const char *WriteFS;
 typedef Word WriteFW;
-typedef unsigned long WriteFU;
-typedef unsigned long WriteFB;
+typedef ULongest WriteFU;
+typedef ULongest WriteFB;
 typedef void *(*WriteFF)(void);
 typedef int WriteFC; /* Promoted */
 typedef double WriteFD;

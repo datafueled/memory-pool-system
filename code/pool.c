@@ -1,6 +1,6 @@
 /* pool.c: POOL IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/pool.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/pool.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -33,7 +33,7 @@
 
 #include "mpm.h"
 
-SRCID(pool, "$Id: //info.ravenbrook.com/project/mps/master/code/pool.c#12 $");
+SRCID(pool, "$Id: //info.ravenbrook.com/project/mps/master/code/pool.c#13 $");
 
 
 /* PoolClassCheck -- check a pool class */
@@ -482,7 +482,7 @@ void PoolTraceEnd(Pool pool, Trace trace)
 /* PoolWalk -- walk objects in this segment */
 
 void PoolWalk(Pool pool, Seg seg, FormattedObjectsStepMethod f,
-              void *p, Size s)
+              void *p, size_t s)
 {
   AVERT(Pool, pool);
   AVERT(Seg, seg);

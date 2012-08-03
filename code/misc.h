@@ -1,6 +1,6 @@
 /* misc.h: MISCELLANEOUS DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/misc.h#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/misc.h#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -40,9 +40,9 @@ typedef const struct SrcIdStruct {
 } SrcIdStruct;
 
 #define SRCID(id, scmid) \
-  static SrcIdStruct FileSrcIdStruct = \
+  static SrcIdStruct id ## FileSrcIdStruct = \
   {__FILE__, (scmid), __DATE__, __TIME__}; \
-  SrcId id ## SrcId = &FileSrcIdStruct
+  SrcId id ## SrcId = &id ## FileSrcIdStruct
 
 
 /* BEGIN and END -- statement brackets

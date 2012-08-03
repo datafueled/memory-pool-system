@@ -1,6 +1,6 @@
 /* walkt0.c: WALK TEST 0
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/walkt0.c#5 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/walkt0.c#7 $
  * Copyright (C) 1998,2003 Ravenbrook Limited.  See end of file for license.
  *
  * Loosely based on <code/steptest.c>.
@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define testArenaSIZE     ((size_t)(64l << 20))
+#define testArenaSIZE     ((size_t)((size_t)64 << 20))
 #define avLEN             3
 #define exactRootsCOUNT   200
 #define objCOUNT          20000
@@ -42,7 +42,7 @@ static mps_gen_param_s testChain[genCOUNT] = {
 };
 
 /* objNULL needs to be odd so that it's ignored in exactRoots. */
-#define objNULL           ((mps_addr_t)0xDECEA5ED)
+#define objNULL           ((mps_addr_t)MPS_WORD_CONST(0xDECEA5ED))
 
 static mps_ap_t ap;
 static mps_addr_t exactRoots[exactRootsCOUNT];

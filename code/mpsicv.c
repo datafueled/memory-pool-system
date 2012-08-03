@@ -1,6 +1,6 @@
 /* mpsicv.c: MPSI COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpsicv.c#17 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpsicv.c#21 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  */
@@ -29,7 +29,7 @@
 #define patternFREQ      100
 
 /* objNULL needs to be odd so that it's ignored in exactRoots. */
-#define objNULL         ((mps_addr_t)0xDECEA5ED)
+#define objNULL         ((mps_addr_t)MPS_WORD_CONST(0xDECEA5ED))
 #define FILLER_OBJECT_SIZE 1023
 
 #define genCOUNT          2
@@ -102,7 +102,8 @@ static void alignmentTest(mps_arena_t arena)
   int dummy = 0;
   size_t j, size;
 
-  die(mps_pool_create(&pool, arena, mps_class_mv(), 0x1000, 1024, 16384),
+  die(mps_pool_create(&pool, arena, mps_class_mv(),
+      (size_t)0x1000, (size_t)1024, (size_t)16384),
       "alignment pool create");
   size = max(sizeof(double), sizeof(long));
 #ifdef HAS_LONG_LONG
@@ -260,9 +261,9 @@ static void addr_pool_test(mps_arena_t arena,
   mps_bool_t b;
   mps_addr_t addr;
   /* DISTInguished values are to observe overwrites. */
-  mps_pool_t poolDistinguished = (mps_pool_t)0x000d1521;
+  mps_pool_t poolDistinguished = (mps_pool_t)MPS_WORD_CONST(0x000d1521);
   mps_pool_t pool = poolDistinguished;
-  mps_fmt_t fmtDistinguished = (mps_fmt_t)0x000d1521;
+  mps_fmt_t fmtDistinguished = (mps_fmt_t)MPS_WORD_CONST(0x000d1521);
   mps_fmt_t fmt = fmtDistinguished;
 
   /* 0a -- obj1 in pool1 (unformatted) */
@@ -336,7 +337,8 @@ static void arena_commit_test(mps_arena_t arena)
   committed = mps_arena_committed(arena);
   reserved = mps_arena_reserved(arena);
   cdie(reserved >= committed, "reserved < committed");
-  die(mps_pool_create(&pool, arena, mps_class_mv(), 0x1000, 1024, 16384),
+  die(mps_pool_create(&pool, arena, mps_class_mv(),
+      (size_t)0x1000, (size_t)1024, (size_t)16384),
       "commit pool create");
   limit = mps_arena_commit_limit(arena);
   die(mps_arena_commit_limit_set(arena, committed), "commit_limit_set before");
@@ -411,7 +413,8 @@ static void *test(void *arg, size_t s)
 
   die(mps_chain_create(&chain, arena, genCOUNT, testChain), "chain_create");
 
-  die(mps_pool_create(&mv, arena, mps_class_mv(), 0x10000, 32, 0x10000),
+  die(mps_pool_create(&mv, arena, mps_class_mv(),
+      (size_t)0x10000, (size_t)32, (size_t)0x10000),
       "pool_create(mv)");
 
   pool_create_v_test(arena, format, chain); /* creates amc pool */
@@ -424,13 +427,13 @@ static void *test(void *arg, size_t s)
     exactRoots[j] = objNULL;
   }
   for(j = 0; j < ambigRootsCOUNT; ++j) {
-    ambigRoots[j] = (mps_addr_t)rnd();
+    ambigRoots[j] = rnd_addr();
   }
 
   die(mps_root_create_table_masked(&exactRoot, arena,
                                    MPS_RANK_EXACT, (mps_rm_t)0,
                                    &exactRoots[0], exactRootsCOUNT,
-                                   (mps_word_t)1),
+                                   MPS_WORD_CONST(1)),
       "root_create_table(exact)");
   die(mps_root_create_table(&ambigRoot, arena,
                             MPS_RANK_AMBIG, (mps_rm_t)0,
@@ -471,14 +474,14 @@ static void *test(void *arg, size_t s)
   collections = mps_collections(arena);
 
   for(i = 0; i < OBJECTS; ++i) {
-    unsigned c;
+    mps_word_t c;
     size_t r;
 
     c = mps_collections(arena);
 
     if(collections != c) {
       collections = c;
-      printf("\nCollection %u, %lu objects.\n", c, i);
+      printf("\nCollection %"PRIuLONGEST", %lu objects.\n", (ulongest_t)c, i);
       for(r = 0; r < exactRootsCOUNT; ++r) {
         cdie(exactRoots[r] == objNULL || dylan_check(exactRoots[r]),
              "all roots check");

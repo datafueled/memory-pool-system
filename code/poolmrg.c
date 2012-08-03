@@ -1,6 +1,6 @@
 /* poolmrg.c: MANUAL RANK GUARDIAN POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolmrg.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmrg.c#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  * 
@@ -32,7 +32,7 @@
 #include "mpm.h"
 #include "poolmrg.h"
 
-SRCID(poolmrg, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmrg.c#14 $");
+SRCID(poolmrg, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmrg.c#15 $");
 
 
 /* Types */
@@ -477,9 +477,6 @@ static MessageClassStruct MRGMessageClassStruct = {
  */
 static void MRGSegPairDestroy(MRGRefSeg refseg, MRG mrg)
 {
-  Pool pool;
-
-  pool = MRG2Pool(mrg);
   RingRemove(&refseg->mrgRing);
   RingFinish(&refseg->mrgRing);
   refseg->sig = SigInvalid;

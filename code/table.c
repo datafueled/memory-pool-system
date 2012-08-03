@@ -1,6 +1,6 @@
 /* table.h: A dictionary mapping a Word to a void*
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/table.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/table.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .note.good-hash: As is common in hash table implementations, we
@@ -65,7 +65,7 @@ static size_t sizeFloorLog2(size_t size)
 static ulong TableHash(Word key)
 {
   /* Shift some randomness into the low bits. */
-  return (key >> 10) + key;
+  return (ulong)((key >> 10) + key);
 }
 
 
@@ -157,7 +157,7 @@ extern Res TableCreate(Table *tableReturn, size_t length)
   if(table == NULL) goto failMallocTable;
   if (length < 2) length = 2;
   /* Table size is length rounded up to the next power of 2. */
-  table->length = 1 << (sizeFloorLog2(length-1) + 1);
+  table->length = (size_t)1 << (sizeFloorLog2(length-1) + 1);
   table->count = 0;
   table->limit = (size_t)(.5 * length);
   table->array = malloc(sizeof(TableEntryStruct) * length);

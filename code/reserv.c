@@ -1,6 +1,6 @@
 /* reserv.c: ARENA RESERVOIR
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/reserv.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/reserv.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * IMPROVEMENTS
@@ -11,7 +11,7 @@
 
 #include "mpm.h"
 
-SRCID(reserv, "$Id: //info.ravenbrook.com/project/mps/master/code/reserv.c#9 $");
+SRCID(reserv, "$Id: //info.ravenbrook.com/project/mps/master/code/reserv.c#10 $");
 
 
 /* The reservoir pool is defined here. See <design/reservoir/> */
@@ -215,7 +215,6 @@ static void reservoirShrink(Reservoir reservoir, Size want)
 Res ReservoirWithdraw(Addr *baseReturn, Tract *baseTractReturn,
                       Reservoir reservoir, Size size, Pool pool)
 {
-  Pool respool;
   Arena arena;
  
   AVER(baseReturn != NULL);
@@ -226,7 +225,6 @@ Res ReservoirWithdraw(Addr *baseReturn, Tract *baseTractReturn,
   AVER(SizeIsAligned(size, ArenaAlign(arena)));
   AVER(size > 0);
   AVERT(Pool, pool);
-  respool = &reservoir->poolStruct;
 
   /* @@@@ As a short-term measure, we only permit the reservoir to */
   /* allocate single-page regions. */

@@ -1,6 +1,6 @@
 /* seg.c: SEGMENTS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/seg.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/seg.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: The design for this module is <design/seg/>.
@@ -29,7 +29,7 @@
 #include "tract.h"
 #include "mpm.h"
 
-SRCID(seg, "$Id: //info.ravenbrook.com/project/mps/master/code/seg.c#11 $");
+SRCID(seg, "$Id: //info.ravenbrook.com/project/mps/master/code/seg.c#12 $");
 
 
 /* SegGCSeg -- convert generic Seg to GCSeg */
@@ -210,7 +210,7 @@ failInit:
 static void SegFinish(Seg seg)
 {
   Arena arena;
-  Addr addr, base, limit;
+  Addr addr, limit;
   Tract tract;
   SegClass class;
 
@@ -231,8 +231,8 @@ static void SegFinish(Seg seg)
   /* See <code/shield.c#shield.flush> */
   ShieldFlush(PoolArena(SegPool(seg)));
 
-  base = SegBase(seg);
   limit = SegLimit(seg);
+  
   TRACT_TRACT_FOR(tract, addr, arena, seg->firstTract, limit) {
     AVER(TractCheck(tract));  /* <design/check/#type.no-sig> */
     TractSetWhite(tract, TraceSetEMPTY);

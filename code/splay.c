@@ -1,6 +1,6 @@
 /* splay.c: SPLAY TREE IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/splay.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/splay.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Splay trees are used to manage potentially unbounded
@@ -17,7 +17,7 @@
 #include "splay.h"
 #include "mpm.h"
 
-SRCID(splay, "$Id: //info.ravenbrook.com/project/mps/master/code/splay.c#11 $");
+SRCID(splay, "$Id: //info.ravenbrook.com/project/mps/master/code/splay.c#12 $");
 
 
 /* Basic getter and setter methods */
@@ -801,7 +801,7 @@ typedef struct {
   SplayTestNodeMethod testNode;
   SplayTestTreeMethod testTree;
   void *p;
-  unsigned long s;
+  Size s;
   SplayTree tree;
 } SplayFindClosureStruct, *SplayFindClosure;
 
@@ -809,7 +809,7 @@ static Compare SplayFindFirstCompare(void *key, SplayNode node)
 {
   SplayFindClosure closure;
   void *closureP;
-  unsigned long closureS;
+  Size closureS;
   SplayTestNodeMethod testNode;
   SplayTestTreeMethod testTree;
   SplayTree tree;
@@ -840,7 +840,7 @@ static Compare SplayFindLastCompare(void *key, SplayNode node)
 {
   SplayFindClosure closure;
   void *closureP;
-  unsigned long closureS;
+  Size closureS;
   SplayTestNodeMethod testNode;
   SplayTestTreeMethod testTree;
   SplayTree tree;
@@ -883,7 +883,7 @@ static Compare SplayFindLastCompare(void *key, SplayNode node)
 Bool SplayFindFirst(SplayNode *nodeReturn, SplayTree tree,
                            SplayTestNodeMethod testNode,
                            SplayTestTreeMethod testTree,
-                           void *closureP, unsigned long closureS)
+                           void *closureP, Size closureS)
 {
   SplayNode node;
   SplayFindClosureStruct closureStruct;
@@ -919,7 +919,7 @@ Bool SplayFindFirst(SplayNode *nodeReturn, SplayTree tree,
 Bool SplayFindLast(SplayNode *nodeReturn, SplayTree tree,
                           SplayTestNodeMethod testNode,
                           SplayTestTreeMethod testTree,
-                          void *closureP, unsigned long closureS)
+                          void *closureP, Size closureS)
 {
   SplayNode node;
   SplayFindClosureStruct closureStruct;

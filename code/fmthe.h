@@ -1,6 +1,6 @@
 /* fmthe.h: HEADERS FOR DYLAN-LIKE OBJECT FORMATS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/fmthe.h#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/fmthe.h#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */
@@ -21,7 +21,7 @@ extern mps_res_t HeaderWeakFormatCheck(mps_addr_t addr);
 #define realTYPE 0x33
 #define realHeader (realTYPE + 0x12345600)
 #define padTYPE  0xaa
-#define headerType(header) ((header) & ((1 << headerTypeBits) - 1))
+#define headerType(header) ((header) & (((mps_word_t)1 << headerTypeBits) - 1))
 #define headerPadSize(header) ((header) >> headerTypeBits)
 #define padHeader(size) ((size << headerTypeBits) | padTYPE)
 

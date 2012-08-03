@@ -1,6 +1,6 @@
 /* poollo.c: LEAF POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poollo.c#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poollo.c#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -12,7 +12,7 @@
 #include "mpm.h"
 #include "mps.h"
 
-SRCID(poollo, "$Id: //info.ravenbrook.com/project/mps/master/code/poollo.c#13 $");
+SRCID(poollo, "$Id: //info.ravenbrook.com/project/mps/master/code/poollo.c#16 $");
 
 
 #define LOGen ((Serial)1)
@@ -108,7 +108,7 @@ static Res loSegInit(Seg seg, Pool pool, Addr base, Size size,
   Size tablebytes;      /* # bytes in each control array */
   Arena arena;
   /* number of bits needed in each control array */
-  unsigned long bits;
+  Count bits;
   void *p;
 
   AVERT(Seg, seg);
@@ -165,7 +165,7 @@ static void loSegFinish(Seg seg)
   Pool pool;
   Arena arena;
   Size tablesize;
-  unsigned long bits;
+  Count bits;
 
   AVERT(Seg, seg);
   loseg = SegLOSeg(seg);
@@ -234,9 +234,8 @@ static Bool loSegFindFree(Addr *bReturn, Addr *lReturn,
   Index baseIndex, limitIndex;
   LO lo;
   Seg seg;
-  Arena arena;
   Count agrains;
-  unsigned long tablesize;
+  Count bits;
   Addr segBase;
 
   AVER(bReturn != NULL);
@@ -246,7 +245,6 @@ static Bool loSegFindFree(Addr *bReturn, Addr *lReturn,
   lo = loseg->lo;
   seg = LOSegSeg(loseg);
   AVER(SizeIsAligned(size, LOPool(lo)->alignment));
-  arena = PoolArena(LOPool(lo));
 
   /* agrains is the number of grains corresponding to the size */
   /* of the allocation request */
@@ -260,9 +258,9 @@ static Bool loSegFindFree(Addr *bReturn, Addr *lReturn,
     return FALSE;
   }
 
-  tablesize = SegSize(seg) >> lo->alignShift;
+  bits = SegSize(seg) >> lo->alignShift;
   if(!BTFindLongResRange(&baseIndex, &limitIndex, loseg->alloc,
-                     0, tablesize, agrains)) {
+                     0, bits, agrains)) {
     return FALSE;
   }
 
@@ -408,7 +406,7 @@ static void loSegReclaim(LOSeg loseg, Trace trace)
 /* a leaf pool, so there can't be any dangling references */
 static void LOWalk(Pool pool, Seg seg,
                    FormattedObjectsStepMethod f,
-                   void *p, unsigned long s)
+                   void *p, size_t s)
 {
   Addr base;
   LO lo;
@@ -491,7 +489,7 @@ static Res LOInit(Pool pool, va_list arg)
   pool->format = format;
   lo->poolStruct.alignment = format->alignment;
   lo->alignShift =
-    SizeLog2((unsigned long)PoolAlignment(&lo->poolStruct));
+    SizeLog2((Size)PoolAlignment(&lo->poolStruct));
   lo->gen = LOGen; /* may be modified in debugger */
   res = ChainCreate(&lo->chain, arena, 1, &loGenParam);
   if (res != ResOK)
@@ -547,7 +545,6 @@ static Res LOBufferFill(Addr *baseReturn, Addr *limitReturn,
   Ring node, nextNode;
   LO lo;
   LOSeg loseg;
-  Arena arena;
   Addr base, limit;
 
   AVER(baseReturn != NULL);
@@ -561,8 +558,6 @@ static Res LOBufferFill(Addr *baseReturn, Addr *limitReturn,
   AVER(size > 0);
   AVER(SizeIsAligned(size, PoolAlignment(pool)));
   AVER(BoolCheck(withReservoirPermit));
-
-  arena = PoolArena(pool);
 
   /* Try to find a segment with enough space already. */
   RING_FOR(node, &pool->segRing, nextNode) {
@@ -619,7 +614,6 @@ static void LOBufferEmpty(Pool pool, Buffer buffer, Addr init, Addr limit)
   Seg seg;
   LOSeg loseg;
   Index baseIndex, initIndex, limitIndex;
-  Arena arena;
 
   AVERT(Pool, pool);
   lo = PARENT(LOStruct, poolStruct, pool);
@@ -634,7 +628,6 @@ static void LOBufferEmpty(Pool pool, Buffer buffer, Addr init, Addr limit)
   AVERT(LOSeg, loseg);
   AVER(loseg->lo == lo);
 
-  arena = PoolArena(pool);
   base = BufferBase(buffer);
   segBase = SegBase(seg);
 
@@ -669,7 +662,7 @@ static void LOBufferEmpty(Pool pool, Buffer buffer, Addr init, Addr limit)
 static Res LOWhiten(Pool pool, Trace trace, Seg seg)
 {
   LO lo;
-  unsigned long bits;
+  Count bits;
 
   AVERT(Pool, pool);
   lo = PoolPoolLO(pool);
@@ -817,7 +810,7 @@ static Bool LOCheck(LO lo)
   CHECKD(Pool, &lo->poolStruct);
   CHECKL(lo->poolStruct.class == EnsureLOPoolClass());
   CHECKL(ShiftCheck(lo->alignShift));
-  CHECKL(1uL << lo->alignShift == PoolAlignment(&lo->poolStruct));
+  CHECKL((Align)1 << lo->alignShift == PoolAlignment(&lo->poolStruct));
   CHECKD(Chain, lo->chain);
   CHECKD(PoolGen, &lo->pgen);
   return TRUE;

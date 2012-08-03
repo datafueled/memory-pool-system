@@ -1,6 +1,6 @@
 /* poolsnc.c: STACK NO CHECKING POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -21,7 +21,7 @@
 #include "mpscsnc.h"
 #include "mpm.h"
 
-SRCID(poolsnc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#9 $");
+SRCID(poolsnc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#11 $");
 
 
 #define SNCGen  ((Serial)1) /* "generation" for SNC pools */
@@ -615,7 +615,7 @@ static void SNCFramePopPending(Pool pool, Buffer buf, AllocFrame frame)
 
 
 static void SNCWalk(Pool pool, Seg seg, FormattedObjectsStepMethod f,
-                    void *p, unsigned long s)
+                    void *p, size_t s)
 {
   AVERT(Pool, pool);
   AVERT(Seg, seg);
@@ -643,8 +643,8 @@ static void SNCWalk(Pool pool, Seg seg, FormattedObjectsStepMethod f,
       limit = SegLimit(seg);
 
     while(object < limit) {
-      (*f)(object, pool->format, pool, p, s);
-      nextObject = (*pool->format->skip)(object);
+      (*f)(object, format, pool, p, s);
+      nextObject = (*format->skip)(object);
       AVER(nextObject > object);
       object = nextObject;
     }

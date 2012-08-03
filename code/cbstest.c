@@ -1,6 +1,6 @@
 /* cbstest.c: COALESCING BLOCK STRUCTURE TEST
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/cbstest.c#10 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/cbstest.c#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -18,7 +18,7 @@ struct itimerspec; /* stop complaints from time.h */
 #endif
 #include <time.h>
 
-SRCID(cbstest, "$Id: //info.ravenbrook.com/project/mps/master/code/cbstest.c#10 $");
+SRCID(cbstest, "$Id: //info.ravenbrook.com/project/mps/master/code/cbstest.c#11 $");
 
 
 #define ArraySize ((Size)123456)
@@ -501,7 +501,7 @@ static void find(CBS cbs, void *block, BT alloc, Size size, Bool high,
 
   expected = (high ? BTFindLongResRangeHigh : BTFindLongResRange)
                (&expectedBase, &expectedLimit, alloc,
-                (Index)0, (Index)ArraySize, (unsigned long)size);
+                (Index)0, (Index)ArraySize, (Count)size);
 
   if (expected) {
     oldSize = (expectedLimit - expectedBase) * Alignment;

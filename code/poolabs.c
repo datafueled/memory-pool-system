@@ -1,6 +1,6 @@
 /* poolabs.c: ABSTRACT POOL CLASSES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 
 #include "mpm.h"
 
-SRCID(poolabs, "$Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#14 $");
+SRCID(poolabs, "$Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#15 $");
 
 
 typedef PoolClassStruct AbstractPoolClassStruct;
@@ -621,7 +621,7 @@ Res PoolTrivFramePop(Pool pool, Buffer buf, AllocFrame frame)
 
 
 void PoolNoWalk(Pool pool, Seg seg,
-                FormattedObjectsStepMethod f, void *p, Size s)
+                FormattedObjectsStepMethod f, void *p, size_t s)
 {
   AVERT(Pool, pool);
   AVERT(Seg, seg);

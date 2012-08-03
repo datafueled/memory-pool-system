@@ -1,6 +1,6 @@
 /* thfri3.c: Threads Manager for Intel x86 systems on FreeBSD
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/thfri4.c#8 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/thfri4.c#9 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is a pthreads implementation of the threads manager.
@@ -36,7 +36,7 @@
  * assumed to be recorded in the context at pointer-aligned boundaries.
  */
 
-#include "prmcfr.h"
+#include "prmcix.h"
 #include "mpm.h"
 
 #if !defined(MPS_OS_FR) || !defined(MPS_ARCH_I4)
@@ -46,7 +46,7 @@
 #include <pthread.h>
 #include "pthrdext.h"
 
-SRCID(thfri4, "$Id: //info.ravenbrook.com/project/mps/master/code/thfri4.c#8 $");
+SRCID(thfri4, "$Id: //info.ravenbrook.com/project/mps/master/code/thfri4.c#9 $");
 
 
 /* ThreadStruct -- thread desriptor */

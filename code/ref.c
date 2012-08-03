@@ -1,6 +1,6 @@
 /* ref.c: REFERENCES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/ref.c#8 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/ref.c#9 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Implement operations on Ref, RefSet, ZoneSet, and Rank.
@@ -10,7 +10,7 @@
 
 #include "mpm.h"
 
-SRCID(ref, "$Id: //info.ravenbrook.com/project/mps/master/code/ref.c#8 $");
+SRCID(ref, "$Id: //info.ravenbrook.com/project/mps/master/code/ref.c#9 $");
 
 
 /* RankCheck -- check a rank value */
@@ -27,7 +27,7 @@ Bool RankCheck(Rank rank)
 
 Bool RankSetCheck(RankSet rankSet)
 {
-  CHECKL(rankSet < (1uL << RankLIMIT));
+  CHECKL(rankSet < ((ULongest)1 << RankLIMIT));
   UNUSED(rankSet); /* <code/mpm.c#check.unused> */
   return TRUE;
 }

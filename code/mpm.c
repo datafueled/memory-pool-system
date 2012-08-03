@@ -1,6 +1,6 @@
 /* mpm.c: GENERAL MPM SUPPORT
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Miscellaneous support for the implementation of the MPM
@@ -15,7 +15,7 @@
 #include <float.h>
 #include <limits.h>
 
-SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#14 $");
+SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#16 $");
 
 
 #if defined(AVER_AND_CHECK)
@@ -34,7 +34,7 @@ unsigned CheckLevel = CHECKLEVEL_INITIAL;
 Bool MPMCheck(void)
 {
   CHECKL(sizeof(Word) * CHAR_BIT == MPS_WORD_WIDTH);
-  CHECKL(1uL << MPS_WORD_SHIFT == MPS_WORD_WIDTH);
+  CHECKL((Word)1 << MPS_WORD_SHIFT == MPS_WORD_WIDTH);
   CHECKL(AlignCheck(MPS_PF_ALIGN));
   /* Check that trace ids will fit in the TraceId type. */
   CHECKL(TraceLIMIT <= UINT_MAX);
@@ -52,10 +52,10 @@ Bool MPMCheck(void)
   CHECKL(!SizeIsAligned(31051, 1024));
   CHECKL(!SizeIsP2(0));
   CHECKL(SizeIsP2(128));
-  CHECKL(SizeLog2(1L) == 0);
-  CHECKL(SizeLog2(256L) == 8);
-  CHECKL(SizeLog2(65536L) == 16);
-  CHECKL(SizeLog2(131072L) == 17);
+  CHECKL(SizeLog2((Size)1) == 0);
+  CHECKL(SizeLog2((Size)256) == 8);
+  CHECKL(SizeLog2((Size)65536) == 16);
+  CHECKL(SizeLog2((Size)131072) == 17);
 
   /* .check.writef: We check that various types will fit in a Word; */
   /* See .writef.check.  Don't need to check WriteFS or WriteFF as they */
@@ -218,13 +218,13 @@ Bool ResIsAllocFailure(Res res)
 }
 
 
-/* WriteWord -- output a textual representation of a word to a stream
+/* WriteULongest -- output a textual representation of an integer to a stream
  *
  * Output as an unsigned value in the given base (2-16), padded to the
  * given width.  */
 
-static Res WriteWord(mps_lib_FILE *stream, Word w, unsigned base,
-                     unsigned width)
+static Res WriteULongest(mps_lib_FILE *stream, ULongest w, unsigned base,
+                         unsigned width)
 {
   static const char digit[16 + 1] = "0123456789ABCDEF";
     /* + 1 for terminator: unused, but prevents compiler warning */
@@ -412,7 +412,7 @@ static Res WriteDouble(mps_lib_FILE *stream, double d)
  * .writef.des: See <design/writef/>, also <design/lib/>
  *
  * .writef.p: There is an assumption that void * fits in Word in
- * the case of $P, and unsigned long for $U and $B.  This is checked in
+ * the case of $P, and ULongest for $U and $B.  This is checked in
  * MPMCheck.
  *
  * .writef.div: Although MPS_WORD_WIDTH/4 appears three times, there
@@ -469,15 +469,15 @@ Res WriteF_firstformat_v(mps_lib_FILE *stream,
         switch(*format) {
           case 'A': {                   /* address */
             WriteFA addr = va_arg(args, WriteFA);
-            res = WriteWord(stream, (Word)addr, 16,
-                            (sizeof(WriteFA) * CHAR_BIT + 3) / 4);
+            res = WriteULongest(stream, (ULongest)addr, 16,
+                                (sizeof(WriteFA) * CHAR_BIT + 3) / 4);
             if (res != ResOK) return res;
           } break;
 
           case 'P': {                   /* pointer, see .writef.p */
             WriteFP p = va_arg(args, WriteFP);
-            res = WriteWord(stream, (Word)p, 16,
-                            (sizeof(WriteFP) * CHAR_BIT + 3)/ 4);
+            res = WriteULongest(stream, (ULongest)p, 16,
+                                (sizeof(WriteFP) * CHAR_BIT + 3)/ 4);
             if (res != ResOK) return res;
           } break;
 
@@ -486,8 +486,8 @@ Res WriteF_firstformat_v(mps_lib_FILE *stream,
             WriteFF *fp = &f; /* dodge to placate splint */
             Byte *b = *((Byte **)&fp);
             for(i=0; i < sizeof(WriteFF); i++) {
-              res = WriteWord(stream, (Word)(b[i]), 16,
-                              (CHAR_BIT + 3) / 4);
+              res = WriteULongest(stream, (ULongest)(b[i]), 16,
+                                  (CHAR_BIT + 3) / 4);
               if (res != ResOK) return res;
             }
           } break;
@@ -506,26 +506,26 @@ Res WriteF_firstformat_v(mps_lib_FILE *stream,
        
           case 'W': {                   /* word */
             WriteFW w = va_arg(args, WriteFW);
-            res = WriteWord(stream, (Word)w, 16,
-                            (sizeof(WriteFW) * CHAR_BIT + 3) / 4);
+            res = WriteULongest(stream, (ULongest)w, 16,
+                                (sizeof(WriteFW) * CHAR_BIT + 3) / 4);
             if (res != ResOK) return res;
           } break;
 
           case 'U': {                   /* decimal, see .writef.p */
             WriteFU u = va_arg(args, WriteFU);
-            res = WriteWord(stream, (Word)u, 10, 0);
+            res = WriteULongest(stream, (ULongest)u, 10, 0);
             if (res != ResOK) return res;
           } break;
 
           case '3': {                   /* decimal for thousandths */
             WriteFU u = va_arg(args, WriteFU);
-            res = WriteWord(stream, (Word)u, 10, 3);
+            res = WriteULongest(stream, (ULongest)u, 10, 3);
             if (res != ResOK) return res;
           } break;
 
           case 'B': {                   /* binary, see .writef.p */
             WriteFB b = va_arg(args, WriteFB);
-            res = WriteWord(stream, (Word)b, 2, sizeof(WriteFB) * CHAR_BIT);
+            res = WriteULongest(stream, (ULongest)b, 2, sizeof(WriteFB) * CHAR_BIT);
             if (res != ResOK) return res;
           } break;
        

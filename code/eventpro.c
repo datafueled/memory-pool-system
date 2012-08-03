@@ -1,7 +1,7 @@
 /* eventpro.c: Event processing routines
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/eventpro.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventpro.c#12 $
  */
 
 #include "config.h"
@@ -14,6 +14,7 @@
 #include "eventpro.h"
 #include "misc.h"
 #include "mpmtypes.h"
+#include "testlib.h" /* for ulongest_t and associated print formats */
 
 #include <assert.h> /* assert */
 #include <stdlib.h> /* size_t */
@@ -94,7 +95,7 @@ static size_t eventType2Index(EventType type)
   for(i = 0; i < eventTypeCount; ++i)
     if (eventTypes[i].type == type)
       return i;
-  error("Unknown event type %08lX", type);
+  error("Unknown event type %0"PRIwWORD PRIXLONGEST, (ulongest_t)type);
   return 0;
 }
 
@@ -109,7 +110,7 @@ static size_t eventCode2Index(EventCode code, Bool errorp)
     if (eventTypes[i].code == code)
       return i;
   if (errorp)
-    error("Unknown event code %08lX", code);
+    error("Unknown event code %0"PRIwWORD PRIXLONGEST, (ulongest_t)code);
   return 0;
 }
 

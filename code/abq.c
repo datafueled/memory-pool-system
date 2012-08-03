@@ -1,6 +1,6 @@
 /* abq.c: AVAILABLE BLOCK QUEUE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/abq.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/abq.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: Any MPS developer
@@ -15,7 +15,7 @@
 #include "cbs.h"
 #include "mpm.h"
 
-SRCID(abq, "$Id: //info.ravenbrook.com/project/mps/master/code/abq.c#11 $");
+SRCID(abq, "$Id: //info.ravenbrook.com/project/mps/master/code/abq.c#12 $");
 
 
 /* Private prototypes */
@@ -168,7 +168,7 @@ Res ABQPeek(ABQ abq, CBSBlock *blockReturn)
 /* ABQDelete -- delete a block from the ABQ */
 Res ABQDelete(ABQ abq, CBSBlock block)
 {
-  Index index, next, elements, in;
+  Index index, next, in;
   CBSBlock *queue;
 
   AVERT(ABQ, abq);
@@ -178,7 +178,6 @@ Res ABQDelete(ABQ abq, CBSBlock block)
 
   index = abq->out;
   in = abq->in;
-  elements = abq->elements;
   queue = abq->queue;
  
   while (index != in) {

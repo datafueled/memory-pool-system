@@ -1,6 +1,6 @@
 /* amcss.c: POOL CLASS AMC STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/amcss.c#21 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/amcss.c#23 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */
@@ -38,7 +38,7 @@ static mps_gen_param_s testChain[genCOUNT] = {
 
 
 /* objNULL needs to be odd so that it's ignored in exactRoots. */
-#define objNULL           ((mps_addr_t)0xDECEA5ED)
+#define objNULL           ((mps_addr_t)MPS_WORD_CONST(0xDECEA5ED))
 
 
 static mps_pool_t pool;
@@ -86,7 +86,7 @@ static void report(mps_arena_t arena)
         nCollsStart += 1;
         printf("\n{\n  Collection %d started.  Because:\n", nCollsStart);
         printf("    %s\n", mps_message_gc_start_why(arena, message));
-        printf("    clock: %lu\n", (unsigned long)mps_message_clock(arena, message));
+        printf("    clock: %"PRIuLONGEST"\n", (ulongest_t)mps_message_clock(arena, message));
         break;
       }
       case mps_message_type_gc(): {
@@ -98,10 +98,10 @@ static void report(mps_arena_t arena)
         not_condemned = mps_message_gc_not_condemned_size(arena, message);
 
         printf("\n  Collection %d finished:\n", nCollsDone);
-        printf("    live %lu\n", (unsigned long)live);
-        printf("    condemned %lu\n", (unsigned long)condemned);
-        printf("    not_condemned %lu\n", (unsigned long)not_condemned);
-        printf("    clock: %lu\n", (unsigned long)mps_message_clock(arena, message));
+        printf("    live %"PRIuLONGEST"\n", (ulongest_t)live);
+        printf("    condemned %"PRIuLONGEST"\n", (ulongest_t)condemned);
+        printf("    not_condemned %"PRIuLONGEST"\n", (ulongest_t)not_condemned);
+        printf("    clock: %"PRIuLONGEST"\n", (ulongest_t)mps_message_clock(arena, message));
         printf("}\n");
 
         if(condemned > (gen1SIZE + gen2SIZE + (size_t)128) * 1024) {
@@ -210,7 +210,7 @@ static void *test(void *arg, size_t s)
   ramping = 1;
   objs = 0;
   while (collections < collectionsCOUNT) {
-    unsigned long c;
+    mps_word_t c;
     size_t r;
 
     c = mps_collections(arena);
@@ -230,9 +230,13 @@ static void *test(void *arg, size_t s)
          */
         
         /* how many random addrs must we try, to hit the arena once? */
-        hitRatio = ((size_t)-1 / mps_arena_committed(arena));
+        hitRatio = (0xfffffffful / mps_arena_committed(arena));
         for (i = 0; i < hitsWanted * hitRatio ; i++) {
-          mps_addr_t p = rnd_addr();
+          /* An exact root maybe in the arena, so add a random 32-bit
+           * offset to it.  We may get no hits if it is objNULL.
+           */ 
+          mps_addr_t p = (char *)exactRoots[rnd() % exactRootsCOUNT]
+                         + rnd()-0x80000000ul;
           if (mps_arena_has_addr(arena, p)) {
             printf("%p is in the arena\n", p);
           }

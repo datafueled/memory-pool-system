@@ -1,6 +1,6 @@
 /* poolawl.c: AUTOMATIC WEAK LINKED POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#16 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#18 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *
@@ -43,7 +43,7 @@
 #include "mpm.h"
 #include "chain.h"
 
-SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#16 $");
+SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#18 $");
 
 
 #define AWLSig ((Sig)0x519B7A37) /* SIGnature PooL AWL */
@@ -1145,7 +1145,7 @@ static Res AWLAccess(Pool pool, Seg seg, Addr addr,
 /* AWLWalk -- walk all objects */
 
 static void AWLWalk(Pool pool, Seg seg, FormattedObjectsStepMethod f,
-                    void *p, unsigned long s)
+                    void *p, size_t s)
 {
   AWL awl;
   AWLSeg awlseg;
@@ -1242,7 +1242,7 @@ static Bool AWLCheck(AWL awl)
   CHECKS(AWL, awl);
   CHECKD(Pool, &awl->poolStruct);
   CHECKL(awl->poolStruct.class == AWLPoolClassGet());
-  CHECKL(1uL << awl->alignShift == awl->poolStruct.alignment);
+  CHECKL((Align)1 << awl->alignShift == awl->poolStruct.alignment);
   CHECKD(Chain, awl->chain);
   /* 30 is just a sanity check really, not a constraint. */
   CHECKL(0 <= awl->gen);

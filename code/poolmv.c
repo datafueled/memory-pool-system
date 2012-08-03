@@ -1,6 +1,6 @@
 /* poolmv.c: MANUAL VARIABLE POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -31,7 +31,7 @@
 #include "poolmfs.h"
 #include "mpm.h"
 
-SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#11 $");
+SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#12 $");
 
 
 #define mvBlockPool(mv) MFSPool(&(mv)->blockPoolStruct)
@@ -824,7 +824,6 @@ size_t mps_mv_size(mps_pool_t mps_pool)
   Pool pool;
   MV mv;
   MVSpan span;
-  Arena arena;
   Size f = 0;
   Ring spans, node = NULL, nextNode; /* gcc whinge stop */
 
@@ -833,7 +832,6 @@ size_t mps_mv_size(mps_pool_t mps_pool)
   AVERT(Pool, pool);
   mv = Pool2MV(pool);
   AVERT(MV, mv);
-  arena = PoolArena(pool);
 
   spans = &mv->spans;
   RING_FOR(node, spans, nextNode) {

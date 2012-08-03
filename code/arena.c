@@ -1,6 +1,6 @@
 /* arena.c: ARENA ALLOCATION FEATURES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/arena.c#18 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/arena.c#19 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .sources: <design/arena/> is the main design document.  */
@@ -9,7 +9,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/master/code/arena.c#18 $");
+SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/master/code/arena.c#19 $");
 
 
 /* ArenaControlPool -- get the control pool */
@@ -172,7 +172,7 @@ Res ArenaInit(Arena arena, ArenaClass class)
   arena->spareCommitted = (Size)0;
   arena->spareCommitLimit = ARENA_INIT_SPARE_COMMIT_LIMIT;
   /* alignment is usually overridden by init */
-  arena->alignment = 1 << ARENA_ZONESHIFT;
+  arena->alignment = (Align)1 << ARENA_ZONESHIFT;
   /* zoneShift is usually overridden by init */
   arena->zoneShift = ARENA_ZONESHIFT;
   arena->poolReady = FALSE;     /* <design/arena/#pool.ready> */

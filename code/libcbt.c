@@ -1,6 +1,6 @@
 /* libcbt: MPS LIBRARY CALLBACK TEST
  *
- * $Header: //info.ravenbrook.com/project/mps/master/code/libcbt.c#2 $
+ * $Header: //info.ravenbrook.com/project/mps/master/code/libcbt.c#3 $
  * Copyright (C) 2005 Ravenbrook Limited.  See end of file for license.
  *
  * This is a simple test of the MPS Library Callback interface
@@ -42,7 +42,7 @@ int main(void)
   die(mps_lib_callback_register("mps_clock",
     (mps_lib_function_t)libcbt_clock),
     "register clock");
-  die(mps_arena_create(&arena, mps_arena_class_vm(), 1000*1000),
+  die(mps_arena_create(&arena, mps_arena_class_vm(), (size_t)1000*1000),
     "mps_arena_create");
   if(defects) {
     printf("Conclusion: Defects detected.\n");

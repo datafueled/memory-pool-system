@@ -1,6 +1,6 @@
 /* segsmss.c: Segment splitting and merging stress test
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/segsmss.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/segsmss.c#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -376,13 +376,13 @@ static void AMSTFinish(Pool pool)
   AVERT(AMST, amst);
 
   printf("\nDestroying pool, having performed:\n");
-  printf("    %lu splits          (S)\n", (unsigned long)amst->splits);
-  printf("    %lu merges          (M)\n", (unsigned long)amst->merges);
-  printf("    %lu aborted splits  (B)\n", (unsigned long)amst->badSplits);
-  printf("    %lu aborted merges  (D)\n", (unsigned long)amst->badMerges);
+  printf("    %"PRIuLONGEST" splits          (S)\n", (ulongest_t)amst->splits);
+  printf("    %"PRIuLONGEST" merges          (M)\n", (ulongest_t)amst->merges);
+  printf("    %"PRIuLONGEST" aborted splits  (B)\n", (ulongest_t)amst->badSplits);
+  printf("    %"PRIuLONGEST" aborted merges  (D)\n", (ulongest_t)amst->badMerges);
   printf("  which included:\n");
-  printf("    %lu buffered splits (C)\n", (unsigned long)amst->bsplits);
-  printf("    %lu buffered merges (J)\n", (unsigned long)amst->bmerges);
+  printf("    %"PRIuLONGEST" buffered splits (C)\n", (ulongest_t)amst->bsplits);
+  printf("    %"PRIuLONGEST" buffered merges (J)\n", (ulongest_t)amst->bmerges);
 
   AMSFinish(pool);
   amst->sig = SigInvalid;
@@ -433,14 +433,10 @@ static Bool AMSSegRegionIsFree(Seg seg, Addr base, Addr limit)
  */
 static void AMSUnallocateRange(Seg seg, Addr base, Addr limit)
 {
-  Pool pool;
-  AMS ams;
   AMSSeg amsseg;
   Index baseIndex, limitIndex;
   /* parameters checked by caller */
 
-  pool = SegPool(seg);
-  ams = Pool2AMS(pool);
   amsseg = Seg2AMSSeg(seg);
 
   baseIndex = AMS_ADDR_INDEX(seg, base);
@@ -475,14 +471,10 @@ static void AMSUnallocateRange(Seg seg, Addr base, Addr limit)
  */
 static void AMSAllocateRange(Seg seg, Addr base, Addr limit)
 {
-  Pool pool;
-  AMS ams;
   AMSSeg amsseg;
   Index baseIndex, limitIndex;
   /* parameters checked by caller */
 
-  pool = SegPool(seg);
-  ams = Pool2AMS(pool);
   amsseg = Seg2AMSSeg(seg);
 
   baseIndex = AMS_ADDR_INDEX(seg, base);
@@ -714,7 +706,7 @@ static mps_class_t mps_class_amst(void)
 #define totalSizeMAX    sizeScale * 800 * (size_t)1024
 #define totalSizeSTEP   200 * (size_t)1024
 /* objNULL needs to be odd so that it's ignored in exactRoots. */
-#define objNULL         ((mps_addr_t)0xDECEA5ED)
+#define objNULL         ((mps_addr_t)MPS_WORD_CONST(0xDECEA5ED))
 #define testArenaSIZE   ((size_t)16<<20)
 #define initTestFREQ    6000
 #define stressTestFREQ  40
@@ -778,7 +770,7 @@ static void *test(void *arg, size_t s)
   for(i = 0; i < exactRootsCOUNT; ++i)
     exactRoots[i] = objNULL;
   for(i = 0; i < ambigRootsCOUNT; ++i)
-    ambigRoots[i] = (mps_addr_t)rnd();
+    ambigRoots[i] = rnd_addr();
 
   die(mps_root_create_table_masked(&exactRoot, arena,
                                    MPS_RANK_EXACT, (mps_rm_t)0,
@@ -790,7 +782,7 @@ static void *test(void *arg, size_t s)
                             &ambigRoots[0], ambigRootsCOUNT),
       "root_create_table(ambig)");
 
-  printf(indent);
+  fputs(indent, stdout);
 
   /* create an ap, and leave it busy */
   die(mps_reserve(&busy_init, busy_ap, 64), "mps_reserve busy");
@@ -799,9 +791,9 @@ static void *test(void *arg, size_t s)
   while(totalSize < totalSizeMAX) {
     if (totalSize > lastStep + totalSizeSTEP) {
       lastStep = totalSize;
-      printf("\nSize %lu bytes, %lu objects.\n",
-             (unsigned long)totalSize, objs);
-      printf(indent);
+      printf("\nSize %"PRIuLONGEST" bytes, %"PRIuLONGEST" objects.\n",
+             (ulongest_t)totalSize, (ulongest_t)objs);
+      printf("%s", indent);
       fflush(stdout);
       for(i = 0; i < exactRootsCOUNT; ++i)
         cdie(exactRoots[i] == objNULL || dylan_check(exactRoots[i]),
@@ -875,18 +867,18 @@ int main(int argc, char **argv)
  * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- * 
+ *
  * 2. Redistributions in binary form must reproduce the above copyright
  * notice, this list of conditions and the following disclaimer in the
  * documentation and/or other materials provided with the distribution.
- * 
+ *
  * 3. Redistributions in any form must be accompanied by information on how
  * to obtain complete source code for this software and any accompanying
  * software that uses this software.  The source code must either be
@@ -897,7 +889,7 @@ int main(int argc, char **argv)
  * include source code for modules or files that typically accompany the
  * major components of the operating system on which the executable file
  * runs.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
  * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR

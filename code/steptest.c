@@ -1,6 +1,6 @@
 /* steptest.c: TEST FOR ARENA STEPPING
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/steptest.c#4 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/steptest.c#9 $
  * Copyright (C) 1998 Ravenbrook Limited.  See end of file for license.
  *
  * Loosely based on <code/amcss.c>.
@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define testArenaSIZE     ((size_t)(64l << 20))
+#define testArenaSIZE     ((size_t)((size_t)64 << 20))
 #define avLEN             3
 #define exactRootsCOUNT   200
 #define ambigRootsCOUNT   50
@@ -50,11 +50,11 @@ static mps_gen_param_s testChain[genCOUNT] = {
  * during allocation.
  */
 
-static size_t step_frequencies[] = {
+static unsigned long step_frequencies[] = {
     1000,
     5000,
     10000,
-    1000000000,
+    1000000000, /* one billion */
 };
 
 #define TESTS (sizeof(step_frequencies) / sizeof(step_frequencies[0]))
@@ -63,7 +63,7 @@ static int test_number = 0;
 
 
 /* objNULL needs to be odd so that it's ignored in exactRoots. */
-#define objNULL           ((mps_addr_t)0xDECEA5ED)
+#define objNULL           ((mps_addr_t)MPS_WORD_CONST(0xDECEA5ED))
 
 static mps_pool_t pool;
 static mps_ap_t ap;
@@ -83,7 +83,7 @@ double total_clock_time; /* Time spent reading the clock */
 long clock_reads;        /* Number of times clock is read */
 long steps;              /* # of mps_arena_step calls returning 1 */
 long no_steps;           /* # of mps_arena_step calls returning 0 */
-long alloc_bytes;        /* # of bytes allocated */
+size_t alloc_bytes;      /* # of bytes allocated */
 long commit_failures;    /* # of times mps_commit fails */
 
 
@@ -208,7 +208,7 @@ static void print_time(char *before, double t, char *after)
     char *x = prefixes+2; /* start at micro */
     double ot = t;
     if (before)
-        printf(before);
+        printf("%s", before);
     if (t > MAXPRINTABLE) {
         while (x[-1] && t > MAXPRINTABLE) {
             t /= 1000.0;
@@ -230,7 +230,7 @@ static void print_time(char *before, double t, char *after)
             printf("%g s", ot/1000000.0);
     }
     if (after)
-        printf(after);
+        printf("%s", after);
 }
 
 /* Make a single Dylan object */
@@ -323,7 +323,7 @@ static void *test(void *arg, size_t s)
     for(i = 0; i < exactRootsCOUNT; ++i)
         exactRoots[i] = objNULL;
     for(i = 0; i < ambigRootsCOUNT; ++i)
-        ambigRoots[i] = (mps_addr_t)rnd();
+        ambigRoots[i] = rnd_addr();
 
     die(mps_root_create_table_masked(&exactRoot, arena,
                                      MPS_RANK_EXACT, (mps_rm_t)0,
@@ -414,11 +414,11 @@ static void *test(void *arg, size_t s)
 
     total_mps_time = alloc_time + step_time + no_step_time;
     printf("Collection statistics:\n");
-    printf("  %lu collections\n", (unsigned long)collections);
-    printf("  %lu bytes condemned.\n", (unsigned long)condemned);
+    printf("  %"PRIuLONGEST" collections\n", (ulongest_t)collections);
+    printf("  %"PRIuLONGEST" bytes condemned.\n", (ulongest_t)condemned);
     printf("  %lu bytes not condemned.\n",
            (unsigned long)not_condemned);
-    printf("  %lu bytes survived.\n", (unsigned long)live);
+    printf("  %"PRIuLONGEST" bytes survived.\n", (ulongest_t)live);
     if (condemned) {
         printf("  Mortality %5.2f%%.\n",
                (1.0 - ((double)live)/condemned) * 100.0);
@@ -433,7 +433,8 @@ static void *test(void *arg, size_t s)
     }
 
     printf("Allocation statistics:\n");
-    printf("  %ld objects (%ld bytes) allocated.\n", objs, alloc_bytes);
+    printf("  %"PRIuLONGEST" objects (%"PRIuLONGEST" bytes) allocated.\n",
+           (ulongest_t)objs, (ulongest_t)alloc_bytes);
     printf("  Commit failed %ld times.\n", commit_failures);
 
     printf("Timings:\n");
@@ -471,7 +472,7 @@ static void *test(void *arg, size_t s)
     print_time("  (adjusted for clock timing: ",
                total_clock_time,
                " spent reading the clock;\n");
-    printf("   %lu clock reads; ", (unsigned long)clock_reads);
+    printf("   %"PRIuLONGEST" clock reads; ", (ulongest_t)clock_reads);
     print_time("", total_clock_time / clock_reads, " per read;");
     print_time(" recently measured as ", clock_time, ").\n");
     mps_ap_destroy(ap);
