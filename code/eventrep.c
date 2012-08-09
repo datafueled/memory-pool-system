@@ -1,7 +1,7 @@
 /* eventrep.c: Allocation replayer routines
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/eventrep.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventrep.c#10 $
  */
 
 #include "config.h"
@@ -29,9 +29,6 @@
 #include <stdlib.h> /* for EXIT_FAILURE */
 #include <stdio.h> /* for printf */
 #include "mpstd.h"
-#ifdef MPS_OS_SU
-#include "ossu.h"
-#endif
 
 
 #ifdef MPS_PF_W3I6MV

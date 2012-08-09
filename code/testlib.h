@@ -1,6 +1,6 @@
 /* testlib.h: TEST LIBRARY INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/testlib.h#17 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/testlib.h#18 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -17,9 +17,6 @@
 #include "mpstd.h"
 #ifdef MPS_OS_W3
 #include "mpswin.h"
-#endif
-#ifdef MPS_OS_SU
-#include "ossu.h"
 #endif
 #ifdef MPS_OS_XC
 #include "osxc.h"

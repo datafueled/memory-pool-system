@@ -1,6 +1,6 @@
 /* sacss.c: SAC MANUAL ALLOC STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/sacss.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/sacss.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */
@@ -15,9 +15,6 @@
 
 #include <stdio.h>
 #include "mpstd.h"
-#ifdef MPS_OS_SU
-#include "ossu.h"
-#endif
 #include <stdlib.h>
 #include <stdarg.h>
 #ifdef MPS_OS_IA

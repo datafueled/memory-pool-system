@@ -1,12 +1,10 @@
 /* protix.c: PROTECTION FOR UNIX
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/protix.c#3 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protix.c#4 $
  *  Copyright (c) 2001,2007 Ravenbrook Limited.  See end of file for license.
  *
  *  Somewhat generic across different Unix systems.  Shared between
- *  Darwin (OS X), OSF/1 (DIGITAL UNIX), FreeBSD, and Linux.
- *
- *  May not actually work on OSF/1 due to lack of available machines.
+ *  Darwin (OS X), FreeBSD, and Linux.
  *
  *  This file does not contain a signal handler.  That's in protsgix.c
  *  (for FreeBSD and Darwin on Intel); in protxcpp.c (for Darwin on
@@ -48,8 +46,8 @@
 
 #include "mpm.h"
 
-#if !defined(MPS_OS_LI) && !defined(MPS_OS_FR) && !defined(MPS_OS_XC) && !defined(MPS_OS_O1)
-#error "protix.c is Unix-specific, currently for MPS_OS_LI FR XC O1"
+#if !defined(MPS_OS_LI) && !defined(MPS_OS_FR) && !defined(MPS_OS_XC)
+#error "protix.c is Unix-specific, currently for MPS_OS_LI FR XC"
 #endif
 #ifndef PROTECTION
 #error "protix.c implements protection, but PROTECTION is not set"
@@ -61,7 +59,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 
-SRCID(protix, "$Id: //info.ravenbrook.com/project/mps/master/code/protix.c#3 $");
+SRCID(protix, "$Id: //info.ravenbrook.com/project/mps/master/code/protix.c#4 $");
 
 /* ProtSet -- set protection
  *

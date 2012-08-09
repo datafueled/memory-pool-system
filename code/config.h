@@ -1,6 +1,6 @@
 /* config.h: MPS CONFIGURATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/config.h#31 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/config.h#32 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -259,7 +259,7 @@
    define what signal number to use, and what si_code value to check.
 */
 
-#if defined(MPS_OS_O1) || defined(MPS_OS_SO) || defined(MPS_OS_FR)
+#if defined(MPS_OS_SO) || defined(MPS_OS_FR)
 #define PROT_SIGNAL (SIGSEGV)
 #elif defined(MPS_OS_XC)
 #define PROT_SIGNAL (SIGBUS)
@@ -267,7 +267,7 @@
 
 #if defined(MPS_OS_XC)
 #define PROT_SIGINFO_GOOD(info) (1)
-#elif defined(MPS_OS_O1) || defined(MPS_OS_FR)
+#elif defined(MPS_OS_FR)
 #define PROT_SIGINFO_GOOD(info) ((info)->si_code == SEGV_ACCERR)
 #endif
 

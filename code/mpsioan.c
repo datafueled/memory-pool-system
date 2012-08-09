@@ -1,6 +1,6 @@
 /* mpsioan.c: RAVENBROOK MEMORY POOL SYSTEM I/O IMPLEMENTATION (ANSI)
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpsioan.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpsioan.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: For MPS client application developers and MPS developers.
@@ -10,20 +10,6 @@
 #include "mpsio.h"
 
 #include "mpstd.h"
-
-#ifdef MPS_OS_SU
-
-extern int fclose (FILE *stream);
-extern int fflush (FILE *stream);
-extern size_t fwrite (const void *ptr, size_t size, size_t nmemb, FILE *stream);
-
-/* These functions are used in the macro definitions of putc and getc
- * but not declared in stdio.h.
- */
-extern int _filbuf(FILE *stream);
-extern int _flsbuf(unsigned char c, FILE *stream);
-
-#endif
 
 #ifdef MPS_OS_XC
 #include "osxc.h"

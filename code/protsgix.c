@@ -1,6 +1,6 @@
 /* protsgix.c: PROTECTION (SIGNAL HANDLER) FOR UNIX
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/protsgix.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protsgix.c#2 $
  *  Copyright (c) 2001-2007 Ravenbrook Limited.  See end of file for license.
  *
  * Would ordinarily be part of protix.c (as the code is common to more
@@ -18,8 +18,8 @@
 
 #include "mpm.h"
 
-#if !defined(MPS_OS_XC) && !defined(MPS_OS_FR) && !defined(MPS_OS_O1)
-#error "protsgix.c is Unix-specific, currently for MPS_OS_O1 FR or XC"
+#if !defined(MPS_OS_XC) && !defined(MPS_OS_FR)
+#error "protsgix.c is Unix-specific, currently for MPS_OS_FR or XC"
 #endif
 #if defined(MPS_OS_XC) && defined(MPS_ARCH_PP)
 #error "protsgix.c does not work on Darwin on PowerPC.  Use protxcpp.c"
@@ -32,7 +32,7 @@
 #include <sys/types.h> /* for getpid */
 #include <unistd.h>    /* for getpid */
 
-SRCID(protsgix, "$Id: //info.ravenbrook.com/project/mps/master/code/protsgix.c#1 $");
+SRCID(protsgix, "$Id: //info.ravenbrook.com/project/mps/master/code/protsgix.c#2 $");
 
 
 /* The previously-installed signal action, as returned by */

@@ -1,7 +1,7 @@
 /* eventcnv.c: Simple event log converter
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/eventcnv.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventcnv.c#13 $
  */
 
 #include "config.h"
@@ -21,9 +21,6 @@
 #include <string.h> /* for strcmp */
 #include <math.h> /* for sqrt */
 #include "mpstd.h"
-#ifdef MPS_OS_SU
-#include "ossu.h"
-#endif
 
 #ifdef MPS_BUILD_MV
 /* MSVC warning 4996 = stdio / C runtime 'unsafe' */

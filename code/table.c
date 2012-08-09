@@ -1,6 +1,6 @@
 /* table.h: A dictionary mapping a Word to a void*
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/table.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/table.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .note.good-hash: As is common in hash table implementations, we
@@ -15,10 +15,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include "mpstd.h"
-#ifdef MPS_OS_SU
-#include "ossu.h"
-#endif
-
 
 typedef unsigned long ulong;
 

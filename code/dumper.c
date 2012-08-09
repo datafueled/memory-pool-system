@@ -1,6 +1,6 @@
 /* dumper.c: Simple Event Dumper
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/dumper.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/dumper.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MM developers.
@@ -16,9 +16,6 @@
 #include <stdarg.h>
 #include <assert.h>
 #include "mpstd.h"
-#ifdef MPS_OS_SU
-#include "ossu.h"
-#endif
 
 typedef MPS_T_WORD Word;
 typedef struct AddrStruct *Addr;
