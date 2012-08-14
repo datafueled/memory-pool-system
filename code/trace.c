@@ -1,6 +1,6 @@
 /* trace.c: GENERIC TRACER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/trace.c#38 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/trace.c#39 $
  * Copyright (c) 2001-2003, 2006, 2007 Ravenbrook Limited.
  * See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
@@ -11,7 +11,7 @@
 #include "mpm.h"
 #include <limits.h> /* for LONG_MAX */
 
-SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/master/code/trace.c#38 $");
+SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/master/code/trace.c#39 $");
 
 /* Forward declarations */
 Rank traceBand(Trace);
@@ -1667,7 +1667,7 @@ void TraceStart(Trace trace, double mortality, double finishingTime)
     if(nPolls >= (double)LONG_MAX)
       nPolls = (double)LONG_MAX;
     /* rate equals scanning work per number of polls available */
-    trace->rate = (trace->foundation + sSurvivors) / (long)nPolls + 1;
+    trace->rate = (trace->foundation + sSurvivors) / (unsigned long)nPolls + 1;
   }
 
   /* @@ DIAG for rate of scanning here. */

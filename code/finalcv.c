@@ -1,6 +1,6 @@
 /* finalcv.c: FINALIZATION COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/finalcv.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/finalcv.c#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -97,7 +97,7 @@ enum {
 
 static void *test(void *arg, size_t s)
 {
-  int i;                        /* index */
+  unsigned i;                        /* index */
   mps_ap_t ap;
   mps_fmt_t fmt;
   mps_chain_t chain;

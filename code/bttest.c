@@ -1,6 +1,6 @@
 /* bttest.c: BIT TABLE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/bttest.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/bttest.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -13,12 +13,9 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "mpstd.h"
-#ifdef MPS_OS_IA
-struct itimerspec; /* stop complaints from time.h */
-#endif
 #include <time.h>
 
-SRCID(bttest, "$Id: //info.ravenbrook.com/project/mps/master/code/bttest.c#11 $");
+SRCID(bttest, "$Id: //info.ravenbrook.com/project/mps/master/code/bttest.c#13 $");
 
 
 static BT bt; /* the BT which we will use */
@@ -289,7 +286,7 @@ static void obeyCommand(char *command)
           printf("negative integer arguments are invalid\n");
           return;
         }
-        args[argCount] = l;
+        args[argCount] = (unsigned long)l;
         if (newP == p) { /* strtoul failed */
           printf("couldn't parse an integer argument\n");
           return;

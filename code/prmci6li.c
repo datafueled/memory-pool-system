@@ -1,6 +1,6 @@
-/* prmci3li.c: PROTECTION MUTATOR CONTEXT INTEL 386 (LINUX)
+/* prmci6li.c: PROTECTION MUTATOR CONTEXT x64 (LINUX)
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/prmci3li.c#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/prmci6li.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This module implements the part of the protection module
@@ -8,9 +8,6 @@
  *
  *
  * SOURCES
- *
- * .source.i486: Intel486 Microprocessor Family Programmer's
- * Reference Manual
  *
  * .source.linux.kernel: Linux kernel source files.
  *
@@ -27,35 +24,42 @@
  */
 
 #include "prmcix.h"
-#include "prmci3.h"
+#include "prmci6.h"
 
-SRCID(prmci3li, "$Id: //info.ravenbrook.com/project/mps/master/code/prmci3li.c#13 $");
+SRCID(prmci6li, "$Id: //info.ravenbrook.com/project/mps/master/code/prmci6li.c#2 $");
 
 
-/* Prmci3AddressHoldingReg -- return an address of a register in a context */
+/* Prmci6AddressHoldingReg -- return an address of a register in a context */
 
-MRef Prmci3AddressHoldingReg(MutatorFaultContext mfc, unsigned int regnum)
+MRef Prmci6AddressHoldingReg(MutatorFaultContext mfc, unsigned int regnum)
 {
   Word *gregs;
 
-  AVER(regnum <= 7);
+  AVER(regnum <= 15);
   AVER(regnum >= 0);
 
   gregs = (Word *)&mfc->ucontext->uc_mcontext.gregs;
 
-  /* .source.i486 */
   /* .assume.regref */
   /* The REG_EAX etc. symbols are only present if _GNU_SOURCE is defined.
-     Currently this is in lii4gc.gmk in PFMDEFS. */
+   * Currently this is in lii6gc.gmk in PFMDEFS. */
   switch (regnum) {
-    case 0: return &gregs[REG_EAX];
-    case 1: return &gregs[REG_ECX];
-    case 2: return &gregs[REG_EDX];
-    case 3: return &gregs[REG_EBX];
-    case 4: return &gregs[REG_ESP];
-    case 5: return &gregs[REG_EBP];
-    case 6: return &gregs[REG_ESI];
-    case 7: return &gregs[REG_EDI];
+    case  0: return &gregs[REG_RAX];
+    case  1: return &gregs[REG_RCX];
+    case  2: return &gregs[REG_RDX];
+    case  3: return &gregs[REG_RBX];
+    case  4: return &gregs[REG_RSP];
+    case  5: return &gregs[REG_RBP];
+    case  6: return &gregs[REG_RSI];
+    case  7: return &gregs[REG_RDI];
+    case  8: return &gregs[REG_R8];
+    case  9: return &gregs[REG_R9];
+    case 10: return &gregs[REG_R10];
+    case 11: return &gregs[REG_R11];
+    case 12: return &gregs[REG_R12];
+    case 13: return &gregs[REG_R13];
+    case 14: return &gregs[REG_R14];
+    case 15: return &gregs[REG_R15];
   }
   NOTREACHED;
   return (MRef)NULL;  /* Avoids compiler warning. */
@@ -64,21 +68,21 @@ MRef Prmci3AddressHoldingReg(MutatorFaultContext mfc, unsigned int regnum)
 
 /* Prmci3DecodeFaultContext -- decode fault to find faulting address and IP */
 
-void Prmci3DecodeFaultContext(MRef *faultmemReturn,
+void Prmci6DecodeFaultContext(MRef *faultmemReturn,
                               Byte **insvecReturn,
                               MutatorFaultContext mfc)
 {
-  /* .source.linux.kernel (linux/arch/i386/mm/fault.c). */
+  /* .source.linux.kernel (linux/arch/x86/mm/fault.c). */
   *faultmemReturn = (MRef)mfc->info->si_addr;
-  *insvecReturn = (Byte*)mfc->ucontext->uc_mcontext.gregs[REG_EIP];
+  *insvecReturn = (Byte*)mfc->ucontext->uc_mcontext.gregs[REG_RIP];
 }
 
 
 /* Prmci3StepOverIns -- modify context to step over instruction */
 
-void Prmci3StepOverIns(MutatorFaultContext mfc, Size inslen)
+void Prmci6StepOverIns(MutatorFaultContext mfc, Size inslen)
 {
-  mfc->ucontext->uc_mcontext.gregs[REG_EIP] += (unsigned long)inslen;
+  mfc->ucontext->uc_mcontext.gregs[REG_RIP] += (Word)inslen;
 }
 
 

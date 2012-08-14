@@ -1,6 +1,6 @@
 /* protw3.c: PROTECTION FOR WIN32
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#10 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#11 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -18,7 +18,7 @@
 
 #include "mpswin.h"
 
-SRCID(protw3, "$Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#10 $");
+SRCID(protw3, "$Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#11 $");
 
 
 void ProtSetup(void)
@@ -107,7 +107,7 @@ LONG ProtSEHfilter(LPEXCEPTION_POINTERS info)
 
 /* ProtSync -- synchronize protection settings with hardware
  *
- * This does nothing under Win32.
+ * This does nothing under Win32.  See protan.c.
  */
 
 void ProtSync(Arena arena)

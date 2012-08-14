@@ -1,11 +1,11 @@
 # lii4gc.gmk: BUILD FOR LINUX/INTEL/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/lii4gc.gmk#13 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/lii4gc.gmk#15 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = lii4gc
 
-THREADSRC = lockli.c thlii4.c pthrdext.c
+THREADSRC = lockli.c thix.c pthrdext.c
 THREADLIB = -lpthread
 
 # _XOPEN_SOURCE is to get the modern POSIX signal handling

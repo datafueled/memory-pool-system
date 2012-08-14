@@ -1,6 +1,6 @@
 /* mps.c: MEMORY POOL SYSTEM ALL-IN-ONE TRANSLATION UNIT
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mps.c#3 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mps.c#6 $
  * Copyright (C) 2012 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This file can be compiled to create the complete MPS library in
@@ -79,9 +79,9 @@
 
 #include "mpstd.h"
 
-/* Mac OS X on 32-bit Intel built with Clang */
+/* Mac OS X on 32-bit Intel built with Clang or GCC */
 
-#if defined(MPS_PF_XCI3LL)
+#if defined(MPS_PF_XCI3LL) || defined(MPS_PF_XCI3GC)
 
 #include "lockix.c"     /* Posix locks */
 #include "than.c"       /* generic single threading */
@@ -92,9 +92,9 @@
 #include "span.c"       /* generic stack probe */
 #include "ssixi3.c"     /* Posix on 32-bit Intel stack scan */
 
-/* Mac OS X on 64-bit Intel build with Clang */
+/* Mac OS X on 64-bit Intel build with Clang or GCC */
 
-#elif defined(MPS_PF_XCI6LL)
+#elif defined(MPS_PF_XCI6LL) || defined(MPS_PF_XCI6GC)
 
 #include "lockix.c"     /* Posix locks */
 #include "than.c"       /* generic single threading */
@@ -119,6 +119,36 @@
 #include "span.c"       /* generic stack probe */
 #include "ssixi3.c"     /* Posix on 32-bit Intel stack scan */
 
+/* Linux on 32-bit Intel with GCC */
+
+#elif defined(MPS_PF_LII4GC)
+
+#include "lockli.c"     /* Linux locks */
+#include "thix.c"       /* Posix threading */
+#include "pthrdext.c"   /* Posix thread extensions */
+#include "vmix.c"       /* Posix virtual memory */
+#include "protix.c"     /* Posix protection */
+#include "protlii3.c"   /* Linux on 32-bit Intel protection */
+#include "proti3.c"     /* 32-bit Intel mutator context */
+#include "prmci3li.c"   /* 32-bit Intel for Linux mutator context */
+#include "span.c"       /* generic stack probe */
+#include "ssixi3.c"     /* Posix on 32-bit Intel stack scan */
+
+/* Linux on 64-bit Intel with GCC */
+
+#elif defined(MPS_PF_LII6GC)
+
+#include "lockli.c"     /* Linux locks */
+#include "thix.c"       /* Posix threading */
+#include "pthrdext.c"   /* Posix thread extensions */
+#include "vmix.c"       /* Posix virtual memory */
+#include "protix.c"     /* Posix protection */
+#include "protlii6.c"   /* Linux on 32-bit Intel protection */
+#include "proti6.c"     /* 32-bit Intel mutator context */
+#include "prmci6li.c"   /* 32-bit Intel for Linux mutator context */
+#include "span.c"       /* generic stack probe */
+#include "ssixi6.c"     /* Posix on 32-bit Intel stack scan */
+
 /* Windows on 32-bit Intel with Microsoft Visual Studio */
 
 #elif defined(MPS_PF_W3I3MV)
@@ -128,10 +158,26 @@
 #include "thw3i3.c"     /* Windows on 32-bit Intel thread stack scan */
 #include "vmw3.c"       /* Windows virtual memory */
 #include "protw3.c"     /* Windows protection */
-#include "proti3.c"     /* Intel mutator context decoding */
+#include "proti3.c"     /* 32-bit Intel mutator context decoding */
 #include "prmci3w3.c"   /* Windows on 32-bit Intel mutator context */
 #include "ssw3i3.c"     /* Windows on 32-bit Intel scan scan */
 #include "spi3.c"       /* Intel stack probe */
+#include "mpsiw3.c"     /* Windows interface layer extras */
+
+/* Windows on 64-bit Intel with Microsoft Visual Studio */
+/* ssw3i6.asm is also required, but can't be included here */
+
+#elif defined(MPS_PF_W3I6MV)
+
+#include "lockw3.c"     /* Windows locks */
+#include "thw3.c"       /* Windows threading */
+#include "thw3i6.c"     /* Windows on 64-bit Intel thread stack scan */
+#include "vmw3.c"       /* Windows virtual memory */
+#include "protw3.c"     /* Windows protection */
+#include "proti6.c"     /* 64-bit Intel mutator context decoding */
+#include "prmci6w3.c"   /* Windows on 64-bit Intel mutator context */
+/* ssw3i6.asm */        /* Windows on 64-bit Intel scan scan */
+#include "span.c"       /* generic stack probe FIXME: Is this correct? */
 #include "mpsiw3.c"     /* Windows interface layer extras */
 
 #else

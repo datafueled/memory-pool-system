@@ -1,6 +1,6 @@
 /* protix.c: PROTECTION FOR UNIX
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/protix.c#4 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protix.c#5 $
  *  Copyright (c) 2001,2007 Ravenbrook Limited.  See end of file for license.
  *
  *  Somewhat generic across different Unix systems.  Shared between
@@ -59,7 +59,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 
-SRCID(protix, "$Id: //info.ravenbrook.com/project/mps/master/code/protix.c#4 $");
+SRCID(protix, "$Id: //info.ravenbrook.com/project/mps/master/code/protix.c#5 $");
 
 /* ProtSet -- set protection
  *
@@ -109,7 +109,7 @@ void ProtSet(Addr base, Addr limit, AccessSet mode)
 
 /* ProtSync -- synchronize protection settings with hardware
  *
- * This does nothing under Solaris.
+ * This does nothing under Posix.  See protan.c.
  */
 
 void ProtSync(Arena arena)

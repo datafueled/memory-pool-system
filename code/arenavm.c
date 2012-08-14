@@ -1,6 +1,6 @@
 /* arenavm.c: VIRTUAL MEMORY ARENA CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#20 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#21 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *
@@ -27,7 +27,7 @@
 #include "mpm.h"
 #include "mpsavm.h"
 
-SRCID(arenavm, "$Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#20 $");
+SRCID(arenavm, "$Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#21 $");
 
 
 /* @@@@ Arbitrary calculation for the maximum number of distinct */
@@ -1111,7 +1111,7 @@ static Res vmArenaExtend(VMArena vmArena, Size size)
 
   /* .chunk-create.fail: If we fail, try again with a smaller size */
   {
-    int fidelity = 8;  /* max fraction of addr-space we may 'waste' */
+    unsigned fidelity = 8;  /* max fraction of addr-space we may 'waste' */
     Size chunkHalf;
     Size chunkMin = 4 * 1024;  /* typical single page */
     Size sliceSize;

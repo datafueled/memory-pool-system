@@ -1,6 +1,6 @@
 /* zcoll.c: Collection test
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/zcoll.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/zcoll.c#10 $
  * Copyright (c) 2008 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -681,7 +681,7 @@ static void testscriptC(mps_arena_t arena, mps_ap_t ap, const char *script)
         checksi(si, 1, script, scriptAll);
         script += sb;
         printf("  StackScan(%u)\n", on);
-        StackScan(arena, on);
+        StackScan(arena, on != 0);
         break;
       }
       case 'Z': {

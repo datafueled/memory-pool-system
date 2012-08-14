@@ -1,6 +1,6 @@
-/* thfri3.c: Threads Manager for Intel x86 systems on FreeBSD
+/* thix.c: Threads Manager for Posix threads
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/thfri4.c#9 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/thix.c#1 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is a pthreads implementation of the threads manager.
@@ -30,23 +30,15 @@
  * .stack.align: assume roots on the stack are always word-aligned,
  * but don't assume that the stack pointer is necessarily
  * word-aligned at the time of reading the context of another thread.
- *
- * .sp: The stack pointer in the context is ESP.
- * .context.regroots: The root regs are EDI, ESI, EBX, EDX, ECX, EAX are
- * assumed to be recorded in the context at pointer-aligned boundaries.
  */
 
 #include "prmcix.h"
 #include "mpm.h"
 
-#if !defined(MPS_OS_FR) || !defined(MPS_ARCH_I4)
-#error "Compiling thfri4 when MPS_OS_FR or MPS_ARCH_I4 not defined."
-#endif
-
 #include <pthread.h>
 #include "pthrdext.h"
 
-SRCID(thfri4, "$Id: //info.ravenbrook.com/project/mps/master/code/thfri4.c#9 $");
+SRCID(thix, "$Id: //info.ravenbrook.com/project/mps/master/code/thix.c#1 $");
 
 
 /* ThreadStruct -- thread desriptor */
@@ -254,7 +246,7 @@ Res ThreadScan(ScanState ss, Thread thread, void *stackBot)
       return ResOK;
     }
 
-    stackPtr  = (Addr)mfc->ucontext->uc_mcontext.mc_esp;   /* .i3.sp */
+    stackPtr = MutatorFaultContextSP(mfc);
     /* .stack.align */
     stackBase  = (Addr *)AddrAlignUp(stackPtr, sizeof(Addr));
     stackLimit = (Addr *)stackBot;
@@ -268,13 +260,8 @@ Res ThreadScan(ScanState ss, Thread thread, void *stackBot)
     if(res != ResOK)
       return res;
 
-    /* (.context.regroots)
-     * This scans the root registers (.context.regroots).  It also
-     * unecessarily scans the rest of the context.  The optimisation
-     * to scan only relevent parts would be machine dependent.
-     */
-    res = TraceScanAreaTagged(ss, (Addr *)mfc->ucontext,
-           (Addr *)((char *)mfc->ucontext + sizeof(*(mfc->ucontext))));
+    /* scan the registers in the mutator fault context */
+    res = MutatorFaultContextScan(ss, mfc);
     if(res != ResOK)
       return res;
   }

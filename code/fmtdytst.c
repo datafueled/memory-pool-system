@@ -1,6 +1,6 @@
 /* fmtdytst.c: DYLAN FORMAT TEST CODE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/fmtdytst.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/fmtdytst.c#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MPS developers, Dylan developers.
@@ -21,14 +21,6 @@
 /* has been removed". */
 #pragma warning(disable: 4514)
 #endif /* MPS_BUILD_MV */
-
-#ifdef MPS_PF_SUS8LC
-/* .hack.malloc: builder.lc (LCC) uses Sun's header files.  Sun's
- * stdlib.h is broken, as it has an incorrect declaration of malloc.
- * We fix that here in a very hacky way.
- */
-#define malloc(x) (void *)malloc(x)
-#endif /* MPS_PF_SUS8LC */
 
 
 static mps_word_t *ww = NULL;

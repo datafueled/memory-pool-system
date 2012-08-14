@@ -1,6 +1,6 @@
 /* cbstest.c: COALESCING BLOCK STRUCTURE TEST
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/cbstest.c#11 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/cbstest.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -13,12 +13,9 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "mpstd.h"
-#ifdef MPS_OS_IA
-struct itimerspec; /* stop complaints from time.h */
-#endif
 #include <time.h>
 
-SRCID(cbstest, "$Id: //info.ravenbrook.com/project/mps/master/code/cbstest.c#11 $");
+SRCID(cbstest, "$Id: //info.ravenbrook.com/project/mps/master/code/cbstest.c#13 $");
 
 
 #define ArraySize ((Size)123456)
@@ -563,7 +560,7 @@ static void find(CBS cbs, void *block, BT alloc, Size size, Bool high,
 
 extern int main(int argc, char *argv[])
 {
-  int i;
+  unsigned i;
   Addr base, limit;
   mps_arena_t mpsArena;
   Arena arena; /* the ANSI arena which we use to allocate the BT */

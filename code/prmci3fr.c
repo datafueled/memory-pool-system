@@ -1,68 +1,51 @@
-/* ssixi6.c: UNIX/x64 STACK SCANNING
+/* prmci3fr.c: PROTECTION MUTATOR CONTEXT INTEL 386 (FREEBSD)
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/ssixi6.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/prmci3fr.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- *  This scans the stack and fixes the registers which may contain
- *  roots.  See <design/thread-manager/>
+ * .purpose: This module implements the part of the protection module
+ * that decodes the MutatorFaultContext. 
  *
- *  This code was branched from ssixi3.c (32-bit Intel) initially for the
- *  port to W3I6LL (Mac OS X on x86_64 with Clang).
- *
- *  This code is common to more than one Unix implementation on
- *  Intel hardware (but is not portable Unix code).  According to Wikipedia,
- *  all the non-Windows platforms use the System V AMD64 ABI.  See
- *  .sources.callees.saves.
  *
  * SOURCES
  *
- * .sources.callees.saves:
- *  "Registers %rbp, %rbx and %r12 through %r15 "belong" to the calling
- *   function and the called function is required to preserve their values.
- *   In other words, a called function must preserve these registers’ values
- *   for its caller." -- System V AMD64 ABI
- *  <http://x86-64.org/documentation/abi.pdf>
+ * .source.i486: Intel486 Microprocessor Family Programmer's
+ * Reference Manual
+ *
  *
  * ASSUMPTIONS
  *
- * .assume.align: The stack pointer is assumed to be aligned on a word
- * boundary.
+ * .sp: The stack pointer in the context is ESP (x86) or RSP (x86_64).
  *
- * .assume.asm.stack: The compiler must not do wacky things with the
- * stack pointer around a call since we need to ensure that the
- * callee-save regs are visible during TraceScanArea.
- *
- * .assume.asm.order: The volatile modifier should prevent movement
- * of code, which might break .assume.asm.stack.
- *
+ * .context.regroots: The root regs are EDI, ESI, EBX, EDX, ECX, EAX (or
+ * their x86_64 equivalents) are assumed to be recorded in the context at
+ * pointer-aligned boundaries.
  */
 
+#include "prmcix.h"
+#include "prmci3.h"
 
-#include "mpm.h"
-
-SRCID(ssixi6, "$Id: //info.ravenbrook.com/project/mps/master/code/ssixi6.c#2 $");
-
-
-/* .assume.asm.order */
-#define ASMV(x) __asm__ volatile (x)
+SRCID(prmci3fr, "$Id: //info.ravenbrook.com/project/mps/master/code/prmci3fr.c#1 $");
 
 
-Res StackScan(ScanState ss, Addr *stackBot)
+Addr MutatorFaultContextSP(MutatorFaultContext mfc)
 {
-  Addr calleeSaveRegs[6];
-  Addr *stackTop;
+  return (Addr)mfc->ucontext->uc_mcontext.mc_esp;   /* .sp */
+}
+
+
+Res MutatorFaultContextScan(ScanState ss, MutatorFaultContext mfc)
+{
   Res res;
 
-  ASMV("mov %%rbp, %0" : "=m" (calleeSaveRegs[0]));
-  ASMV("mov %%rbx, %0" : "=m" (calleeSaveRegs[1]));
-  ASMV("mov %%r12, %0" : "=m" (calleeSaveRegs[2]));
-  ASMV("mov %%r13, %0" : "=m" (calleeSaveRegs[3]));
-  ASMV("mov %%r14, %0" : "=m" (calleeSaveRegs[4]));
-  ASMV("mov %%r15, %0" : "=m" (calleeSaveRegs[5]));
-  ASMV("mov %%rsp, %0" : "=r" (stackTop) :);    /* stackTop = rsp */
-
-  AVER(AddrIsAligned((Addr)stackTop, sizeof(Addr)));  /* .assume.align */
-  res = TraceScanArea(ss, stackTop, stackBot);
+  /* This scans the root registers (.context.regroots).  It also unnecessarily
+     scans the rest of the context.  The optimisation to scan only relevant
+     parts would be machine dependent. */
+  res = TraceScanAreaTagged(
+    ss,
+    (Addr *)mfc->ucontext,
+    (Addr *)((char *)mfc->ucontext + sizeof(*(mfc->ucontext)))
+  );
 
   return res;
 }

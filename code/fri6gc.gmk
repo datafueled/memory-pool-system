@@ -1,17 +1,30 @@
-# sos8gc.gmk: BUILD FOR SOLARIS/SPARC V8/GCC PLATFORM
+# fri6gc.gmk: BUILD FOR FreeBSD/amd64/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/sos8gc.gmk#9 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/fri6gc.gmk#1 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
-PFM = sos8gc
+PFM = fri6gc
 
-MPMPF = lockan.c than.c vmso.c \
-        protso.c prmcan.c span.c
-MPMS = sssos8.s
-SWPF = than.c vmso.c protsw.c prmcan.c ssan.c
-LIBS = -lm
+PFMDEFS = -D_REENTRANT
+
+MPMPF = lockix.c thix.c pthrdext.c vmix.c \
+        protix.c protsgix.c prmcan.c prmci6fr.c ssixi6.c span.c
+SWPF = than.c vmfr.c protsw.c prmcan.c ssan.c
+
+LIBS = -lm -pthread
 
 include gc.gmk
+
+CFLAGSCOMPILER := $(subst -pedantic,,$(CFLAGSCOMPILER))
+CFLAGSDEBUG = -g3
+CFLAGSOPT = -O -g3
+
+CC = cc
+
+# Suppress some warnings (SuSE).
+#   .void: -Wpointer-arith cannot be used because the string.h header does
+#   arithmetic on void*.
+#CFLAGSCOMPILER := $(subst -Wpointer-arith,,$(CFLAGSCOMPILER))
 
 include comm.gmk
 

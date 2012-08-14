@@ -1,47 +1,45 @@
-/* protxcpp.c: PROTECTION FOR MAC OS X ON POWERPC
+/* protlii6.c: PROTECTION FOR LINUX (x64)
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/protxcpp.c#3 $
- *  Copyright (c) 2001,2005 Ravenbrook Limited.  See end of file for license.
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protlii6.c#1 $
+ *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- *  Most of this was copied from protso.c and modified.
+ * SOURCES
  *
- *  REFERENCES
- *
- * [PEM] "PowerPC Microprocessor Family: The Programming Environments for
- * 32-bit Microprocessors", Motorola, 1997-01.  MPCFPE32B/AD REV.1
- *
- * [SIGNALH] /usr/include/sys/signal.h on drj's iBook (Mac OS X 10.3.8)
- *
- * [PPCUCH] /usr/include/ppc/ucontext.h
- *
+ * .source.linux.kernel: Linux kernel source files.
  */
 
-#include "mpm.h"
+#include "prmcix.h"
 
-#ifndef MPS_OS_XC
-#error "protxcpp.c is Mac OS X specific, but MPS_OS_XC is not set"
+#ifndef MPS_OS_LI
+#error "protlii6.c is Linux-specific, but MPS_OS_LI is not set"
 #endif
-#ifndef MPS_ARCH_PP
-#error "protxcpp.c is PowerPC specific, but MPS_ARCH_PP is not set"
+#if !defined(MPS_ARCH_I6)
+#error "protlii6.c is x64, but MPS_ARCH_I6 is not set"
 #endif
 #ifndef PROTECTION
-#error "protxcpp.c implements protection, but PROTECTION is not set"
+#error "protlii6.c implements protection, but PROTECTION is not set"
 #endif
 
+#include <limits.h>
+#include <stddef.h>
+#include <stdlib.h>
 #include <signal.h>
-#include <sys/ucontext.h>
+#include <unistd.h>
 
-SRCID(protxcpp, "$Id: //info.ravenbrook.com/project/mps/master/code/protxcpp.c#3 $");
+SRCID(protlii6, "$Id: //info.ravenbrook.com/project/mps/master/code/protlii6.c#1 $");
+
+
 
 /* The previously-installed signal action, as returned by */
 /* sigaction(3).  See ProtSetup. */
 
 static struct sigaction sigNext;
 
+
 /* sigHandle -- protection signal handler
  *
  *  This is the signal handler installed by ProtSetup to deal with
- *  protection faults.  It is installed on the SIGBUS signal.
+ *  protection faults.  It is installed on the SIGSEGV signal.
  *  It decodes the protection fault details from the signal context
  *  and passes them to ArenaAccess, which attempts to handle the
  *  fault and remove its cause.  If the fault is handled, then
@@ -49,102 +47,100 @@ static struct sigaction sigNext;
  *  then sigHandle does its best to pass the signal on to the
  *  previously installed signal handler (sigNext).
  *
- *  .sigh.addr: si_addr, on Darwin 7.8.0, is the address of the faulting
- *  instruction (by observation). [SIGNALH] says, in the declaration of
- *  siginfo_t, that this field should be the faulting instruction, but
- *  below that says that for SIGBUS it should be the faulting address).
- *  We grub around in the ucontext to find the PowerPC DAR register (See
- *  [PEM] 6-25, Table 6-9) which contains the faulting address.
+ *  .sigh.context: We check si_code for being a memory access
+ *  si_addr gives the fault address.  See 
+ *  .source.linux.kernel (linux/arch/x86/mm/fault.c).
  *
- *  .sigh.limit: We throw away the limit information.
+ *  .sigh.addr: We assume that the OS decodes the address to something
+ *  sensible
  */
+/* This is defined here to keep the sources closer to those in protsgix.c
+ * They can't be merged yet because protsgix doesn't pass the context to
+ * ArenaAccess */
 
-static void sigHandle(int sig, siginfo_t *info, void *contextArg)
+#define PROT_SIGNAL SIGSEGV
+
+static void sigHandle(int sig, siginfo_t *info, void *context)  /* .sigh.args */
 {
-  ucontext_t *ucontext;
+  int e;
+  /* sigset renamed to asigset due to clash with global on Darwin. */
+  sigset_t asigset, oldset;
+  struct sigaction sa;
 
-  AVER(sig == SIGBUS);
-  AVER(info != NULL);
+  AVER(sig == PROT_SIGNAL);
 
-  ucontext = contextArg;
-
-  /* On OS X the si_code field does't appear to be useful.  Protection
-   * faults appear as SIGBUS signals, and the only documented code for
-   * SIGBUS is BUS_ADRALN (invalid address alignment) which is what
-   * si_code is set to (it has value 1), even though the address is
-   * in fact aligned.
-   * On other platforms a test like info->si_code == SEGV_ACCERR appears
-   * here. */
-  if(1) {
+  if(info->si_code == SEGV_ACCERR) {  /* .sigh.context */
     AccessSet mode;
-    Addr base, limit;
+    Addr base;
+    ucontext_t *ucontext;
+    MutatorFaultContextStruct mfContext;
 
-    /* We dont't bother to determine the access mode (read, write, etc.)
-     * under OS X.  It's possible that this information is available in
-     * the context structures.  Needs more investigation.
-     */
+    ucontext = (ucontext_t *)context;
+    mfContext.ucontext = ucontext;
+    mfContext.info = info;
 
+    /* on linux we used to be able to tell whether this was a read or a write */
     mode = AccessREAD | AccessWRITE;
 
     /* We assume that the access is for one word at the address. */
-
-    /* See [PPCUCH] */
-    base = (Addr)ucontext->uc_mcontext->es.dar;
-    limit = AddrAdd(base, (Size)sizeof(Addr));
+    base = (Addr)info->si_addr;   /* .sigh.addr */
+    /* limit = AddrAdd(base, (Size)sizeof(Addr)); */
 
     /* Offer each protection structure the opportunity to handle the */
     /* exception.  If it succeeds, then allow the mutator to continue. */
 
-    /* MutatorFaultContext parameter is a dummy parameter for this */
-    /* implementation */
-    if(ArenaAccess(base, mode, NULL)) {
+    if(ArenaAccess(base, mode, &mfContext))
       return;
-    }
   }
 
   /* The exception was not handled by any known protection structure, */
-  /* so throw it to the previously installed handler. */
+  /* so throw it to the previously installed handler.  That handler won't */
+  /* get an accurate context (the MPS would fail if it were the second in */
+  /* line) but it's the best we can do. */
 
-  /* @@ This is really weak.
-   * Need to implement rest of the contract of sigaction */
-  (*sigNext.sa_sigaction)(sig, info, contextArg);
+  e = sigaction(PROT_SIGNAL, &sigNext, &sa);
+  AVER(e == 0);
+  sigemptyset(&asigset);
+  sigaddset(&asigset, PROT_SIGNAL);
+  e = sigprocmask(SIG_UNBLOCK, &asigset, &oldset);
+  AVER(e == 0);
+  kill(getpid(), PROT_SIGNAL);
+  e = sigprocmask(SIG_SETMASK, &oldset, NULL);
+  AVER(e == 0);
+  e = sigaction(PROT_SIGNAL, &sa, NULL);
+  AVER(e == 0);
 }
 
 
 /*  ProtSetup -- global protection setup
  *
- *  Under OS X, the global setup involves installing a signal handler
- *  on SIGBUS to catch and handle protection faults (see sigHandle).
+ *  Under Linux, the global setup involves installing a signal handler
+ *  on SIGSEGV to catch and handle page faults (see sigHandle).
  *  The previous handler is recorded so that it can be reached from
  *  sigHandle if it fails to handle the fault.
  *
  *  NOTE: There are problems with this approach:
- *    1. we can't honor the wishes of the sigvec(2) entry for the
- *       previous handler,
+ *    1. we can't honor the sa_flags for the previous handler,
+ *    2. what if this thread is suspended just after calling signal(3)?
+ *       The sigNext variable will never be initialized!
  */
 
-/* This function itself probably isn't architecture specific, but it
- * references the sigHandle which is currently static and which is
- * architecture specific. */
 void ProtSetup(void)
 {
   struct sigaction sa;
   int result;
 
   sa.sa_sigaction = sigHandle;
-  /* No idea if sigemptyset is necessary, copied from protfri3.c,
-   * 2005-03-02 DRJ */
   sigemptyset(&sa.sa_mask);
   sa.sa_flags = SA_SIGINFO;
 
-  result = sigaction(SIGBUS, &sa, &sigNext);
+  result = sigaction(PROT_SIGNAL, &sa, &sigNext);
   AVER(result == 0);
 }
 
-
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002,2005 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

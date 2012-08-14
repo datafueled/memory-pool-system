@@ -1,6 +1,6 @@
 /* steptest.c: TEST FOR ARENA STEPPING
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/steptest.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/steptest.c#10 $
  * Copyright (C) 1998 Ravenbrook Limited.  See end of file for license.
  *
  * Loosely based on <code/amcss.c>.
@@ -59,7 +59,7 @@ static unsigned long step_frequencies[] = {
 
 #define TESTS (sizeof(step_frequencies) / sizeof(step_frequencies[0]))
 
-static int test_number = 0;
+static unsigned test_number = 0;
 
 
 /* objNULL needs to be odd so that it's ignored in exactRoots. */

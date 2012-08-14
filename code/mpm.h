@@ -1,6 +1,6 @@
 /* mpm.h: MEMORY POOL MANAGER DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.h#32 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.h#33 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -879,6 +879,12 @@ extern void ProtTramp(void **resultReturn, void *(*f)(void *, size_t),
 extern void ProtSync(Arena arena);
 extern Bool ProtCanStepInstruction(MutatorFaultContext context);
 extern Res ProtStepInstruction(MutatorFaultContext context);
+
+
+/* Mutator Fault Context */
+
+extern Addr MutatorFaultContextSP(MutatorFaultContext mfc);
+extern Res MutatorFaultContextScan(ScanState ss, MutatorFaultContext mfc);
 
 
 /* Location Dependency -- see <code/ld.c> */

@@ -1,6 +1,6 @@
 /* fmtno.c: NULL OBJECT FORMAT IMPLEMENTATION
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/fmtno.c#2 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/fmtno.c#3 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MPS developers
@@ -12,14 +12,6 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-
-#ifdef MPS_PF_SUS8LC
-/* .hack.stderr: builder.lc (LCC) uses Sun's header files.  Sun's
- * assert.h is broken, as it assumes it can use stderr.  We have to
- * fix it by supplying stderr.
- */
-#include <stdio.h>
-#endif
 
 
 #define notreached()    assert(0)

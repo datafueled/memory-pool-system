@@ -1,6 +1,6 @@
 /* mv2test.c: POOLMVT STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mv2test.c#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mv2test.c#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -8,9 +8,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "mpstd.h"
-#ifdef MPS_OS_IA
-struct itimerspec; /* stop complaints from time.h */
-#endif
 #include <time.h>
 
 #include "mpscmv2.h"
@@ -76,7 +73,7 @@ static float ran1(long *idum)
   *idum=IA*(*idum-k*IQ)-IR*k;   /* Compute idum=(IA*idum) % IM without
                                    overflows by Schrage's method. */
   if (*idum < 0) *idum += IM;
-  j=iy/NDIV;                    /* Will be in the range 0..NTAB-1. */
+  j=(int)(iy/NDIV);             /* Will be in the range 0..NTAB-1. */
   iy=iv[j];                     /* Output previously stored value and
                                    refill the shuffle table. */
   iv[j] = *idum;

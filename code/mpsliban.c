@@ -1,6 +1,6 @@
 /* mpsliban.c: RAVENBROOK MEMORY POOL SYSTEM LIBRARY INTERFACE (ANSI)
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpsliban.c#15 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpsliban.c#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -30,9 +30,6 @@
 #include "osxc.h"
 #endif
 
-#ifdef MPS_OS_IA
-struct itimerspec; /* stop complaints from time.h */
-#endif
 #include <time.h>
 
 #include <stdlib.h>
