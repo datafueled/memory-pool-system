@@ -1,6 +1,6 @@
 /* poolmv.c: MANUAL VARIABLE POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#14 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -31,7 +31,7 @@
 #include "poolmfs.h"
 #include "mpm.h"
 
-SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#12 $");
+SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#14 $");
 
 
 #define mvBlockPool(mv) MFSPool(&(mv)->blockPoolStruct)
@@ -235,7 +235,7 @@ static Res MVInit(Pool pool, va_list arg)
 
   mv->sig = MVSig;
   AVERT(MV, mv);
-  EVENT_PPWWW(PoolInitMV, pool, arena, extendBy, avgSize, maxSize);
+  EVENT5(PoolInitMV, pool, arena, extendBy, avgSize, maxSize);
   return ResOK;
 }
 
@@ -574,7 +574,7 @@ static void MVFree(Pool pool, Addr old, Size size)
   MV mv;
   Res res;
   Bool b;
-  Tract tract;
+  Tract tract = NULL;           /* suppress "may be used uninitialized" */
 
   AVERT(Pool, pool);
   mv = Pool2MV(pool);
@@ -646,9 +646,9 @@ static Res MVDescribe(Pool pool, mps_lib_FILE *stream)
   char c;
   Ring spans, node = NULL, nextNode; /* gcc whinge stop */
 
-  if(!CHECKT(Pool, pool)) return ResFAIL;
+  if(!TESTT(Pool, pool)) return ResFAIL;
   mv = Pool2MV(pool);
-  if(!CHECKT(MV, mv)) return ResFAIL;
+  if(!TESTT(MV, mv)) return ResFAIL;
   if(stream == NULL) return ResFAIL;
 
   res = WriteF(stream,

@@ -1,13 +1,13 @@
 /* pooln.c: NULL POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "pooln.h"
 #include "mpm.h"
 
-SRCID(pooln, "$Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#10 $");
+SRCID(pooln, "$Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#11 $");
 
 
 /* PoolNStruct -- the pool structure */
@@ -39,7 +39,7 @@ static Res NInit(Pool pool, va_list args)
   /* Initialize pool-specific structures. */
 
   AVERT(PoolN, poolN);
-  EVENT_PPP(PoolInit, pool, PoolArena(pool), ClassOfPool(pool));
+  EVENT3(PoolInit, pool, PoolArena(pool), ClassOfPool(pool));
   return ResOK;
 }
 

@@ -1,6 +1,6 @@
 /* poollo.c: LEAF POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poollo.c#16 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poollo.c#17 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -12,7 +12,7 @@
 #include "mpm.h"
 #include "mps.h"
 
-SRCID(poollo, "$Id: //info.ravenbrook.com/project/mps/master/code/poollo.c#16 $");
+SRCID(poollo, "$Id: //info.ravenbrook.com/project/mps/master/code/poollo.c#17 $");
 
 
 #define LOGen ((Serial)1)
@@ -502,7 +502,7 @@ static Res LOInit(Pool pool, va_list arg)
 
   lo->sig = LOSig;
   AVERT(LO, lo);
-  EVENT_PP(PoolInitLO, pool, format);
+  EVENT2(PoolInitLO, pool, format);
   return ResOK;
 
 failGenInit:

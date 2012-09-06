@@ -1,6 +1,6 @@
 /* poolmrg.c: MANUAL RANK GUARDIAN POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolmrg.c#16 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmrg.c#18 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  * 
@@ -32,7 +32,7 @@
 #include "mpm.h"
 #include "poolmrg.h"
 
-SRCID(poolmrg, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmrg.c#16 $");
+SRCID(poolmrg, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmrg.c#18 $");
 
 
 /* Types */
@@ -332,7 +332,7 @@ static Count MRGGuardiansPerSeg(MRG mrg)
 
 static RefPart MRGRefPartOfLink(Link link, Arena arena)
 {
-  Seg seg;
+  Seg seg = NULL;       /* suppress "may be used uninitialized" */
   Bool b;
   Link linkBase;
   Index index;
@@ -407,7 +407,7 @@ static void MRGGuardianInit(MRG mrg, Link link, RefPart refPart)
 
 static void MRGMessageDelete(Message message)
 {
-  Pool pool;
+  Pool pool = NULL;             /* suppress "may be used uninitialized" */
   Arena arena;
   Link link;
   Bool b;
@@ -635,7 +635,7 @@ static Res MRGInit(Pool pool, va_list args)
   DIAG_PRINTF(( "mrg->extendBy = %u, MRGGuardiansPerSeg = %u\n", 
                 (unsigned int) mrg->extendBy, 
                 (unsigned int) MRGGuardiansPerSeg(mrg) ));
-  EVENT_PPP(PoolInit, pool, PoolArena(pool), ClassOfPool(pool));
+  EVENT3(PoolInit, pool, PoolArena(pool), ClassOfPool(pool));
   return ResOK;
 }
 
@@ -792,9 +792,9 @@ static Res MRGDescribe(Pool pool, mps_lib_FILE *stream)
   RefPart refPart;
   Res res;
 
-  if (!CHECKT(Pool, pool)) return ResFAIL;
+  if (!TESTT(Pool, pool)) return ResFAIL;
   mrg = Pool2MRG(pool);
-  if (!CHECKT(MRG, mrg)) return ResFAIL;
+  if (!TESTT(MRG, mrg)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
 
   arena = PoolArena(pool);

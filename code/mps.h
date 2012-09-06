@@ -1,6 +1,6 @@
 /* mps.h: RAVENBROOK MEMORY POOL SYSTEM C INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mps.h#26 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mps.h#27 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -273,10 +273,6 @@ extern mps_res_t mps_space_collect(mps_space_t);
 extern mps_res_t mps_arena_create(mps_arena_t *, mps_arena_class_t, ...);
 extern mps_res_t mps_arena_create_v(mps_arena_t *, mps_arena_class_t, va_list);
 extern void mps_arena_destroy(mps_arena_t);
-
-/* these two for backward compatibility */
-extern mps_res_t mps_space_create(mps_space_t *);
-extern void mps_space_destroy(mps_space_t);
 
 extern size_t mps_arena_reserved(mps_arena_t);
 extern size_t mps_arena_committed(mps_arena_t);

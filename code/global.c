@@ -1,6 +1,6 @@
 /* global.c: ARENA-GLOBAL INTERFACES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#24 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#27 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#24 $");
+SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#27 $");
 
 
 /* All static data objects are declared here. See .static */
@@ -239,7 +239,6 @@ Res GlobalsInit(Globals arenaGlobals)
     RingInit(&arenaRing);
     ProtSetup();
   }
-  EventInit();
   arenaReleaseRingLock();
 
   arena = GlobalsArena(arenaGlobals);
@@ -370,7 +369,7 @@ void GlobalsFinish(Globals arenaGlobals)
   AVERT(Globals, arenaGlobals);
   arena = GlobalsArena(arenaGlobals);
 
-  STATISTIC_STAT(EVENT_PW(ArenaWriteFaults, arena,
+  STATISTIC_STAT(EVENT2(ArenaWriteFaults, arena,
                           arena->writeBarrierHitCount));
 
   arenaGlobals->sig = SigInvalid;
@@ -415,6 +414,7 @@ void GlobalsPrepareToDestroy(Globals arenaGlobals)
 
   /* report dropped messages (currently in diagnostic varieties only) */
   if(arena->droppedMessages > 0) {
+    EVENT1(MessagesDropped, arena->droppedMessages);
     DIAG_SINGLEF(( "GlobalsPrepareToDestroy_dropped",
       "arena->droppedMessages = $U", (WriteFU)arena->droppedMessages,
       NULL ));
@@ -426,6 +426,7 @@ void GlobalsPrepareToDestroy(Globals arenaGlobals)
   /* the message queue would have dangling pointers to messages */
   /* whose memory has been unmapped. */
   if(MessagePoll(arena)) {
+    EVENT0(MessagesExist);
     DIAG_SINGLEF(( "GlobalsPrepareToDestroy_queue",
       "Message queue not empty", NULL ));
   }
@@ -462,6 +463,10 @@ Ring GlobalsRememberedSummaryRing(Globals global)
 
 /* ArenaEnter -- enter the state where you can look at the arena */
 
+/* TODO: The THREAD_SINGLE and PROTECTION_NONE build configs aren't regularly
+   tested, though they might well be useful for embedded custom targets.
+   Should test them.  RB 2012-09-03 */
+
 #if defined(THREAD_SINGLE) && defined(PROTECTION_NONE)
 void (ArenaEnter)(Arena arena)
 {
@@ -484,7 +489,7 @@ void arenaEnterLock(Arena arena, int recursive)
   /* This check is safe to do outside the lock.  Unless the client
      is also calling ArenaDestroy, but that's a protocol violation by
      the client if so. */
-  AVER(CHECKT(Arena, arena));
+  AVER(TESTT(Arena, arena));
 
   StackProbe(StackProbeDEPTH);
   lock = ArenaGlobals(arena)->lock;
@@ -912,7 +917,7 @@ void ArenaPokeSeg(Arena arena, Seg seg, Addr addr, Ref ref)
 Ref ArenaRead(Arena arena, Addr addr)
 {
   Bool b;
-  Seg seg;
+  Seg seg = NULL;       /* suppress "may be used uninitialized" */
 
   AVERT(Arena, arena);
 
@@ -946,7 +951,7 @@ Res GlobalsDescribe(Globals arenaGlobals, mps_lib_FILE *stream)
   Ring node, nextNode;
   Index i;
 
-  if (!CHECKT(Globals, arenaGlobals)) return ResFAIL;
+  if (!TESTT(Globals, arenaGlobals)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
 
   arena = GlobalsArena(arenaGlobals);

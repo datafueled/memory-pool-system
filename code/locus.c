@@ -1,6 +1,6 @@
 /* locus.c: LOCUS MANAGER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/locus.c#16 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/locus.c#17 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -15,7 +15,7 @@
 #include "mpstd.h"
 #include <float.h> /* for DBL_MAX */
 
-SRCID(locus, "$Id: //info.ravenbrook.com/project/mps/master/code/locus.c#16 $");
+SRCID(locus, "$Id: //info.ravenbrook.com/project/mps/master/code/locus.c#17 $");
 
 
 /* SegPrefCheck -- check the consistency of a segment preference */
@@ -295,6 +295,7 @@ Res ChainCondemnAuto(double *mortalityReturn, Chain chain, Trace trace)
     genNewSize = GenDescNewSize(gen);
   } while (genNewSize >= gen->capacity * (Size)1024);
   
+  EVENT3(ChainCondemnAuto, chain, topCondemnedGenSerial, chain->genCount);
   DIAG_SINGLEF(( "ChainCondemnAuto",
     "condemn gens [0..$U]", (WriteFU)topCondemnedGenSerial,
     " (of $U)", (WriteFU)chain->genCount,

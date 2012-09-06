@@ -1,7 +1,7 @@
 /* eventrep.c: Allocation replayer routines
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/eventrep.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventrep.c#12 $
  */
 
 #include "config.h"
@@ -51,7 +51,6 @@ static ulong totalEvents; /* count of events */
 static ulong discardedEvents; /* count of ignored events */
 static ulong unknownEvents; /* count of unknown events */
 
-static Bool partialLog;
 static Word eventTime;
 
 /* Dictionaries for translating from log to replay values */
@@ -682,12 +681,12 @@ void EventReplay(Event event, Word etime)
 
 /* Checking macros, copied from check.h */
 
-#define CHECKLVALUE(lv1, lv2) \
+#define COMPATLVALUE(lv1, lv2) \
   ((void)sizeof((lv1) = (lv2)), (void)sizeof((lv2) = (lv1)), TRUE)
 
-#define CHECKTYPE(t1, t2) \
+#define COMPATTYPE(t1, t2) \
   (sizeof(t1) == sizeof(t2) && \
-   CHECKLVALUE(*((t1 *)0), *((t2 *)0)))
+   COMPATLVALUE(*((t1 *)0), *((t2 *)0)))
 
 
 /* CHECKCONV -- check t2 can be cast to t1 without loss */
@@ -698,20 +697,19 @@ void EventReplay(Event event, Word etime)
 
 /* EventRepInit -- initialize the module */
 
-Res EventRepInit(Bool partial)
+Res EventRepInit(void)
 {
   Res res;
 
   /* Check using pointers as keys in the tables. */
   verify(CHECKCONV(Word, void *));
   /* Check storage of MPS opaque handles in the tables. */
-  verify(CHECKTYPE(mps_arena_t, void *));
-  verify(CHECKTYPE(mps_ap_t, void *));
+  verify(COMPATTYPE(mps_arena_t, void *));
+  verify(COMPATTYPE(mps_ap_t, void *));
   /* .event-conv: Conversion of event fields into the types required */
   /* by the MPS functions is justified by the reverse conversion */
   /* being acceptable (which is upto the event log generator). */
 
-  partialLog = partial;
   totalEvents = 0; discardedEvents = 0; unknownEvents = 0;
 
   res = TableCreate(&arenaTable, (size_t)1);

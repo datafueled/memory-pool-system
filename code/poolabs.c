@@ -1,6 +1,6 @@
 /* poolabs.c: ABSTRACT POOL CLASSES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#15 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 
 #include "mpm.h"
 
-SRCID(poolabs, "$Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#15 $");
+SRCID(poolabs, "$Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#16 $");
 
 
 typedef PoolClassStruct AbstractPoolClassStruct;
@@ -413,9 +413,12 @@ Res PoolSingleAccess(Pool pool, Seg seg, Addr addr,
       /* Check that the reference is aligned to a word boundary */
       /* (we assume it is not a reference otherwise). */
       if(WordIsAligned((Word)ref, sizeof(Word))) {
-        /* See the note in TraceSegAccess about using RankEXACT here */
+        Rank rank;
+        /* See the note in TraceRankForAccess */
         /* (<code/trace.c#scan.conservative>). */
-        TraceScanSingleRef(arena->flippedTraces, RankEXACT, arena,
+        
+        rank = TraceRankForAccess(arena, seg);
+        TraceScanSingleRef(arena->flippedTraces, rank, arena,
                            seg, (Ref *)addr);
       }
     }

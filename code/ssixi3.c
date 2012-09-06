@@ -1,6 +1,6 @@
 /* ssixi3.c: UNIX/INTEL STACK SCANNING
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/ssixi3.c#4 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/ssixi3.c#5 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  This scans the stack and fixes the registers which may contain
@@ -42,7 +42,7 @@
 
 #include "mpm.h"
 
-SRCID(ssixi3, "$Id: //info.ravenbrook.com/project/mps/master/code/ssixi3.c#4 $");
+SRCID(ssixi3, "$Id: //info.ravenbrook.com/project/mps/master/code/ssixi3.c#5 $");
 
 
 /* .assume.asm.order */
@@ -66,7 +66,7 @@ Res StackScan(ScanState ss, Addr *stackBot)
   ASMV("mov %%esp, %0" : "=r" (stackTop) :);    /* stackTop = esp */
 
   AVER(AddrIsAligned((Addr)stackTop, sizeof(Addr)));  /* .assume.align */
-  res = TraceScanArea(ss, stackTop, stackBot);
+  res = TraceScanAreaTagged(ss, stackTop, stackBot);
 
   return res;
 }

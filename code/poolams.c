@@ -1,6 +1,6 @@
 /* poolams.c: AUTOMATIC MARK & SWEEP POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolams.c#16 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolams.c#18 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -20,7 +20,7 @@
 #include "mpm.h"
 #include <stdarg.h>
 
-SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/master/code/poolams.c#16 $");
+SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/master/code/poolams.c#18 $");
 
 
 #define AMSSig          ((Sig)0x519A3599) /* SIGnature AMS */
@@ -524,10 +524,10 @@ static Res AMSSegDescribe(Seg seg, mps_lib_FILE *stream)
   Buffer buffer;               /* the segment's buffer, if it has one */
   Index i;
 
-  if (!CHECKT(Seg, seg)) return ResFAIL;
+  if (!TESTT(Seg, seg)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
   amsseg = Seg2AMSSeg(seg);
-  if (!CHECKT(AMSSeg, amsseg)) return ResFAIL;
+  if (!TESTT(AMSSeg, amsseg)) return ResFAIL;
 
   /* Describe the superclass fields first via next-method call */
   super = SEG_SUPERCLASS(AMSSegClass);
@@ -749,7 +749,7 @@ static Res AMSInit(Pool pool, va_list args)
   /* references, the alloc and white tables cannot be shared. */
   res = AMSInitInternal(Pool2AMS(pool), format, chain, !supportAmbiguous);
   if (res == ResOK) {
-    EVENT_PPP(PoolInitAMS, pool, PoolArena(pool), format);
+    EVENT3(PoolInitAMS, pool, PoolArena(pool), format);
   }
   return res;
 }
@@ -885,7 +885,7 @@ static Res AMSBufferFill(Addr *baseReturn, Addr *limitReturn,
   AMS ams;
   Seg seg;
   Ring node, ring, nextNode;    /* for iterating over the segments */
-  Index base, limit;
+  Index base = 0, limit = 0;    /* suppress "may be used uninitialized" */
   Addr baseAddr, limitAddr;
   RankSet rankSet;
   Bool b;                       /* the return value of amsSegAlloc */
@@ -1366,7 +1366,7 @@ static Res AMSFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
   Format format;
 
   AVERT_CRITICAL(Pool, pool);
-  AVER_CRITICAL(CHECKT(AMS, Pool2AMS(pool)));
+  AVER_CRITICAL(TESTT(AMS, Pool2AMS(pool)));
   AVERT_CRITICAL(ScanState, ss);
   AVERT_CRITICAL(Seg, seg);
   AVER_CRITICAL(refIO != NULL);
@@ -1591,9 +1591,9 @@ static Res AMSDescribe(Pool pool, mps_lib_FILE *stream)
   Ring node, nextNode;
   Res res;
 
-  if (!CHECKT(Pool, pool)) return ResFAIL;
+  if (!TESTT(Pool, pool)) return ResFAIL;
   ams = Pool2AMS(pool);
-  if (!CHECKT(AMS, ams)) return ResFAIL;
+  if (!TESTT(AMS, ams)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
 
   res = WriteF(stream,

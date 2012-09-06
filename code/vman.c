@@ -1,6 +1,6 @@
 /* vman.c: ANSI VM: MALLOC-BASED PSEUDO MEMORY MAPPING
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/vman.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/vman.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -9,7 +9,7 @@
 #include <stdlib.h>     /* for malloc and free */
 #include <string.h>     /* for memset */
 
-SRCID(vman, "$Id: //info.ravenbrook.com/project/mps/master/code/vman.c#9 $");
+SRCID(vman, "$Id: //info.ravenbrook.com/project/mps/master/code/vman.c#10 $");
 
 
 /* VMStruct -- virtual memory structure */
@@ -93,7 +93,7 @@ Res VMCreate(VM *vmReturn, Size size)
 
   AVERT(VM, vm);
  
-  EVENT_PAA(VMCreate, vm, vm->base, vm->limit);
+  EVENT3(VMCreate, vm, vm->base, vm->limit);
   *vmReturn = vm;
   return ResOK;
 }
@@ -114,7 +114,7 @@ void VMDestroy(VM vm)
   vm->sig = SigInvalid;
   free(vm);
  
-  EVENT_P(VMDestroy, vm);
+  EVENT1(VMDestroy, vm);
 }
 
 
@@ -176,7 +176,7 @@ Res VMMap(VM vm, Addr base, Addr limit)
 
   vm->mapped += size;
 
-  EVENT_PAA(VMMap, vm, base, limit);
+  EVENT3(VMMap, vm, base, limit);
   return ResOK;
 }
 
@@ -200,7 +200,7 @@ void VMUnmap(VM vm, Addr base, Addr limit)
   AVER(vm->mapped >= size);
   vm->mapped -= size;
 
-  EVENT_PAA(VMUnmap, vm, base, limit);
+  EVENT3(VMUnmap, vm, base, limit);
 }
 
 

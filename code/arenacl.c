@@ -1,6 +1,6 @@
 /* arenacl.c: ARENA CLASS USING CLIENT MEMORY
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/arenacl.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/arenacl.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: See <design/arena/#client>.
@@ -17,7 +17,7 @@
 #include "mpm.h"
 #include "mpsacl.h"
 
-SRCID(arenacl, "$Id: //info.ravenbrook.com/project/mps/master/code/arenacl.c#10 $");
+SRCID(arenacl, "$Id: //info.ravenbrook.com/project/mps/master/code/arenacl.c#12 $");
 
 
 /* ClientArenaStruct -- Client Arena Structure */
@@ -236,7 +236,7 @@ static Res ClientArenaInit(Arena *arenaReturn, ArenaClass class,
   /* arena if the size is not a power of 2. */
   arena->zoneShift = SizeFloorLog2(size >> MPS_WORD_SHIFT);
 
-  EVENT_PWA(ArenaCreateCL, arena, size, base);
+  EVENT3(ArenaCreateCL, arena, size, base);
   AVERT(ClientArena, clientArena);
   *arenaReturn = arena;
   return ResOK;
@@ -406,7 +406,7 @@ static Res ClientAlloc(Addr *baseReturn, Tract *baseTractReturn,
 static void ClientFree(Addr base, Size size, Pool pool)
 {
   Arena arena;
-  Chunk chunk;
+  Chunk chunk = NULL;           /* suppress "may be used uninitialized" */
   Size pages;
   ClientArena clientArena;
   Index pi, baseIndex, limitIndex;

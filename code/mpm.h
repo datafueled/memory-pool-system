@@ -1,6 +1,6 @@
 /* mpm.h: MEMORY POOL MANAGER DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.h#33 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.h#36 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -145,6 +145,7 @@ extern Bool SizeIsP2(Size size);
 extern Shift SizeLog2(Size size);
 extern Shift SizeFloorLog2(Size size);
 
+extern Bool WordIsP2(Word word);
 
 /* Formatted Output -- see <design/writef/>, <code/mpm.c> */
 
@@ -377,6 +378,7 @@ extern void TraceStart(Trace trace, double mortality,
                        double finishingTime);
 extern Size TracePoll(Globals globals);
 
+extern Rank TraceRankForAccess(Arena arena, Seg seg);
 extern void TraceSegAccess(Arena arena, Seg seg, AccessSet mode);
 extern Res TraceFix(ScanState ss, Ref *refIO);
 extern Res TraceFixEmergency(ScanState ss, Ref *refIO);
@@ -978,7 +980,7 @@ extern void StackProbe(Size depth);
 #elif defined(STATISTICS_NONE)
 
 #define STATISTIC(gather) DISCARD(((gather), 0))
-#define STATISTIC_STAT(gather) DISCARD_STAT(gather)
+#define STATISTIC_STAT DISCARD_STAT
 #define STATISTIC_WRITE(format, arg)
 
 #else

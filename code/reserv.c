@@ -1,6 +1,6 @@
 /* reserv.c: ARENA RESERVOIR
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/reserv.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/reserv.c#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * IMPROVEMENTS
@@ -11,7 +11,7 @@
 
 #include "mpm.h"
 
-SRCID(reserv, "$Id: //info.ravenbrook.com/project/mps/master/code/reserv.c#10 $");
+SRCID(reserv, "$Id: //info.ravenbrook.com/project/mps/master/code/reserv.c#11 $");
 
 
 /* The reservoir pool is defined here. See <design/reservoir/> */
@@ -41,7 +41,7 @@ static Res ResPoolInit(Pool pool, va_list arg)
 
   UNUSED(arg);
   /* Caller will set sig and AVERT. */
-  EVENT_PPP(PoolInit, pool, PoolArena(pool), ClassOfPool(pool));
+  EVENT3(PoolInit, pool, PoolArena(pool), ClassOfPool(pool));
   return ResOK;
 }
 
@@ -340,7 +340,7 @@ void ReservoirSetLimit(Reservoir reservoir, Size size)
 
   AVER(SizeIsAligned(needed, ArenaAlign(arena)));
   /* Emit event now, so subsequent change can be ascribed to it. */
-  EVENT_PW(ReservoirLimitSet, arena, size);
+  EVENT2(ReservoirLimitSet, arena, size);
 
   if (needed > reservoir->reservoirSize) {
     /* Try to grow the reservoir */

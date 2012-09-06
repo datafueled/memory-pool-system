@@ -1,6 +1,6 @@
 /* vmw3.c: VIRTUAL MEMORY MAPPING FOR WIN32
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/vmw3.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/vmw3.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: See <design/vm/>.
@@ -49,7 +49,7 @@
 
 #include "mpswin.h"
 
-SRCID(vmw3, "$Id: //info.ravenbrook.com/project/mps/master/code/vmw3.c#10 $");
+SRCID(vmw3, "$Id: //info.ravenbrook.com/project/mps/master/code/vmw3.c#12 $");
 
 
 /* VMStruct -- virtual memory structure */
@@ -103,8 +103,8 @@ Res VMCreate(VM *vmReturn, Size size)
 
   AVER(vmReturn != NULL);
 
-  AVER(CHECKTYPE(LPVOID, Addr));  /* .assume.lpvoid-addr */
-  AVER(CHECKTYPE(SIZE_T, Size));
+  AVER(COMPATTYPE(LPVOID, Addr));  /* .assume.lpvoid-addr */
+  AVER(COMPATTYPE(SIZE_T, Size));
 
   GetSystemInfo(&si);
   align = (Align)si.dwPageSize;
@@ -140,7 +140,7 @@ Res VMCreate(VM *vmReturn, Size size)
   vm->sig = VMSig;
   AVERT(VM, vm);
 
-  EVENT_PAA(VMCreate, vm, vm->base, vm->limit);
+  EVENT3(VMCreate, vm, vm->base, vm->limit);
   *vmReturn = vm;
   return ResOK;
 
@@ -170,7 +170,7 @@ void VMDestroy(VM vm)
 
   b = VirtualFree((LPVOID)vm, (SIZE_T)0, MEM_RELEASE);
   AVER(b != 0);
-  EVENT_P(VMDestroy, vm);
+  EVENT1(VMDestroy, vm);
 }
 
 
@@ -240,7 +240,7 @@ Res VMMap(VM vm, Addr base, Addr limit)
 
   vm->mapped += AddrOffset(base, limit);
 
-  EVENT_PAA(VMMap, vm, base, limit);
+  EVENT3(VMMap, vm, base, limit);
   return ResOK;
 }
 
@@ -266,7 +266,7 @@ void VMUnmap(VM vm, Addr base, Addr limit)
   AVER(b != 0);  /* .assume.free.success */
   vm->mapped -= AddrOffset(base, limit);
 
-  EVENT_PAA(VMUnmap, vm, base, limit);
+  EVENT3(VMUnmap, vm, base, limit);
 }
 
 

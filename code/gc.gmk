@@ -1,6 +1,6 @@
 # gc.gmk: GNUMAKEFILE FRAGMENT FOR GNU CC
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/gc.gmk#10 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/gc.gmk#11 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # This file is included by platform makefiles that use the GNU CC
@@ -13,9 +13,8 @@ CFLAGSCOMPILER := \
 	-Wstrict-prototypes -Wmissing-prototypes \
 	-Winline -Waggregate-return -Wnested-externs \
 	-Wcast-qual -Wshadow
-CFLAGSDEBUG = -g -ggdb3
-CFLAGSOPT = -O -g -ggdb3
-CFLAGSOPTNODEBUG = -O -g0
+CFLAGSDEBUG = -O -g3
+CFLAGSOPT = -O2 -g3
 
 # gcc -MM generates a dependency line of the form:
 #   thing.o : thing.c ...

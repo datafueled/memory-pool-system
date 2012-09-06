@@ -1,6 +1,6 @@
 /* poolmfs.c: MANUAL FIXED SMALL UNIT POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolmfs.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmfs.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * This is the implementation of the MFS pool class.
@@ -35,7 +35,7 @@
 #include "poolmfs.h"
 #include "mpm.h"
 
-SRCID(poolmfs, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmfs.c#9 $");
+SRCID(poolmfs, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmfs.c#10 $");
 
 
 /* ROUND -- Round up
@@ -106,7 +106,7 @@ static Res MFSInit(Pool pool, va_list arg)
   mfs->sig = MFSSig;
 
   AVERT(MFS, mfs);
-  EVENT_PPP(PoolInit, pool, arena, ClassOfPool(pool));
+  EVENT4(PoolInitMFS, pool, arena, extendBy, unitSize);
   return ResOK;
 }
 

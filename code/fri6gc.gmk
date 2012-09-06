@@ -1,30 +1,20 @@
 # fri6gc.gmk: BUILD FOR FreeBSD/amd64/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/fri6gc.gmk#1 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/fri6gc.gmk#3 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = fri6gc
 
-PFMDEFS = -D_REENTRANT
-
 MPMPF = lockix.c thix.c pthrdext.c vmix.c \
         protix.c protsgix.c prmcan.c prmci6fr.c ssixi6.c span.c
-SWPF = than.c vmfr.c protsw.c prmcan.c ssan.c
 
 LIBS = -lm -pthread
 
 include gc.gmk
 
-CFLAGSCOMPILER := $(subst -pedantic,,$(CFLAGSCOMPILER))
-CFLAGSDEBUG = -g3
-CFLAGSOPT = -O -g3
+CFLAGSCOMPILER := $(CFLAGSCOMPILER) -Wno-strict-aliasing
 
 CC = cc
-
-# Suppress some warnings (SuSE).
-#   .void: -Wpointer-arith cannot be used because the string.h header does
-#   arithmetic on void*.
-#CFLAGSCOMPILER := $(subst -Wpointer-arith,,$(CFLAGSCOMPILER))
 
 include comm.gmk
 

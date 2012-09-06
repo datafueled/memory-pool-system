@@ -1,6 +1,6 @@
 /* arenavm.c: VIRTUAL MEMORY ARENA CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#21 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#23 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *
@@ -27,7 +27,7 @@
 #include "mpm.h"
 #include "mpsavm.h"
 
-SRCID(arenavm, "$Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#21 $");
+SRCID(arenavm, "$Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#23 $");
 
 
 /* @@@@ Arbitrary calculation for the maximum number of distinct */
@@ -202,10 +202,10 @@ static Res VMArenaDescribe(Arena arena, mps_lib_FILE *stream)
   VMArena vmArena;
   Index gen;
 
-  if (!CHECKT(Arena, arena)) return ResFAIL;
+  if (!TESTT(Arena, arena)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
   vmArena = Arena2VMArena(arena);
-  if (!CHECKT(VMArena, vmArena)) return ResFAIL;
+  if (!TESTT(VMArena, vmArena)) return ResFAIL;
 
   /* Describe the superclass fields first via next-method call */
   /* ...but the next method is ArenaTrivDescribe, so don't call it;
@@ -529,9 +529,9 @@ static Res VMArenaInit(Arena *arenaReturn, ArenaClass class, va_list args)
 
   AVERT(VMArena, vmArena);
   if ((ArenaClass)mps_arena_class_vm() == class)
-    EVENT_PWW(ArenaCreateVM, arena, userSize, chunkSize);
+    EVENT3(ArenaCreateVM, arena, userSize, chunkSize);
   else
-    EVENT_PWW(ArenaCreateVMNZ, arena, userSize, chunkSize);
+    EVENT3(ArenaCreateVMNZ, arena, userSize, chunkSize);
   *arenaReturn = arena;
   return ResOK;
 
@@ -573,7 +573,7 @@ static void VMArenaFinish(Arena arena)
 
   VMUnmap(arenaVM, VMBase(arenaVM), VMLimit(arenaVM));
   VMDestroy(arenaVM);
-  EVENT_P(ArenaDestroy, vmArena);
+  EVENT1(ArenaDestroy, vmArena);
 }
 
 
@@ -1102,7 +1102,8 @@ static Res vmArenaExtend(VMArena vmArena, Size size)
     break;
   } while(0);
 
-
+  EVENT3(vmArenaExtendStart, size, chunkSize,
+                             VMArenaReserved(VMArena2Arena(vmArena)));
   DIAG_SINGLEF(( "vmArenaExtend_Start", 
     "to accommodate size $W, try chunkSize $W", (WriteFW)size, (WriteFW)chunkSize,
     " (VMArenaReserved currently $W bytes)\n",
@@ -1129,6 +1130,8 @@ static Res vmArenaExtend(VMArena vmArena, Size size)
       /* remove slices, down to chunkHalf but no further */
       for(; chunkSize > chunkHalf; chunkSize -= sliceSize) {
         if(chunkSize < chunkMin) {
+          EVENT2(vmArenaExtendFail, chunkMin,
+                                    VMArenaReserved(VMArena2Arena(vmArena)));
           DIAG_SINGLEF(( "vmArenaExtend_FailMin", 
             "no remaining address-space chunk >= min($W)", (WriteFW)chunkMin,
             " (so VMArenaReserved remains $W bytes)\n",
@@ -1145,6 +1148,7 @@ static Res vmArenaExtend(VMArena vmArena, Size size)
 
 vmArenaExtend_Done:
 
+  EVENT2(vmArenaExtendDone, chunkSize, VMArenaReserved(VMArena2Arena(vmArena)));
   DIAG_SINGLEF(( "vmArenaExtend_Done",
     "Request for new chunk of VM $W bytes succeeded", (WriteFW)chunkSize,
     " (VMArenaReserved now $W bytes)\n", 
@@ -1584,7 +1588,7 @@ static void VMFree(Addr base, Size size, Pool pool)
   Arena arena;
   VMArena vmArena;
   VMChunk vmChunk;
-  Chunk chunk;
+  Chunk chunk = NULL;           /* suppress "may be used uninitialized" */
   Count pages;
   Index pi, piBase, piLimit;
   Index pageTableBase;

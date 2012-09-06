@@ -1,6 +1,6 @@
 /* lockli.c: RECURSIVE LOCKS FOR POSIX SYSTEMS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/lockli.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/lockli.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .linux: This implementation currently just supports LinuxThreads
@@ -22,21 +22,20 @@
  * while we hold the mutex. 
  */
 
-#define _XOPEN_SOURCE 500
-#include <pthread.h>
-#include <semaphore.h>
-#include <errno.h>
-
 #include "mpmtypes.h"
 #include "lock.h"
 #include "config.h"
+
+#include <pthread.h>
+#include <semaphore.h>
+#include <errno.h>
 
 
 #ifndef MPS_OS_LI
 #error "lockli.c is specific to LinuxThreads but MPS_OS_LI not defined"
 #endif
 
-SRCID(lockli, "$Id: //info.ravenbrook.com/project/mps/master/code/lockli.c#9 $");
+SRCID(lockli, "$Id: //info.ravenbrook.com/project/mps/master/code/lockli.c#10 $");
 
 
 /* LockAttrSetRecursive -- Set mutexattr to permit recursive locking

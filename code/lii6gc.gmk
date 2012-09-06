@@ -1,6 +1,6 @@
 # lii6gc.gmk: BUILD FOR LINUX/x64/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/lii6gc.gmk#2 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/lii6gc.gmk#5 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = lii6gc
@@ -8,24 +8,14 @@ PFM = lii6gc
 THREADSRC = lockli.c thix.c pthrdext.c
 THREADLIB = -lpthread
 
-# _XOPEN_SOURCE is to get the modern POSIX signal handling
-# _GNU_SOURCE is to get register numbers in prmci3li.c
-PFMDEFS = -D_REENTRANT -D_XOPEN_SOURCE=500 -D_GNU_SOURCE
-
 MPMPF = ${THREADSRC} vmix.c \
-        protix.c protlii6.c proti6.c prmci6li.c ssixi6.c span.c
-SWPF = than.c vmli.c protsw.c prmcan.c ssan.c
+        protix.c protli.c proti6.c prmci6li.c ssixi6.c span.c
 
 LIBS = -lm ${THREADLIB}
 
 include gc.gmk
 
 CC = cc
-
-# Suppress some warnings (SuSE).
-#   .void: -Wpointer-arith cannot be used because the string.h header does
-#   arithmetic on void*.
-CFLAGSCOMPILER := -pthread $(subst -Wpointer-arith,,$(CFLAGSCOMPILER))
 
 include comm.gmk
 

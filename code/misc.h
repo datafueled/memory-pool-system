@@ -1,6 +1,6 @@
 /* misc.h: MISCELLANEOUS DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/misc.h#15 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/misc.h#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -17,7 +17,7 @@
 
 
 typedef int Bool;                       /* <design/type/#bool> */
-enum {
+enum BoolEnum {
   FALSE = 0,
   TRUE = 1
 };

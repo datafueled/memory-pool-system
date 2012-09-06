@@ -1,6 +1,6 @@
 /* poolmvff.c: First Fit Manual Variable Pool
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolmvff.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmvff.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -23,7 +23,7 @@
 #include "cbs.h"
 #include "mpm.h"
 
-SRCID(poolmvff, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmvff.c#10 $");
+SRCID(poolmvff, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmvff.c#12 $");
 
 
 /* Would go in poolmvff.h if the class had any MPS-internal clients. */
@@ -112,7 +112,7 @@ static void MVFFAddToFreeList(Addr *baseIO, Addr *limitIO, MVFF mvff) {
  */
 static void MVFFFreeSegs(MVFF mvff, Addr base, Addr limit)
 {
-  Seg seg;
+  Seg seg = NULL;       /* suppress "may be used uninitialized" */
   Arena arena;
   Bool b;
   Addr segLimit;  /* limit of the current segment when iterating */
@@ -473,7 +473,7 @@ static Res MVFFInit(Pool pool, va_list arg)
 
   mvff->sig = MVFFSig;
   AVERT(MVFF, mvff);
-  EVENT_PPWWWUUU(PoolInitMVFF, pool, arena, extendBy, avgSize, align,
+  EVENT8(PoolInitMVFF, pool, arena, extendBy, avgSize, align,
                  slotHigh, arenaHigh, firstFit);
   return ResOK;
 
@@ -537,9 +537,9 @@ static Res MVFFDescribe(Pool pool, mps_lib_FILE *stream)
   Res res;
   MVFF mvff;
 
-  if (!CHECKT(Pool, pool)) return ResFAIL;
+  if (!TESTT(Pool, pool)) return ResFAIL;
   mvff = Pool2MVFF(pool);
-  if (!CHECKT(MVFF, mvff)) return ResFAIL;
+  if (!TESTT(MVFF, mvff)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
 
   res = WriteF(stream,

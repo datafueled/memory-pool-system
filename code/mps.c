@@ -1,6 +1,6 @@
 /* mps.c: MEMORY POOL SYSTEM ALL-IN-ONE TRANSLATION UNIT
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mps.c#6 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mps.c#12 $
  * Copyright (C) 2012 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This file can be compiled to create the complete MPS library in
@@ -17,6 +17,16 @@
  * includes of other source code, with ifdefs for platform configuration,
  * which closely mirror those in the makefiles.
  */
+
+
+/* Platform interface
+ *
+ * This must be included first as it defines symbols which affect system
+ * headers, such as _POSIX_C_SOURCE _REENTRANT etc.
+ */
+
+#include "mpstd.h"
+
 
 /* MPM Core */
 
@@ -72,12 +82,10 @@
 
 /* ANSI Plinth */
 
+#if !defined(PLINTH_NONE)       /* see CONFIG_PLINTH_NONE in config.h  */
 #include "mpsliban.c"
 #include "mpsioan.c"
-
-/* Platform interface */
-
-#include "mpstd.h"
+#endif
 
 /* Mac OS X on 32-bit Intel built with Clang or GCC */
 
@@ -107,28 +115,44 @@
 
 /* FreeBSD on 32-bit Intel built with GCC */
 
-#elif defined(MPS_PF_FRI4GC)
+#elif defined(MPS_PF_FRI3GC)
 
 #include "lockix.c"     /* Posix locks */
-#include "thfri4.c"     /* FreeBSD on 32-bit Intel threading */
+#include "thix.c"       /* Posix threading */
 #include "pthrdext.c"   /* Posix thread extensions */
 #include "vmix.c"       /* Posix virtual memory */
 #include "protix.c"     /* Posix protection */
 #include "protsgix.c"   /* Posix signal handling */
 #include "prmcan.c"     /* generic mutator context */
+#include "prmci3fr.c"   /* 32-bit Intel for FreeBSD mutator context */
 #include "span.c"       /* generic stack probe */
 #include "ssixi3.c"     /* Posix on 32-bit Intel stack scan */
 
+/* FreeBSD on 64-bit Intel built with GCC */
+
+#elif defined(MPS_PF_FRI6GC)
+
+#include "lockix.c"     /* Posix locks */
+#include "thix.c"       /* Posix threading */
+#include "pthrdext.c"   /* Posix thread extensions */
+#include "vmix.c"       /* Posix virtual memory */
+#include "protix.c"     /* Posix protection */
+#include "protsgix.c"   /* Posix signal handling */
+#include "prmcan.c"     /* generic mutator context */
+#include "prmci6fr.c"   /* 64-bit Intel for FreeBSD mutator context */
+#include "span.c"       /* generic stack probe */
+#include "ssixi6.c"     /* Posix on 64-bit Intel stack scan */
+
 /* Linux on 32-bit Intel with GCC */
 
-#elif defined(MPS_PF_LII4GC)
+#elif defined(MPS_PF_LII3GC)
 
 #include "lockli.c"     /* Linux locks */
 #include "thix.c"       /* Posix threading */
 #include "pthrdext.c"   /* Posix thread extensions */
 #include "vmix.c"       /* Posix virtual memory */
 #include "protix.c"     /* Posix protection */
-#include "protlii3.c"   /* Linux on 32-bit Intel protection */
+#include "protli.c"     /* Linux protection */
 #include "proti3.c"     /* 32-bit Intel mutator context */
 #include "prmci3li.c"   /* 32-bit Intel for Linux mutator context */
 #include "span.c"       /* generic stack probe */
@@ -143,11 +167,11 @@
 #include "pthrdext.c"   /* Posix thread extensions */
 #include "vmix.c"       /* Posix virtual memory */
 #include "protix.c"     /* Posix protection */
-#include "protlii6.c"   /* Linux on 32-bit Intel protection */
-#include "proti6.c"     /* 32-bit Intel mutator context */
-#include "prmci6li.c"   /* 32-bit Intel for Linux mutator context */
+#include "protli.c"     /* Linux protection */
+#include "proti6.c"     /* 64-bit Intel mutator context */
+#include "prmci6li.c"   /* 64-bit Intel for Linux mutator context */
 #include "span.c"       /* generic stack probe */
-#include "ssixi6.c"     /* Posix on 32-bit Intel stack scan */
+#include "ssixi6.c"     /* Posix on 64-bit Intel stack scan */
 
 /* Windows on 32-bit Intel with Microsoft Visual Studio */
 
@@ -160,7 +184,7 @@
 #include "protw3.c"     /* Windows protection */
 #include "proti3.c"     /* 32-bit Intel mutator context decoding */
 #include "prmci3w3.c"   /* Windows on 32-bit Intel mutator context */
-#include "ssw3i3.c"     /* Windows on 32-bit Intel scan scan */
+#include "ssw3mv.c"     /* Windows stack scan for Microsoft C */
 #include "spi3.c"       /* Intel stack probe */
 #include "mpsiw3.c"     /* Windows interface layer extras */
 
@@ -176,7 +200,7 @@
 #include "protw3.c"     /* Windows protection */
 #include "proti6.c"     /* 64-bit Intel mutator context decoding */
 #include "prmci6w3.c"   /* Windows on 64-bit Intel mutator context */
-/* ssw3i6.asm */        /* Windows on 64-bit Intel scan scan */
+#include "ssw3mv.c"     /* Windows stack scan for Microsoft C */
 #include "span.c"       /* generic stack probe FIXME: Is this correct? */
 #include "mpsiw3.c"     /* Windows interface layer extras */
 

@@ -1,6 +1,6 @@
 /* arena.c: ARENA ALLOCATION FEATURES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/arena.c#19 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/arena.c#21 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .sources: <design/arena/> is the main design document.  */
@@ -9,7 +9,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/master/code/arena.c#19 $");
+SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/master/code/arena.c#21 $");
 
 
 /* ArenaControlPool -- get the control pool */
@@ -26,7 +26,7 @@ static void ArenaTrivCompact(Arena arena, Trace trace);
 
 static Res ArenaTrivDescribe(Arena arena, mps_lib_FILE *stream)
 {
-  if (!CHECKT(Arena, arena)) return ResFAIL;
+  if (!TESTT(Arena, arena)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
 
   /* .describe.triv.never-called-from-subclass-method:
@@ -219,6 +219,11 @@ Res ArenaCreateV(Arena *arenaReturn, ArenaClass class, va_list args)
   AVER(arenaReturn != NULL);
   AVERT(ArenaClass, class);
 
+  /* We must initialise the event subsystem very early, because event logging
+     will start as soon as anything interesting happens and expect to write
+     to the EventLast pointers. */
+  EventInit();
+
   /* Do initialization.  This will call ArenaInit (see .init.caller). */
   res = (*class->init)(&arena, class, args);
   if (res != ResOK)
@@ -324,7 +329,7 @@ Res ArenaDescribe(Arena arena, mps_lib_FILE *stream)
   Res res;
   Size reserved;
 
-  if (!CHECKT(Arena, arena)) return ResFAIL;
+  if (!TESTT(Arena, arena)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
 
   res = WriteF(stream, "Arena $P {\n", (WriteFP)arena,
@@ -396,7 +401,7 @@ Res ArenaDescribeTracts(Arena arena, mps_lib_FILE *stream)
   Addr oldLimit, base, limit;
   Size size;
 
-  if (!CHECKT(Arena, arena)) return ResFAIL;
+  if (!TESTT(Arena, arena)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
 
   b = TractFirst(&tract, arena);
@@ -481,7 +486,7 @@ Res ControlDescribe(Arena arena, mps_lib_FILE *stream)
 {
   Res res;
 
-  if (!CHECKT(Arena, arena)) return ResFAIL;
+  if (!TESTT(Arena, arena)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
 
   res = PoolDescribe(ArenaControlPool(arena), stream);
@@ -529,7 +534,7 @@ Res ArenaAlloc(Addr *baseReturn, SegPref pref, Size size, Pool pool,
     if (res == ResOK)
       goto goodAlloc;
   }
-  EVENT_PWP(ArenaAllocFail, arena, size, pool);
+  EVENT3(ArenaAllocFail, arena, size, pool);
   return res;
 
 goodAlloc:
@@ -537,7 +542,7 @@ goodAlloc:
   arena->lastTract = baseTract;
   arena->lastTractBase = base;
 
-  EVENT_PPAWP(ArenaAlloc, arena, baseTract, base, size, pool);
+  EVENT5(ArenaAlloc, arena, baseTract, base, size, pool);
   *baseReturn = base;
   return ResOK;
 }
@@ -577,7 +582,7 @@ void ArenaFree(Addr base, Size size, Pool pool)
     ReservoirDeposit(reservoir, base, size);
   }
 
-  EVENT_PAW(ArenaFree, arena, base, size);
+  EVENT3(ArenaFree, arena, base, size);
   return;
 }
 
@@ -616,7 +621,7 @@ void ArenaSetSpareCommitLimit(Arena arena, Size limit)
     arena->class->spareCommitExceeded(arena);
   }
 
-  EVENT_PW(SpareCommitLimitSet, arena, limit);
+  EVENT2(SpareCommitLimitSet, arena, limit);
   return;
 }
 
@@ -658,7 +663,7 @@ Res ArenaSetCommitLimit(Arena arena, Size limit)
     arena->commitLimit = limit;
     res = ResOK;
   }
-  EVENT_PWU(CommitLimitSet, arena, limit, (res == ResOK));
+  EVENT3(CommitLimitSet, arena, limit, (res == ResOK));
   return res;
 }
 
@@ -690,7 +695,7 @@ Res ArenaExtend(Arena arena, Addr base, Size size)
   if (res != ResOK)
     return res;
 
-  EVENT_PAW(ArenaExtend, arena, base, size);
+  EVENT3(ArenaExtend, arena, base, size);
   return ResOK;
 }
 

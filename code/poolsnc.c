@@ -1,6 +1,6 @@
 /* poolsnc.c: STACK NO CHECKING POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -21,7 +21,7 @@
 #include "mpscsnc.h"
 #include "mpm.h"
 
-SRCID(poolsnc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#11 $");
+SRCID(poolsnc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#13 $");
 
 
 #define SNCGen  ((Serial)1) /* "generation" for SNC pools */
@@ -382,7 +382,7 @@ static Res SNCInit(Pool pool, va_list arg)
   snc->sig = SNCSig;
 
   AVERT(SNC, snc);
-  EVENT_PP(PoolInitSNC, pool, format);
+  EVENT2(PoolInitSNC, pool, format);
   return ResOK;
 }
 
@@ -590,7 +590,7 @@ static void SNCFramePopPending(Pool pool, Buffer buf, AllocFrame frame)
 
   } else {
     Arena arena;
-    Seg seg;
+    Seg seg = NULL;     /* suppress "may be used uninitialized" */
     Bool foundSeg;
 
     arena = PoolArena(pool);

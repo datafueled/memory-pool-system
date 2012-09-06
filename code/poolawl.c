@@ -1,6 +1,6 @@
 /* poolawl.c: AUTOMATIC WEAK LINKED POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#18 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#19 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *
@@ -43,7 +43,7 @@
 #include "mpm.h"
 #include "chain.h"
 
-SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#18 $");
+SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#19 $");
 
 
 #define AWLSig ((Sig)0x519B7A37) /* SIGnature PooL AWL */
@@ -523,7 +523,7 @@ static Res AWLInit(Pool pool, va_list arg)
   awl->sig = AWLSig;
 
   AVERT(AWL, awl);
-  EVENT_PP(PoolInitAWL, pool, format);
+  EVENT2(PoolInitAWL, pool, format);
   return ResOK;
 
 failGenInit:

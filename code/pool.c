@@ -1,6 +1,6 @@
 /* pool.c: POOL IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/pool.c#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/pool.c#17 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -33,7 +33,7 @@
 
 #include "mpm.h"
 
-SRCID(pool, "$Id: //info.ravenbrook.com/project/mps/master/code/pool.c#13 $");
+SRCID(pool, "$Id: //info.ravenbrook.com/project/mps/master/code/pool.c#17 $");
 
 
 /* PoolClassCheck -- check a pool class */
@@ -250,7 +250,7 @@ void PoolFinish(Pool pool)
   RingFinish(&pool->bufferRing);
   RingFinish(&pool->arenaRing);
  
-  EVENT_P(PoolFinish, pool);
+  EVENT1(PoolFinish, pool);
 }
 
 
@@ -305,13 +305,15 @@ Res PoolAlloc(Addr *pReturn, Pool pool, Size size,
   /* .hasaddr.critical: The PoolHasAddr check is expensive, and in */
   /* allocation-bound programs this is on the critical path. */
   AVER_CRITICAL(PoolHasAddr(pool, *pReturn));
+  /* All allocations should be aligned to the pool's alignment */
+  AVER_CRITICAL(AddrIsAligned(*pReturn, pool->alignment));
 
   /* All PoolAllocs should advance the allocation clock, so we count */
   /* it all in the fillMutatorSize field. */
   pool->fillMutatorSize += size;
   ArenaGlobals(PoolArena(pool))->fillMutatorSize += size;
 
-  EVENT_PAW(PoolAlloc, pool, *pReturn, size);
+  EVENT3(PoolAlloc, pool, *pReturn, size);
 
   return ResOK;
 }
@@ -328,7 +330,7 @@ void PoolFree(Pool pool, Addr old, Size size)
   AVER(size > 0);
   (*pool->class->free)(pool, old, size);
  
-  EVENT_PAW(PoolFree, pool, old, size);
+  EVENT3(PoolFree, pool, old, size);
 }
 
 
@@ -391,12 +393,10 @@ Res PoolScan(Bool *totalReturn, ScanState ss, Pool pool, Seg seg)
   /* The segment must belong to the pool. */
   AVER(pool == SegPool(seg));
 
-  /* We actually want to check that the rank we are scanning at */
-  /* (ss->rank) is at least as big as all the ranks in */
-  /* the segment (SegRankSet(seg)).  It is tricky to check that, */
-  /* so we only check that either ss->rank is in the segment's */
-  /* ranks, or that ss->rank is exact. */
-  /* See <code/trace.c#scan.conservative> */
+  /* We check that either ss->rank is in the segment's
+   * ranks, or that ss->rank is exact.  The check is more complicated if
+   * we actually have multiple ranks in a seg.
+   * See <code/trace.c#scan.conservative> */
   AVER(ss->rank == RankEXACT || RankSetIsMember(SegRankSet(seg), ss->rank));
 
   /* Should only scan segments which contain grey objects. */
@@ -515,7 +515,7 @@ Res PoolDescribe(Pool pool, mps_lib_FILE *stream)
   Res res;
   Ring node, nextNode;
 
-  if (!CHECKT(Pool, pool)) return ResFAIL;
+  if (!TESTT(Pool, pool)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
  
   res = WriteF(stream,

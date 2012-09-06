@@ -1,6 +1,6 @@
 /* meter.c: METERS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/meter.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/meter.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * TRANSGRESSIONS
@@ -13,7 +13,7 @@
 #include "meter.h"
 #include "mpm.h"
 
-SRCID(meter, "$Id: //info.ravenbrook.com/project/mps/master/code/meter.c#9 $");
+SRCID(meter, "$Id: //info.ravenbrook.com/project/mps/master/code/meter.c#10 $");
 
 
 /* MeterInit -- initialize a meter */
@@ -31,7 +31,7 @@ void MeterInit(Meter meter, char *name, void *owner)
 
   sym = EventInternString(name);
   EventLabelAddr((Addr)meter, sym); /* see .trans.label */
-  EVENT_PP(MeterInit, meter, owner);
+  EVENT2(MeterInit, meter, owner);
   UNUSED(owner); /* @@@@ hack */
 }
 
@@ -98,7 +98,7 @@ Res MeterWrite(Meter meter, mps_lib_FILE *stream)
 
 void MeterEmit(Meter meter)
 {
-  EVENT_PDDWWW(MeterValues, meter, meter->total, meter->meanSquared,
+  EVENT6(MeterValues, meter, meter->total, meter->meanSquared,
                meter->count, meter->max, meter->min);
   UNUSED(meter); /* @@@@ hack */
 }

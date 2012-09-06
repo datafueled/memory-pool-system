@@ -1,6 +1,6 @@
 /* vmix.c: VIRTUAL MEMORY MAPPING FOR UNIX (ISH)
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/vmix.c#6 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/vmix.c#7 $
  * Copyright (c) 2001,2007 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is the implementation of the virtual memory mapping
@@ -58,7 +58,7 @@
 #error "vmix.c is Unix-like specific, currently MPS_OS_FR XC LI"
 #endif
 
-SRCID(vmix, "$Id: //info.ravenbrook.com/project/mps/master/code/vmix.c#6 $");
+SRCID(vmix, "$Id: //info.ravenbrook.com/project/mps/master/code/vmix.c#7 $");
 
 
 /* VMStruct -- virtual memory structure */
@@ -159,7 +159,7 @@ Res VMCreate(VM *vmReturn, Size size)
 
   AVERT(VM, vm);
 
-  EVENT_PAA(VMCreate, vm, vm->base, vm->limit);
+  EVENT3(VMCreate, vm, vm->base, vm->limit);
   DIAG_SINGLEF((
     "VM_ix_Create_ok",
     "[$W..<$W>..$W)", 
@@ -206,7 +206,7 @@ void VMDestroy(VM vm)
              (size_t)SizeAlignUp(sizeof(VMStruct), vm->align));
   AVER(r == 0);
 
-  EVENT_P(VMDestroy, vm);
+  EVENT1(VMDestroy, vm);
 }
 
 
@@ -277,7 +277,7 @@ Res VMMap(VM vm, Addr base, Addr limit)
 
   vm->mapped += size;
 
-  EVENT_PAA(VMMap, vm, base, limit);
+  EVENT3(VMMap, vm, base, limit);
   return ResOK;
 }
 
@@ -306,7 +306,7 @@ void VMUnmap(VM vm, Addr base, Addr limit)
 
   vm->mapped -= size;
 
-  EVENT_PAA(VMUnmap, vm, base, limit);
+  EVENT3(VMUnmap, vm, base, limit);
 }
 
 

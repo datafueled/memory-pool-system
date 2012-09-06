@@ -1,6 +1,6 @@
 /* poolamc.c: AUTOMATIC MOSTLY-COPYING MEMORY POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#34 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#36 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -12,7 +12,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#34 $");
+SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#36 $");
 
 /* PType enumeration -- distinguishes AMCGen and AMCNailboard */
 enum {AMCPTypeGen = 1, AMCPTypeNailboard};
@@ -258,12 +258,12 @@ static Res AMCSegDescribe(Seg seg, mps_lib_FILE *stream)
   Size row;
   char abzSketch[5];
 
-  if(!CHECKT(Seg, seg))
+  if(!TESTT(Seg, seg))
     return ResFAIL;
   if(stream == NULL)
     return ResFAIL;
   amcseg = Seg2amcSeg(seg);
-  if(!CHECKT(amcSeg, amcseg))
+  if(!TESTT(amcSeg, amcseg))
     return ResFAIL;
 
   /* Describe the superclass fields first via next-method call */
@@ -705,7 +705,7 @@ static Res amcGenCreate(amcGen *genReturn, AMC amc, Serial genNr)
   AVERT(amcGen, gen);
 
   RingAppend(&amc->genRing, &gen->amcRing);
-  EVENT_PP(AMCGenCreate, amc, gen);
+  EVENT2(AMCGenCreate, amc, gen);
   *genReturn = gen;
   return ResOK;
 
@@ -728,7 +728,7 @@ static void amcGenDestroy(amcGen gen)
   AVER(gen->segs == 0);
   AVER(gen->pgen.totalSize == 0);
 
-  EVENT_P(AMCGenDestroy, gen);
+  EVENT1(AMCGenDestroy, gen);
   arena = PoolArena(amcGenPool(gen));
   gen->sig = SigInvalid;
   RingRemove(&gen->amcRing);
@@ -745,7 +745,7 @@ static Res amcGenDescribe(amcGen gen, mps_lib_FILE *stream)
 {
   Res res;
 
-  if(!CHECKT(amcGen, gen))
+  if(!TESTT(amcGen, gen))
     return ResFAIL;
 
   res = WriteF(stream,
@@ -1011,11 +1011,11 @@ static Res amcInitComm(Pool pool, RankSet rankSet, va_list arg)
   amc->gensBooted = TRUE;
 
   AVERT(AMC, amc);
-  EVENT_PP(AMCInit, pool, amc);
+  EVENT2(AMCInit, pool, amc);
   if(rankSet == RankSetEMPTY)
-    EVENT_PP(PoolInitAMCZ, pool, pool->format);
+    EVENT2(PoolInitAMCZ, pool, pool->format);
   else
-    EVENT_PP(PoolInitAMC, pool, pool->format);
+    EVENT2(PoolInitAMC, pool, pool->format);
   return ResOK;
 
 failGenAlloc:
@@ -1053,7 +1053,7 @@ static void AMCFinish(Pool pool)
   amc = Pool2AMC(pool);
   AVERT(AMC, amc);
 
-  EVENT_P(AMCFinish, amc);
+  EVENT1(AMCFinish, amc);
 
   /* @@@@ Make sure that segments aren't buffered by forwarding */
   /* buffers.  This is a hack which allows the pool to be destroyed */
@@ -1436,7 +1436,7 @@ static Res amcScanNailedOnce(Bool *totalReturn, Bool *moreReturn,
 
   UNUSED(amc); /* Actually only unused when telemetry is off. @@@@ */
 
-  EVENT_PPP(AMCScanBegin, amc, seg, ss); /* @@@@ use own event */
+  EVENT3(AMCScanBegin, amc, seg, ss); /* @@@@ use own event */
 
   format = pool->format;
   amcSegNailboard(seg)->newMarks = FALSE;
@@ -1491,7 +1491,7 @@ static Res amcScanNailedOnce(Bool *totalReturn, Bool *moreReturn,
   AVER(p == limit);
 
 returnGood:
-  EVENT_PPP(AMCScanEnd, amc, seg, ss); /* @@@@ use own event */
+  EVENT3(AMCScanEnd, amc, seg, ss); /* @@@@ use own event */
 
   AVER(bytesScanned <= SegSize(seg));
   ss->scannedSize += bytesScanned;
@@ -1601,7 +1601,7 @@ static Res AMCScan(Bool *totalReturn, ScanState ss, Pool pool, Seg seg)
     return amcScanNailed(totalReturn, ss, pool, seg, amc);
   }
 
-  EVENT_PPP(AMCScanBegin, amc, seg, ss);
+  EVENT3(AMCScanBegin, amc, seg, ss);
 
   base = AddrAdd(SegBase(seg), format->headerSize);
   /* <design/poolamc/#seg-scan.loop> */
@@ -1637,7 +1637,7 @@ static Res AMCScan(Bool *totalReturn, ScanState ss, Pool pool, Seg seg)
   }
 
   ss->scannedSize += AddrOffset(base, limit);
-  EVENT_PPP(AMCScanEnd, amc, seg, ss);
+  EVENT3(AMCScanEnd, amc, seg, ss);
 
   *totalReturn = TRUE;
   return ResOK;
@@ -1666,7 +1666,7 @@ static void amcFixInPlace(Pool pool, Seg seg, ScanState ss, Ref *refIO)
   /* segment. */
   AVER(ref < SegLimit(seg));
 
-  EVENT_0(AMCFixInPlace);
+  EVENT0(AMCFixInPlace);
   if(amcSegHasNailboard(seg)) {
     Bool wasMarked = amcNailGetAndSetMark(seg, ref);
     /* If there are no new marks (i.e., no new traces for which we */
@@ -1751,7 +1751,7 @@ Res AMCFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
   AVERT_CRITICAL(ScanState, ss);
   AVERT_CRITICAL(Seg, seg);
   AVER_CRITICAL(refIO != NULL);
-  EVENT_0(AMCFix);
+  EVENT0(AMCFix);
 
   /* For the moment, assume that the object was already marked. */
   /* (See <design/fix/#protocol.was-marked>.) */
@@ -1814,7 +1814,7 @@ Res AMCFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
     }
     /* Object is not preserved yet (neither moved, nor nailed) */
     /* so should be preserved by forwarding. */
-    EVENT_A(AMCFixForward, newRef);
+    EVENT1(AMCFixForward, newRef);
     /* <design/fix/#protocol.was-marked> */
     ss->wasMarked = FALSE;
 
@@ -1901,7 +1901,7 @@ static Res AMCHeaderFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
   AVERT_CRITICAL(ScanState, ss);
   AVERT_CRITICAL(Seg, seg);
   AVER_CRITICAL(refIO != NULL);
-  EVENT_0(AMCFix);
+  EVENT0(AMCFix);
 
   /* For the moment, assume that the object was already marked. */
   /* (See <design/fix/#protocol.was-marked>.) */
@@ -1964,7 +1964,7 @@ static Res AMCHeaderFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
     }
     /* object is not preserved yet (neither moved, nor nailed) */
     /* so should be preserved by forwarding */
-    EVENT_A(AMCFixForward, newRef);
+    EVENT1(AMCFixForward, newRef);
     /* <design/fix/#protocol.was-marked> */
     ss->wasMarked = FALSE;
 
@@ -2166,7 +2166,7 @@ static void AMCReclaim(Pool pool, Trace trace, Seg seg)
   gen = amcSegGen(seg);
   AVERT_CRITICAL(amcGen, gen);
 
-  EVENT_PPP(AMCReclaim, gen, trace, seg);
+  EVENT3(AMCReclaim, gen, trace, seg);
 
   /* This switching needs to be more complex for multiple traces. */
   AVER_CRITICAL(TraceSetIsSingle(PoolArena(pool)->busyTraces));
@@ -2330,10 +2330,10 @@ static Res AMCDescribe(Pool pool, mps_lib_FILE *stream)
   Ring node, nextNode;
   char *rampmode;
 
-  if(!CHECKT(Pool, pool))
+  if(!TESTT(Pool, pool))
     return ResFAIL;
   amc = Pool2AMC(pool);
-  if(!CHECKT(AMC, amc))
+  if(!TESTT(AMC, amc))
     return ResFAIL;
   if(stream == NULL)
     return ResFAIL;
@@ -2485,7 +2485,7 @@ void mps_amc_apply(mps_pool_t mps_pool,
   mps_amc_apply_closure_s closure_s;
   Arena arena;
 
-  AVER(CHECKT(Pool, pool));
+  AVER(TESTT(Pool, pool));
   arena = PoolArena(pool);
   ArenaEnter(arena);
   AVERT(Pool, pool);

@@ -1,6 +1,6 @@
 /* mpm.c: GENERAL MPM SUPPORT
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#16 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#18 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Miscellaneous support for the implementation of the MPM
@@ -15,7 +15,7 @@
 #include <float.h>
 #include <limits.h>
 
-SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#16 $");
+SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#18 $");
 
 
 #if defined(AVER_AND_CHECK)
@@ -23,10 +23,12 @@ SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#16 $");
 
 /* CheckLevel -- Control check level 
  *
- * This controls the behaviour of Check methods (see impl.h.check).
+ * This controls the behaviour of Check methods (see check.h).
  */
 
-unsigned CheckLevel = CHECKLEVEL_INITIAL;
+#ifdef CHECKLEVEL_DYNAMIC
+unsigned CheckLevel = CHECKLEVEL_DYNAMIC;
+#endif
 
 
 /* MPMCheck -- test MPM assumptions */
@@ -174,7 +176,14 @@ Word (WordAlignDown)(Word word, Align alignment)
 
 Bool SizeIsP2(Size size)
 {
-  return size > 0 && (size & (size - 1)) == 0;
+  return WordIsP2((Word)size);
+}
+
+/* WordIsP2 -- tests whether a word is a power of two */
+
+Bool WordIsP2(Word word)
+{
+  return word > 0 && (word & (word - 1)) == 0;  
 }
 
 

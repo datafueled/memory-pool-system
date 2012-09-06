@@ -1,37 +1,28 @@
-#!/bin/sh
+# lii3gc.gmk: BUILD FOR LINUX/INTEL/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/logrun#1 $
-# Copyright (c) 2007 Ravenbrook Limited.  See end of file for license.
-#
-# DESCRIPTION
-#
-# Runs specified command, logging output to logfile.
-#
-# Logfile is put in ./log/<datetime>-<command-name>
+# $Id: //info.ravenbrook.com/project/mps/master/code/lii3gc.gmk#4 $
+# Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
+PFM = lii3gc
 
-LOGRUNCOMMAND="$1"
-shift
+THREADSRC = lockli.c thix.c pthrdext.c
+THREADLIB = -lpthread
 
-# This ${foo##*/} construct drops all except the last component of the 
-# path foo, so "./xcppgc/hi/amcss" --> "amcss".
-LOGRUNCOMMANDNAME="${LOGRUNCOMMAND##*/}"
+MPMPF = ${THREADSRC} vmix.c \
+        protix.c protli.c proti3.c prmci3li.c ssixi3.c span.c
 
-# Some commands have a language suffix, eg .py.  But that does not 
-# mean the resulting logfile is in that language: so append .txt.
-LOGRUNFILE="log/`date -u '+%Y%m%dt%H%M%S'`-${LOGRUNCOMMANDNAME}.txt"
+LIBS = -lm ${THREADLIB}
 
-mkdir -p log
-echo "(${LOGRUNCOMMAND} $@)(Logging to ${LOGRUNFILE})" | tee ${LOGRUNFILE}
-"${LOGRUNCOMMAND}" "$@" 2>&1 | tee -a ${LOGRUNFILE}
+include gc.gmk
 
-# open logfile in your favourite editor...
-mate ${LOGRUNFILE}
+CC = cc
+
+include comm.gmk
 
 
 # C. COPYRIGHT AND LICENSE
 #
-# Copyright (C) 2007 Ravenbrook Limited <http://www.ravenbrook.com/>.
+# Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
 # All rights reserved.  This is an open source license.  Contact
 # Ravenbrook for commercial licensing options.
 # 

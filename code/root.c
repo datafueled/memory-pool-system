@@ -1,6 +1,6 @@
 /* root.c: ROOT IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/root.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/root.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is the implementation of the root datatype.
@@ -10,7 +10,7 @@
 
 #include "mpm.h"
 
-SRCID(root, "$Id: //info.ravenbrook.com/project/mps/master/code/root.c#11 $");
+SRCID(root, "$Id: //info.ravenbrook.com/project/mps/master/code/root.c#13 $");
 
 
 /* RootStruct -- tracing root structure */
@@ -380,7 +380,7 @@ void RootDestroy(Root root)
 
 Arena RootArena(Root root)
 {
-  AVER(CHECKT(Root, root));
+  AVER(TESTT(Root, root));
   return root->arena;
 }
 
@@ -506,7 +506,7 @@ Res RootScan(ScanState ss, Root root)
   AVER(res == ResOK);
   root->grey = TraceSetDiff(root->grey, ss->traces);
   rootSetSummary(root, ScanStateSummary(ss));
-  EVENT_PWW(RootScan, root, ss->traces, ScanStateSummary(ss));
+  EVENT3(RootScan, root, ss->traces, ScanStateSummary(ss));
 
 failScan:
   if (root->pm != AccessSetEMPTY) {
@@ -584,7 +584,7 @@ Res RootDescribe(Root root, mps_lib_FILE *stream)
 {
   Res res;
 
-  if (!CHECKT(Root, root)) return ResFAIL;
+  if (!TESTT(Root, root)) return ResFAIL;
   if (stream == NULL) return ResFAIL;
 
   res = WriteF(stream,

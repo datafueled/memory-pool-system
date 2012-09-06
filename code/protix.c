@@ -1,6 +1,6 @@
 /* protix.c: PROTECTION FOR UNIX
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/protix.c#5 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protix.c#6 $
  *  Copyright (c) 2001,2007 Ravenbrook Limited.  See end of file for license.
  *
  *  Somewhat generic across different Unix systems.  Shared between
@@ -39,11 +39,6 @@
  *    is permitted when PROT_NONE alone is used.
  */
 
-
-/* open sesame magic, see standards(5) */
-#define _POSIX_C_SOURCE 199309L
-#define _XOPEN_SOURCE_EXTENDED 1
-
 #include "mpm.h"
 
 #if !defined(MPS_OS_LI) && !defined(MPS_OS_FR) && !defined(MPS_OS_XC)
@@ -59,7 +54,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 
-SRCID(protix, "$Id: //info.ravenbrook.com/project/mps/master/code/protix.c#5 $");
+SRCID(protix, "$Id: //info.ravenbrook.com/project/mps/master/code/protix.c#6 $");
 
 /* ProtSet -- set protection
  *

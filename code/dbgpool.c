@@ -1,6 +1,6 @@
 /* dbgpool.c: POOL DEBUG MIXIN
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/dbgpool.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/dbgpool.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -13,7 +13,7 @@
 #include "mpm.h"
 #include <stdarg.h>
 
-SRCID(dbgpool, "$Id: //info.ravenbrook.com/project/mps/master/code/dbgpool.c#11 $");
+SRCID(dbgpool, "$Id: //info.ravenbrook.com/project/mps/master/code/dbgpool.c#12 $");
 
 
 /* tagStruct -- tags for storing info about allocated objects */
@@ -72,7 +72,7 @@ Bool PoolDebugMixinCheck(PoolDebugMixin debug)
     CHECKL(TagInitMethodCheck(debug->tagInit));
     /* Nothing to check about tagSize */
     CHECKD(Pool, debug->tagPool);
-    CHECKL(CHECKTYPE(Addr, void*)); /* tagPool relies on this */
+    CHECKL(COMPATTYPE(Addr, void*)); /* tagPool relies on this */
     /* Nothing to check about missingTags */
     CHECKL(SplayTreeCheck(&debug->index));
   }
@@ -224,7 +224,7 @@ static void freeSplat(PoolDebugMixin debug, Pool pool, Addr base, Addr limit)
   Addr p, next;
   Size freeSize = debug->freeSize;
   Arena arena;
-  Seg seg;
+  Seg seg = NULL;       /* suppress "may be used uninitialized" */
   Bool inSeg;
 
   AVER(base < limit);
@@ -258,7 +258,7 @@ static Bool freeCheck(PoolDebugMixin debug, Pool pool, Addr base, Addr limit)
   Size freeSize = debug->freeSize;
   Res res;
   Arena arena;
-  Seg seg;
+  Seg seg = NULL;       /* suppress "may be used uninitialized" */
   Bool inSeg;
 
   AVER(base < limit);
@@ -472,7 +472,7 @@ static Res DebugPoolAlloc(Addr *aReturn,
                           Pool pool, Size size, Bool withReservoir)
 {
   Res res;
-  Addr new;
+  Addr new = NULL; /* suppress "may be used uninitialized" warning */
   PoolDebugMixin debug;
 
   AVER(aReturn != NULL);
