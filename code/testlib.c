@@ -1,6 +1,6 @@
 /* testlib.c: TEST LIBRARY
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/testlib.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/testlib.c#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -30,6 +30,15 @@ struct itimerspec; /* stop complaints from time.h */
 /* Objects to: sscanf.  See job001934. */
 #pragma warning( disable : 4996 )
 #endif
+
+
+/* fail -- like assert, but (notionally) returns a value, so usable in an expression */
+
+int fail(void)
+{
+  Insist(FALSE);
+  return 1111UL;
+}
 
 
 /* rnd -- a random number generator

@@ -1,6 +1,6 @@
 /* fmtdytst.h: DYLAN OBJECT FORMAT TESTING
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/fmtdytst.h#6 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/fmtdytst.h#7 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -8,6 +8,7 @@
 #define fmtdytst_h
 
 #include "mps.h"
+#include "testlib.h"
 
 extern mps_res_t dylan_init(mps_addr_t addr, size_t size,
                             mps_addr_t *refs, size_t nr_refs);
@@ -25,7 +26,15 @@ extern mps_res_t make_dylan_vector(mps_word_t *v, mps_ap_t ap, size_t slots);
 
 #define DYLAN_INT(n) (((mps_word_t)(n) << 2) | 1)
 
+#define INT_DYI(n)  ( (n) <= DYLAN_UINT_MAX ? DYLAN_INT(n) : (mps_word_t)fail() )
+
+
 #define DYLAN_INT_INT(d)  ((mps_word_t)(d) >> 2)
+
+#define DYI_INT(d)  ( ((d) & 0x3) == 0x1 ? DYLAN_INT_INT(d) : (mps_word_t)fail() )
+
+#define DYLAN_UINT_MAX  ((mps_word_t)-1 >> 2)
+#define DYLAN_UINT_MASK  DYLAN_UINT_MAX
 
 #endif /* fmtdy_h */
 

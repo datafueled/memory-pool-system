@@ -1,6 +1,6 @@
 # commpost.nmk: SECOND COMMON FRAGMENT FOR PLATFORMS USING MV AND NMAKE
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/commpost.nmk#33 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/commpost.nmk#34 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # DESCRIPTION
@@ -232,7 +232,7 @@ $(PFM)\$(VARIETY)\zmess.exe: $(PFM)\$(VARIETY)\zmess.obj \
 	$(TESTLIBOBJ)
 
 $(PFM)\$(VARIETY)\eventcnv.exe: $(PFM)\$(VARIETY)\eventcnv.obj \
-	$(PFM)\$(VARIETY)\eventpro.obj $(PFM)\$(VARIETY)\table.obj
+	$(PFM)\$(VARIETY)\eventpro.obj $(MPMOBJ) $(PLINTHOBJ)
 
 $(PFM)\$(VARIETY)\replay.exe: $(PFM)\$(VARIETY)\replay.obj \
   $(PFM)\$(VARIETY)\eventrep.obj \

@@ -1,6 +1,6 @@
 /* poolamc.c: AUTOMATIC MOSTLY-COPYING MEMORY POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#36 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#37 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -12,7 +12,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#36 $");
+SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#37 $");
 
 /* PType enumeration -- distinguishes AMCGen and AMCNailboard */
 enum {AMCPTypeGen = 1, AMCPTypeNailboard};
@@ -1520,55 +1520,41 @@ static Res amcScanNailed(Bool *totalReturn, ScanState ss, Pool pool,
   } while(moreScanning);
 
   if(loops > 1) {
-    {
-      /* Looped: should only happen under emergency tracing. */
-      TraceId ti;
-      Trace trace;
-      Bool emerg = FALSE;
-      TraceSet ts = ss->traces;
-      Arena arena = pool->arena;
-      
-      TRACE_SET_ITER(ti, trace, ts, arena)
-        if(trace->emergency) {
-          emerg = TRUE;
-        }
-      TRACE_SET_ITER_END(ti, trace, ts, arena);
-      AVER(emerg);
-    }
-    {      
-      /* Looped: fixed refs (from 1st pass) were seen by MPS_FIX1
-       * (in later passes), so the "ss.unfixedSummary" is _not_ 
-       * purely unfixed.  In this one case, unfixedSummary is not 
-       * accurate, and cannot be used to verify the SegSummary (see 
-       * impl/trace/#verify.segsummary).  Use ScanStateSetSummary to 
-       * store ScanStateSummary in ss.fixedSummary and reset 
-       * ss.unfixedSummary.  See job001548.
-       */
-      RefSet refset;
-    
-      refset = ScanStateSummary(ss);
+    RefSet refset;
+
+    AVER(ArenaEmergency(PoolArena(pool)));
+
+    /* Looped: fixed refs (from 1st pass) were seen by MPS_FIX1
+     * (in later passes), so the "ss.unfixedSummary" is _not_
+     * purely unfixed.  In this one case, unfixedSummary is not 
+     * accurate, and cannot be used to verify the SegSummary (see 
+     * impl/trace/#verify.segsummary).  Use ScanStateSetSummary to 
+     * store ScanStateSummary in ss.fixedSummary and reset 
+     * ss.unfixedSummary.  See job001548.
+     */
+  
+    refset = ScanStateSummary(ss);
 
 #if 1
-      /* A rare event, which might prompt a rare defect to appear. */
-      DIAG_SINGLEF(( "amcScanNailed_loop",
-        "scan completed, but had to loop $U times:\n", (WriteFU)loops,
-        " SegSummary:        $B\n", (WriteFB)SegSummary(seg),
-        " ss.white:          $B\n", (WriteFB)ss->white,
-        " ss.unfixedSummary: $B", (WriteFB)ss->unfixedSummary,
-          "$S\n", (WriteFS)( 
-            (RefSetSub(ss->unfixedSummary, SegSummary(seg)))
-            ? ""
-            : " <=== This would have failed .verify.segsummary!"
-            ),
-        " ss.fixedSummary:   $B\n", (WriteFB)ss->fixedSummary,
-        "ScanStateSummary:   $B\n", (WriteFB)refset,
-        "MOVING ScanStateSummary TO fixedSummary, "
-        "RESETTING unfixedSummary.\n", NULL
-      ));
+    /* A rare event, which might prompt a rare defect to appear. */
+    DIAG_SINGLEF(( "amcScanNailed_loop",
+      "scan completed, but had to loop $U times:\n", (WriteFU)loops,
+      " SegSummary:        $B\n", (WriteFB)SegSummary(seg),
+      " ss.white:          $B\n", (WriteFB)ss->white,
+      " ss.unfixedSummary: $B", (WriteFB)ss->unfixedSummary,
+        "$S\n", (WriteFS)( 
+          (RefSetSub(ss->unfixedSummary, SegSummary(seg)))
+          ? ""
+          : " <=== This would have failed .verify.segsummary!"
+          ),
+      " ss.fixedSummary:   $B\n", (WriteFB)ss->fixedSummary,
+      "ScanStateSummary:   $B\n", (WriteFB)refset,
+      "MOVING ScanStateSummary TO fixedSummary, "
+      "RESETTING unfixedSummary.\n", NULL
+    ));
 #endif
-    
-      ScanStateSetSummary(ss, refset);
-    }
+  
+    ScanStateSetSummary(ss, refset);
   }
   
   *totalReturn = total;
@@ -2219,7 +2205,6 @@ static void AMCTraceEnd(Pool pool, Trace trace)
     DIAG_SINGLEF(( "AMCTraceEnd_pageret",
       " $U", (WriteFU)ArenaEpoch(pool->arena),
       " $U", (WriteFU)trace->why,
-      " $S", (WriteFS)(trace->emergency ? "Emergency" : "-"),
       " $U", (WriteFU)amc->pageretstruct[ti].pCond,
       " $U", (WriteFU)amc->pageretstruct[ti].pRet, ",",
       " $U", (WriteFU)amc->pageretstruct[ti].pCS,

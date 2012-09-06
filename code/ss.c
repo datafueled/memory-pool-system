@@ -1,68 +1,66 @@
-/* ssixi6.c: UNIX/x64 STACK SCANNING
+/* ss.c: STACK SCANNING
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/ssixi6.c#4 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/ss.c#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- *  This scans the stack and fixes the registers which may contain
- *  roots.  See <design/thread-manager/>
+ *  This is part of the code that scans the stack and fixes the registers
+ *  that may contain roots.  See <design/thread-manager/>
  *
- *  This code was branched from ssixi3.c (32-bit Intel) initially for the
- *  port to W3I6LL (Mac OS X on x86_64 with Clang).
- *
- *  This code is common to more than one Unix implementation on
- *  Intel hardware (but is not portable Unix code).  According to Wikipedia,
- *  all the non-Windows platforms use the System V AMD64 ABI.  See
- *  .sources.callees.saves.
- *
- * SOURCES
- *
- * .sources.callees.saves:
- *  "Registers %rbp, %rbx and %r12 through %r15 "belong" to the calling
- *   function and the called function is required to preserve their values.
- *   In other words, a called function must preserve these registers’ values
- *   for its caller." -- System V AMD64 ABI
- *  <http://x86-64.org/documentation/abi.pdf>
- *
- * ASSUMPTIONS
- *
- * .assume.align: The stack pointer is assumed to be aligned on a word
- * boundary.
- *
- * .assume.asm.stack: The compiler must not do wacky things with the
- * stack pointer around a call since we need to ensure that the
- * callee-save regs are visible during TraceScanArea.
- *
- * .assume.asm.order: The volatile modifier should prevent movement
- * of code, which might break .assume.asm.stack.
- *
+ *  Each platform ABI has a set of callee-save registers that may still
+ *  contain roots.  The StackScan function is defined for each ABI in source
+ *  files like ss*.c and ss*.asm.  That function saves the callee save
+ *  registers in its frame, then calls StackScanInner to do the scanning.
  */
-
 
 #include "mpm.h"
 
-SRCID(ssixi6, "$Id: //info.ravenbrook.com/project/mps/master/code/ssixi6.c#4 $");
+SRCID(ss, "$Id: //info.ravenbrook.com/project/mps/master/code/ss.c#1 $");
 
 
-/* .assume.asm.order */
-#define ASMV(x) __asm__ volatile (x)
+/* StackScanInner -- carry out stack scanning
+ *
+ * This function should be called by StackScan once it has saved the
+ * callee-save registers for the platform ABI in order to do the actual
+ * scanning.
+ */
 
-
-Res StackScan(ScanState ss, Addr *stackBot)
+Res StackScanInner(ScanState ss,
+                   Addr *stackBot,
+                   Addr *stackTop,
+                   Count nSavedRegs)
 {
-  Addr calleeSaveRegs[6];
-  
-  /* .assume.asm.stack */
-  /* Store the callee save registers on the stack so they get scanned
-   * as they may contain roots.
-   */
-  ASMV("mov %%rbp, %0" : "=m" (calleeSaveRegs[0]));
-  ASMV("mov %%rbx, %0" : "=m" (calleeSaveRegs[1]));
-  ASMV("mov %%r12, %0" : "=m" (calleeSaveRegs[2]));
-  ASMV("mov %%r13, %0" : "=m" (calleeSaveRegs[3]));
-  ASMV("mov %%r14, %0" : "=m" (calleeSaveRegs[4]));
-  ASMV("mov %%r15, %0" : "=m" (calleeSaveRegs[5]));
-  
-  return StackScanInner(ss, stackBot, calleeSaveRegs, NELEMS(calleeSaveRegs));
+  Arena arena;
+  Res res;
+
+  AVERT(ScanState, ss);
+  AVER(stackTop < stackBot);
+  AVER(AddrIsAligned((Addr)stackTop, sizeof(Addr)));  /* .assume.align */
+  AVER(0 < nSavedRegs && nSavedRegs < 128);     /* sanity check */
+
+  arena = ss->arena;
+
+  /* If a stack pointer was stored when we entered the arena (through the
+     MPS interface in mpsi*.c) then we scan just the saved registers and
+     the stack starting there, in order to avoid false ambiguous references
+     in the MPS stack.  This is particularly important for transforms
+     (trans.c).  Otherwise, scan the whole stack. */
+
+  if (arena->stackAtArenaEnter != NULL) {
+    AVER(stackTop < arena->stackAtArenaEnter);
+    AVER(arena->stackAtArenaEnter < stackBot);
+    res = TraceScanAreaTagged(ss, stackTop, stackTop + nSavedRegs);
+    if (res != ResOK)
+      return res;
+    res = TraceScanAreaTagged(ss, arena->stackAtArenaEnter, stackBot);
+    if (res != ResOK)
+      return res;
+  } else {
+    res = TraceScanAreaTagged(ss, stackTop, stackBot);
+    if (res != ResOK)
+      return res;
+  }
+
+  return ResOK;
 }
 
 

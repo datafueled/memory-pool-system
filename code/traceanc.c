@@ -1,6 +1,6 @@
 /* traceanc.c: ANCILLARY SUPPORT FOR TRACER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/traceanc.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/traceanc.c#2 $
  * Copyright (c) 2001-2003, 2006-2008 Ravenbrook Limited.
  * See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
@@ -166,6 +166,9 @@ const char *TraceStartWhyToString(int why)
     break;
   case TraceStartWhyWALK:
     r = "Walking all live objects.";
+    break;
+  case TraceStartWhyEXTENSION:
+    r = "Extension: an MPS extension started the trace.";
     break;
   default:
     NOTREACHED;
@@ -590,6 +593,10 @@ void ArenaPark(Globals globals)
       }
     TRACE_SET_ITER_END(ti, trace, arena->busyTraces, arena);
   }
+  
+  /* Clear any emergency flag so that the next collection starts normally.
+     Any traces that have been finished may have reclaimed memory. */
+  ArenaSetEmergency(arena, FALSE);
 }
 
 /* ArenaStartCollect -- start a collection of everything in the

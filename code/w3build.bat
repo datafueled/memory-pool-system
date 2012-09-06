@@ -1,7 +1,7 @@
 @rem impl.bat.gathconf: GATHERING A RELEASE FOR CONFIGURA
 @rem
 @rem $HopeName: !gathconf.bat(trunk.1) $
-@rem $Id: //info.ravenbrook.com/project/mps/master/code/w3build.bat#17 $
+@rem $Id: //info.ravenbrook.com/project/mps/master/code/w3build.bat#18 $
 @rem Copyright (C) 2000 Harlequin Limited.  All rights reserved.
 @rem Copyright (C) 2005-2010 Ravenbrook Limited.  All rights reserved.
 
@@ -20,6 +20,7 @@ mkdir %mpsreleasename%
 
 mkdir %mpsreleasename%\include
 copy mps.h %mpsreleasename%\include
+copy mpstr.h %mpsreleasename%\include
 copy mpsavm.h %mpsreleasename%\include
 copy mpsacl.h %mpsreleasename%\include
 copy mpscamc.h %mpsreleasename%\include

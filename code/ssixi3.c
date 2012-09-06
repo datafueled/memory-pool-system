@@ -1,6 +1,6 @@
 /* ssixi3.c: UNIX/INTEL STACK SCANNING
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/ssixi3.c#5 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/ssixi3.c#6 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  This scans the stack and fixes the registers which may contain
@@ -42,7 +42,7 @@
 
 #include "mpm.h"
 
-SRCID(ssixi3, "$Id: //info.ravenbrook.com/project/mps/master/code/ssixi3.c#5 $");
+SRCID(ssixi3, "$Id: //info.ravenbrook.com/project/mps/master/code/ssixi3.c#6 $");
 
 
 /* .assume.asm.order */
@@ -52,8 +52,6 @@ SRCID(ssixi3, "$Id: //info.ravenbrook.com/project/mps/master/code/ssixi3.c#5 $")
 Res StackScan(ScanState ss, Addr *stackBot)
 {
   Addr calleeSaveRegs[4];
-  Addr *stackTop;
-  Res res;
 
   /* .assume.asm.stack */
   /* Store the callee save registers on the stack so they get scanned 
@@ -63,12 +61,8 @@ Res StackScan(ScanState ss, Addr *stackBot)
   ASMV("mov %%esi, %0" : "=m" (calleeSaveRegs[1]));
   ASMV("mov %%edi, %0" : "=m" (calleeSaveRegs[2]));
   ASMV("mov %%ebp, %0" : "=m" (calleeSaveRegs[3]));
-  ASMV("mov %%esp, %0" : "=r" (stackTop) :);    /* stackTop = esp */
-
-  AVER(AddrIsAligned((Addr)stackTop, sizeof(Addr)));  /* .assume.align */
-  res = TraceScanAreaTagged(ss, stackTop, stackBot);
-
-  return res;
+  
+  return StackScanInner(ss, stackBot, calleeSaveRegs, NELEMS(calleeSaveRegs));
 }
 
 

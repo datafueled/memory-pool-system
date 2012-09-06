@@ -1,6 +1,6 @@
 /* fmtdy.h: DYLAN OBJECT FORMAT
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/fmtdy.h#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/fmtdy.h#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 

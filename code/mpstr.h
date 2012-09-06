@@ -1,74 +1,32 @@
-/* ssixi6.c: UNIX/x64 STACK SCANNING
+/* mpstr.h: RAVENBROOK MEMORY POOL SYSTEM C INTERFACE TO TRANSFORMS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/ssixi6.c#4 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpstr.h#1 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- *  This scans the stack and fixes the registers which may contain
- *  roots.  See <design/thread-manager/>
- *
- *  This code was branched from ssixi3.c (32-bit Intel) initially for the
- *  port to W3I6LL (Mac OS X on x86_64 with Clang).
- *
- *  This code is common to more than one Unix implementation on
- *  Intel hardware (but is not portable Unix code).  According to Wikipedia,
- *  all the non-Windows platforms use the System V AMD64 ABI.  See
- *  .sources.callees.saves.
- *
- * SOURCES
- *
- * .sources.callees.saves:
- *  "Registers %rbp, %rbx and %r12 through %r15 "belong" to the calling
- *   function and the called function is required to preserve their values.
- *   In other words, a called function must preserve these registers’ values
- *   for its caller." -- System V AMD64 ABI
- *  <http://x86-64.org/documentation/abi.pdf>
- *
- * ASSUMPTIONS
- *
- * .assume.align: The stack pointer is assumed to be aligned on a word
- * boundary.
- *
- * .assume.asm.stack: The compiler must not do wacky things with the
- * stack pointer around a call since we need to ensure that the
- * callee-save regs are visible during TraceScanArea.
- *
- * .assume.asm.order: The volatile modifier should prevent movement
- * of code, which might break .assume.asm.stack.
- *
+ * .readership: customers, MPS developers.
  */
 
+#ifndef mpstr_h
+#define mpstr_h
 
-#include "mpm.h"
+#include "mps.h"
 
-SRCID(ssixi6, "$Id: //info.ravenbrook.com/project/mps/master/code/ssixi6.c#4 $");
+typedef struct mps_transform_s *mps_transform_t;
 
+extern mps_res_t mps_transform_create(mps_transform_t *, mps_arena_t);
 
-/* .assume.asm.order */
-#define ASMV(x) __asm__ volatile (x)
+extern mps_res_t mps_transform_add_oldnew(mps_transform_t, mps_addr_t *, mps_addr_t *, size_t);
 
+extern mps_res_t mps_transform_apply(mps_bool_t *, mps_transform_t);
 
-Res StackScan(ScanState ss, Addr *stackBot)
-{
-  Addr calleeSaveRegs[6];
-  
-  /* .assume.asm.stack */
-  /* Store the callee save registers on the stack so they get scanned
-   * as they may contain roots.
-   */
-  ASMV("mov %%rbp, %0" : "=m" (calleeSaveRegs[0]));
-  ASMV("mov %%rbx, %0" : "=m" (calleeSaveRegs[1]));
-  ASMV("mov %%r12, %0" : "=m" (calleeSaveRegs[2]));
-  ASMV("mov %%r13, %0" : "=m" (calleeSaveRegs[3]));
-  ASMV("mov %%r14, %0" : "=m" (calleeSaveRegs[4]));
-  ASMV("mov %%r15, %0" : "=m" (calleeSaveRegs[5]));
-  
-  return StackScanInner(ss, stackBot, calleeSaveRegs, NELEMS(calleeSaveRegs));
-}
+extern void mps_transform_destroy(mps_transform_t);
+
+#endif /* mpstr_h */
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2011 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

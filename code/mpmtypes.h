@@ -1,6 +1,6 @@
 /* mpmtypes.h: MEMORY POOL MANAGER TYPES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#22 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#23 $
  * Copyright (c) 2001-2002, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2001 Global Graphics Software.
  *
@@ -411,6 +411,8 @@ enum {
 /* TraceStart reasons: the trigger that caused a trace to start. */
 /* Make these specific trigger names, not broad categories; */
 /* and if a new trigger is added, add a new reason. */
+/* TODO: A better way for MPS extensions to extend the list of reasons
+   instead of the catch-all TraceStartWhyEXTENSION. */
 
 enum {
   TraceStartWhyBASE = 1, /* not a reason, the base of the enum. */
@@ -419,7 +421,8 @@ enum {
   TraceStartWhyOPPORTUNISM,      /* start full */
   TraceStartWhyCLIENTFULL_INCREMENTAL,   /* start full */
   TraceStartWhyCLIENTFULL_BLOCK, /* do full */
-  TraceStartWhyWALK,
+  TraceStartWhyWALK,            /* walking references -- see walk.c */
+  TraceStartWhyEXTENSION,       /* MPS extension using traces */
   TraceStartWhyLIMIT /* not a reason, the limit of the enum. */
 };
 

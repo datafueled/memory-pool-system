@@ -1,6 +1,6 @@
 /* protsgix.c: PROTECTION (SIGNAL HANDLER) FOR UNIX
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/protsgix.c#3 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protsgix.c#4 $
  *  Copyright (c) 2001-2007 Ravenbrook Limited.  See end of file for license.
  *
  * Would ordinarily be part of protix.c (as the code is common to more
@@ -32,7 +32,7 @@
 #include <sys/types.h> /* for getpid */
 #include <unistd.h>    /* for getpid */
 
-SRCID(protsgix, "$Id: //info.ravenbrook.com/project/mps/master/code/protsgix.c#3 $");
+SRCID(protsgix, "$Id: //info.ravenbrook.com/project/mps/master/code/protsgix.c#4 $");
 
 
 /* The previously-installed signal action, as returned by */
@@ -78,6 +78,8 @@ static void sigHandle(int sig, siginfo_t *info, void *context)  /* .sigh.args */
   /* sigset renamed to asigset due to clash with global on Darwin. */
   sigset_t asigset, oldset;
   struct sigaction sa;
+  
+  UNUSED(context);
 
   UNUSED(context);
   AVER(sig == PROT_SIGNAL);

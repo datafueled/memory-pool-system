@@ -1,6 +1,6 @@
 /* pool.c: POOL IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/pool.c#17 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/pool.c#18 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -33,7 +33,7 @@
 
 #include "mpm.h"
 
-SRCID(pool, "$Id: //info.ravenbrook.com/project/mps/master/code/pool.c#17 $");
+SRCID(pool, "$Id: //info.ravenbrook.com/project/mps/master/code/pool.c#18 $");
 
 
 /* PoolClassCheck -- check a pool class */
@@ -425,7 +425,7 @@ Res (PoolFix)(Pool pool, ScanState ss, Seg seg, Addr *refIO)
   return PoolFix(pool, ss, seg, refIO);
 }
 
-void PoolFixEmergency(Pool pool, ScanState ss, Seg seg, Addr *refIO)
+Res PoolFixEmergency(Pool pool, ScanState ss, Seg seg, Addr *refIO)
 {
   Res res;
 
@@ -440,6 +440,7 @@ void PoolFixEmergency(Pool pool, ScanState ss, Seg seg, Addr *refIO)
 
   res = (pool->class->fixEmergency)(pool, ss, seg, refIO);
   AVER(res == ResOK);
+  return res;
 }
 
 

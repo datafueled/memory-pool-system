@@ -1,6 +1,6 @@
 /* mpsi.c: MEMORY POOL SYSTEM C INTERFACE LAYER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#24 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#25 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -53,7 +53,7 @@
 #include "sac.h"
 #include "chain.h"
 
-SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#24 $");
+SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#25 $");
 
 
 /* mpsi_check -- check consistency of interface mappings
@@ -160,11 +160,7 @@ static Bool mpsi_check(void)
   /* Check ss_s/ScanStateStruct compatibility by hand */
   /* .check.ss: See <code/mps.h#ss> and <code/mpmst.h#ss>. */
   /* Note that the size of the mps_ss_s and ScanStateStruct */
-  /* are not equal.  See <code/mpmst.h#ss>.  COMPATFIELDAPPROX */
-  /* is used on the fix field because its type is punned and */
-  /* therefore isn't exactly checkable.  See */
-  /* <design/interface-c/#pun.addr>. */
-  CHECKL(COMPATFIELDAPPROX(mps_ss_s, fix, ScanStateStruct, fix));
+  /* are not equal.  See <code/mpmst.h#ss>. */
   CHECKL(COMPATFIELD(mps_ss_s, w0, ScanStateStruct, zoneShift));
   CHECKL(COMPATFIELD(mps_ss_s, w1, ScanStateStruct, white));
   CHECKL(COMPATFIELD(mps_ss_s, w2, ScanStateStruct, unfixedSummary));

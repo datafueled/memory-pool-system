@@ -1,6 +1,6 @@
 /* mps.c: MEMORY POOL SYSTEM ALL-IN-ONE TRANSLATION UNIT
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mps.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mps.c#13 $
  * Copyright (C) 2012 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This file can be compiled to create the complete MPS library in
@@ -67,7 +67,9 @@
 #include "splay.c"
 #include "cbs.c"
 #include "diag.c"
+#include "ss.c"
 #include "version.c"
+#include "table.c"
 
 /* Additional pool classes */
 
@@ -184,7 +186,7 @@
 #include "protw3.c"     /* Windows protection */
 #include "proti3.c"     /* 32-bit Intel mutator context decoding */
 #include "prmci3w3.c"   /* Windows on 32-bit Intel mutator context */
-#include "ssw3mv.c"     /* Windows stack scan for Microsoft C */
+#include "ssw3i3mv.c"   /* Windows on 32-bit stack scan for Microsoft C */
 #include "spi3.c"       /* Intel stack probe */
 #include "mpsiw3.c"     /* Windows interface layer extras */
 
@@ -200,7 +202,7 @@
 #include "protw3.c"     /* Windows protection */
 #include "proti6.c"     /* 64-bit Intel mutator context decoding */
 #include "prmci6w3.c"   /* Windows on 64-bit Intel mutator context */
-#include "ssw3mv.c"     /* Windows stack scan for Microsoft C */
+#include "ssw3i6mv.c"   /* Windows on 64-bit stack scan for Microsoft C */
 #include "span.c"       /* generic stack probe FIXME: Is this correct? */
 #include "mpsiw3.c"     /* Windows interface layer extras */
 
