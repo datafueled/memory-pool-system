@@ -1,6 +1,6 @@
 /* mv2test.c: POOLMVT STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mv2test.c#15 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mv2test.c#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -220,7 +220,7 @@ static mps_res_t stress(mps_class_t class, mps_arena_t arena,
   va_end(arg);
   if(res != MPS_RES_OK) return res;
 
-  die(mps_ap_create(&ap, pool, MPS_RANK_EXACT), "BufferCreate");
+  die(mps_ap_create(&ap, pool, mps_rank_exact()), "BufferCreate");
 
   /* allocate a load of objects */
   for(i=0; i<TEST_SET_SIZE; ++i) {

@@ -1,6 +1,6 @@
 /* poolams.c: AUTOMATIC MARK & SWEEP POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolams.c#18 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolams.c#19 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -20,7 +20,7 @@
 #include "mpm.h"
 #include <stdarg.h>
 
-SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/master/code/poolams.c#18 $");
+SRCID(poolams, "$Id: //info.ravenbrook.com/project/mps/master/code/poolams.c#19 $");
 
 
 #define AMSSig          ((Sig)0x519A3599) /* SIGnature AMS */
@@ -1237,7 +1237,7 @@ static Res amsScanObject(Seg seg, Index i, Addr p, Addr next, void *clos)
 
   /* @@@@ This isn't quite right for multiple traces. */
   if (closure->scanAllObjects || AMS_IS_GREY(seg, i)) {
-    res = (*format->scan)(closure->ss,
+    res = (*format->scan)(&closure->ss->ss_s,
                           AddrAdd(p, format->headerSize),
                           AddrAdd(next, format->headerSize));
     if (res != ResOK)
@@ -1331,7 +1331,7 @@ Res AMSScan(Bool *totalReturn, ScanState ss, Pool pool, Seg seg)
             next = AddrAdd(p, alignment);
           }
           j = AMS_ADDR_INDEX(seg, next);
-          res = (*format->scan)(ss, clientP, clientNext);
+          res = (*format->scan)(&ss->ss_s, clientP, clientNext);
           if (res != ResOK) {
             /* <design/poolams/#marked.scan.fail> */
             amsseg->marksChanged = TRUE;

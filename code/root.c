@@ -1,6 +1,6 @@
 /* root.c: ROOT IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/root.c#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/root.c#14 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is the implementation of the root datatype.
@@ -10,7 +10,7 @@
 
 #include "mpm.h"
 
-SRCID(root, "$Id: //info.ravenbrook.com/project/mps/master/code/root.c#13 $");
+SRCID(root, "$Id: //info.ravenbrook.com/project/mps/master/code/root.c#14 $");
 
 
 /* RootStruct -- tracing root structure */
@@ -478,20 +478,20 @@ Res RootScan(ScanState ss, Root root)
     break;
 
     case RootFUN:
-    res = (*root->the.fun.scan)(ss, root->the.fun.p, root->the.fun.s);
+    res = (*root->the.fun.scan)(&ss->ss_s, root->the.fun.p, root->the.fun.s);
     if (res != ResOK)
       goto failScan;
     break;
 
     case RootREG:
-    res = (*root->the.reg.scan)(ss, root->the.reg.thread,
+    res = (*root->the.reg.scan)(&ss->ss_s, root->the.reg.thread,
                                 root->the.reg.p, root->the.reg.s);
     if (res != ResOK)
       goto failScan;
     break;
 
     case RootFMT:
-    res = (*root->the.fmt.scan)(ss, root->the.fmt.base, root->the.fmt.limit);
+    res = (*root->the.fmt.scan)(&ss->ss_s, root->the.fmt.base, root->the.fmt.limit);
     ss->scannedSize += AddrOffset(root->the.fmt.base, root->the.fmt.limit);
     if (res != ResOK)
       goto failScan;

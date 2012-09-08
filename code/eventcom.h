@@ -1,7 +1,7 @@
 /* <code/eventcom.h> -- Event Logging Common Definitions
  *
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
- * $Id: //info.ravenbrook.com/project/mps/master/code/eventcom.h#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventcom.h#13 $
  *
  * .sources: mps.design.telemetry
  */
@@ -109,16 +109,25 @@ typedef mps_clock_t EventClock;
  * They are small enough to be able to be used as members of a bit set.
  */
 
-enum EventKindEnum {
-  EventKindArena,       /* Per space or arena */
-  EventKindPool,        /* Per pool */
-  EventKindTrace,       /* Per trace or scan */
-  EventKindSeg,         /* Per seg */
-  EventKindRef,         /* Per ref or fix */
-  EventKindObject,      /* Per alloc or object */
-  EventKindUser,        /* User-invoked */
-  EventKindLIMIT
-};
+#define EventKindENUM(ENUM, X) \
+  ENUM(X, Arena,  "Per space or arena") \
+  ENUM(X, Pool,   "Per pool") \
+  ENUM(X, Trace,  "Per trace or scan") \
+  ENUM(X, Seg,    "Per seg") \
+  ENUM(X, Ref,    "Per ref or fix") \
+  ENUM(X, Object, "Per alloc or object") \
+  ENUM(X, User,   "User-invoked")
+
+#define ENUM_DECLARE(name) \
+  enum name##Enum { \
+    name##ENUM(ENUM_DECLARE_ROW, name) \
+    name##LIMIT \
+  };
+
+#define ENUM_DECLARE_ROW(enumName, rowName, rowDoc) \
+  enumName##rowName,
+
+ENUM_DECLARE(EventKind)
 
 
 /* Event type definitions
@@ -135,7 +144,7 @@ enum EventKindEnum {
 
 enum EventDefinitionsEnum {
   EVENT_LIST(EVENT_ENUM, X)
-  EventEnumWarningSuppressor
+  EventEnumWarningSuppressor    /* suppress comma-at-end-of-enum warning */
 };
 
 

@@ -1,6 +1,6 @@
 # gc.gmk: GNUMAKEFILE FRAGMENT FOR GNU CC
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/gc.gmk#11 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/gc.gmk#12 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # This file is included by platform makefiles that use the GNU CC
@@ -12,7 +12,7 @@ CFLAGSCOMPILER := \
 	-ansi -pedantic -Wall -Werror -Wpointer-arith \
 	-Wstrict-prototypes -Wmissing-prototypes \
 	-Winline -Waggregate-return -Wnested-externs \
-	-Wcast-qual -Wshadow
+	-Wcast-qual -Wshadow -Wstrict-aliasing=2
 CFLAGSDEBUG = -O -g3
 CFLAGSOPT = -O2 -g3
 

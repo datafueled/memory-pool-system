@@ -1,6 +1,6 @@
 /* tract.c: PAGE TABLES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/tract.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/tract.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .ullagepages: Pages whose page index is < allocBase are recorded as
@@ -14,7 +14,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(tract, "$Id: //info.ravenbrook.com/project/mps/master/code/tract.c#12 $");
+SRCID(tract, "$Id: //info.ravenbrook.com/project/mps/master/code/tract.c#13 $");
 
 
 static void ChunkDecache(Arena arena, Chunk chunk);
@@ -73,7 +73,8 @@ void TractFinish(Tract tract)
 
 
 /* .tract.critical: These tract functions are low-level and used
- * throughout. They are therefore on the critical path and their
+ * throughout. They are therefore on the
+ * [critical path](../design/critical-path.txt) and their
  * AVERs are so-marked.
  */
 
@@ -295,7 +296,7 @@ void ChunkCacheEntryInit(ChunkCacheEntry entry)
 
 static void ChunkEncache(Arena arena, Chunk chunk)
 {
-  /* Critical path; called by ChunkOfAddr */
+  /* [Critical path](../design/critical-path.txt); called by ChunkOfAddr */
   AVERT_CRITICAL(Arena, arena);
   AVERT_CRITICAL(Chunk, chunk);
   AVER_CRITICAL(arena == chunk->arena);
@@ -424,8 +425,8 @@ Index IndexOfAddr(Chunk chunk, Addr addr)
 /* Page table functions */
 
 /* .tract.critical: These Tract functions are low-level and are on
- * the critical path in various ways.  The more common therefore
- * use AVER_CRITICAL.
+ * the [critical path](../design/critical-path.txt) in various ways.  The
+ * more common therefore use AVER_CRITICAL.
  */
 
 

@@ -1,6 +1,6 @@
 /* poolawl.c: AUTOMATIC WEAK LINKED POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#19 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#20 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *
@@ -43,7 +43,7 @@
 #include "mpm.h"
 #include "chain.h"
 
-SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#19 $");
+SRCID(poolawl, "$Id: //info.ravenbrook.com/project/mps/master/code/poolawl.c#20 $");
 
 
 #define AWLSig ((Sig)0x519B7A37) /* SIGnature PooL AWL */
@@ -820,7 +820,7 @@ static Res awlScanObject(Arena arena, AWL awl, ScanState ss,
       SegSetSummary(dependentSeg, RefSetUNIV);
   }
 
-  res = (*format->scan)(ss, base, limit);
+  res = (*format->scan)(&ss->ss_s, base, limit);
   if (res == ResOK)
     ss->scannedSize += AddrOffset(base, limit);
 

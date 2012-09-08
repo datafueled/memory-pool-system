@@ -1,6 +1,6 @@
 /* poolsnc.c: STACK NO CHECKING POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#14 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -21,7 +21,7 @@
 #include "mpscsnc.h"
 #include "mpm.h"
 
-SRCID(poolsnc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#13 $");
+SRCID(poolsnc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#14 $");
 
 
 #define SNCGen  ((Serial)1) /* "generation" for SNC pools */
@@ -516,7 +516,7 @@ static Res SNCScan(Bool *totalReturn, ScanState ss, Pool pool, Seg seg)
   }
  
   if (base < limit) {
-    res = (*format->scan)(ss, base, limit);
+    res = (*format->scan)(&ss->ss_s, base, limit);
     if (res != ResOK) {
       *totalReturn = FALSE;
       return res;

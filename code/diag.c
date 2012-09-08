@@ -1,6 +1,6 @@
 /* diag.c: MEMORY POOL MANAGER DIAGNOSTICS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/diag.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/diag.c#12 $
  * Copyright (c) 2007 Ravenbrook Limited.  See end of file for license.
  *
  * To Do: [RHSK 2007-08-13]
@@ -14,6 +14,7 @@
 #include "mpm.h"
 #include "mpslib.h" /* for mps_lib_stdout */
 
+#if defined(DIAG_WITH_STREAM_AND_WRITEF)
 
 typedef struct RuleStruct {
   const char *action;
@@ -726,6 +727,9 @@ static void diag_test(void)
   DIAG_END( "TestTag2" );
 #endif
 }
+
+#endif /* DIAG_WITH_STREAM_AND_WRITEF */
+
 
 /* C. COPYRIGHT AND LICENSE
  *

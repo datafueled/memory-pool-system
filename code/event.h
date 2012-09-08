@@ -1,7 +1,7 @@
 /* <code/event.h> -- Event Logging Interface
  *
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
- * $Id: //info.ravenbrook.com/project/mps/master/code/event.h#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/event.h#11 $
  *
  * READERSHIP
  *
@@ -25,7 +25,7 @@ typedef Word EventStringId;
 typedef Word EventControlSet;
 
 extern void EventSync(void);
-extern Res EventInit(void);
+extern void EventInit(void);
 extern void EventFinish(void);
 extern EventControlSet EventControl(EventControlSet resetMask,
                                     EventControlSet flipMask);
@@ -48,7 +48,7 @@ extern Word EventKindControl;
 
 
 /* Events are written into the buffer from the top down, so that a backtrace
-   can find them all starting at EventNext. */
+   can find them all starting at EventLast. */
 
 #define EVENT_BEGIN(name, structSize) \
   BEGIN \

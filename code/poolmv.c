@@ -1,6 +1,6 @@
 /* poolmv.c: MANUAL VARIABLE POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -31,7 +31,7 @@
 #include "poolmfs.h"
 #include "mpm.h"
 
-SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#14 $");
+SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#15 $");
 
 
 #define mvBlockPool(mv) MFSPool(&(mv)->blockPoolStruct)
@@ -402,12 +402,14 @@ static Res MVSpanFree(MVSpan span, Addr base, Addr limit, Pool blockPool)
         /* cases 2, 7, and 8: making a new fragment */
         Res res;
         MVBlock new;
+        Addr addr;
 
         /* The freed area is buried in the middle of the block, so the */
         /* block must be split into two parts.  */
-        res = PoolAlloc((Addr *)&new, blockPool, sizeof(MVBlockStruct),
+        res = PoolAlloc(&addr, blockPool, sizeof(MVBlockStruct),
                         /* withReservoirPermit */ FALSE);
         if(res != ResOK) return res;
+        new = (MVBlock)addr;
 
         freeAreaSize = AddrOffset(base, limit);
 
@@ -501,10 +503,11 @@ static Res MVAlloc(Addr *pReturn, Pool pool, Size size,
   /* pool with a new region which will hold the requested allocation. */
   /* Allocate a new span descriptor and initialize it to point at the */
   /* region. */
-  res = PoolAlloc((Addr *)&span, mvSpanPool(mv), sizeof(MVSpanStruct),
+  res = PoolAlloc(&addr, mvSpanPool(mv), sizeof(MVSpanStruct),
                   withReservoirPermit);
   if(res != ResOK)
     return res;
+  span = (MVSpan)addr;
 
   if(size <= mv->extendBy)
     regionSize = mv->extendBy;

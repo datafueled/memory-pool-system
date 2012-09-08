@@ -1,6 +1,6 @@
 /* trace.c: GENERIC TRACER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/trace.c#43 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/trace.c#47 $
  * Copyright (c) 2001-2003, 2006, 2007 Ravenbrook Limited.
  * See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
@@ -11,7 +11,7 @@
 #include "mpm.h"
 #include <limits.h> /* for LONG_MAX */
 
-SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/master/code/trace.c#43 $");
+SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/master/code/trace.c#47 $");
 
 /* Forward declarations */
 Rank traceBand(Trace);
@@ -40,12 +40,12 @@ Bool ScanStateCheck(ScanState ss)
   CHECKS(ScanState, ss);
   CHECKL(FUNCHECK(ss->fix));
   /* Can't check ss->fixClosure. */
-  CHECKL(ss->zoneShift == ss->arena->zoneShift);
+  CHECKL(ScanStateZoneShift(ss) == ss->arena->zoneShift);
   white = ZoneSetEMPTY;
   TRACE_SET_ITER(ti, trace, ss->traces, ss->arena)
     white = ZoneSetUnion(white, ss->arena->trace[ti].white);
   TRACE_SET_ITER_END(ti, trace, ss->traces, ss->arena);
-  CHECKL(ss->white == white);
+  CHECKL(ScanStateWhite(ss) == white);
   CHECKU(Arena, ss->arena);
   /* Summaries could be anything, and can't be checked. */
   CHECKL(TraceSetCheck(ss->traces));
@@ -94,12 +94,12 @@ void ScanStateInit(ScanState ss, TraceSet ts, Arena arena,
 
   ss->rank = rank;
   ss->traces = ts;
-  ss->zoneShift = arena->zoneShift;
-  ss->unfixedSummary = RefSetEMPTY;
+  ScanStateSetZoneShift(ss, arena->zoneShift);
+  ScanStateSetUnfixedSummary(ss, RefSetEMPTY);
   ss->fixedSummary = RefSetEMPTY;
   ss->arena = arena;
   ss->wasMarked = TRUE;
-  ss->white = white;
+  ScanStateSetWhite(ss, white);
   STATISTIC(ss->fixRefCount = (Count)0);
   STATISTIC(ss->segRefCount = (Count)0);
   STATISTIC(ss->whiteSegRefCount = (Count)0);
@@ -1108,7 +1108,7 @@ void ScanStateSetSummary(ScanState ss, RefSet summary)
   AVERT(ScanState, ss);
   /* Can't check summary, as it can be anything. */
 
-  ss->unfixedSummary = RefSetEMPTY;
+  ScanStateSetUnfixedSummary(ss, RefSetEMPTY);
   ss->fixedSummary = summary;
   AVER(ScanStateSummary(ss) == summary);
 }
@@ -1127,7 +1127,8 @@ RefSet ScanStateSummary(ScanState ss)
   AVERT(ScanState, ss);
 
   return RefSetUnion(ss->fixedSummary,
-                     RefSetDiff(ss->unfixedSummary, ss->white));
+                     RefSetDiff(ScanStateUnfixedSummary(ss),
+                                ScanStateWhite(ss)));
 }
 
 
@@ -1156,16 +1157,17 @@ static Res traceScanSegRes(TraceSet ts, Rank rank, Arena arena, Seg seg)
     /* Setup result code to return later. */
     res = ResOK;
   } else {      /* scan it */
-    ScanStateStruct ss;
-    ScanStateInit(&ss, ts, arena, rank, white);
+    ScanStateStruct ssStruct;
+    ScanState ss = &ssStruct;
+    ScanStateInit(ss, ts, arena, rank, white);
 
     /* Expose the segment to make sure we can scan it. */
     ShieldExpose(arena, seg);
-    res = PoolScan(&wasTotal, &ss, SegPool(seg), seg);
+    res = PoolScan(&wasTotal, ss, SegPool(seg), seg);
     /* Cover, regardless of result */
     ShieldCover(arena, seg);
 
-    traceSetUpdateCounts(ts, arena, &ss, traceAccountingPhaseSegScan);
+    traceSetUpdateCounts(ts, arena, ss, traceAccountingPhaseSegScan);
     /* Count segments scanned pointlessly */
     STATISTIC_STAT
       ({
@@ -1186,19 +1188,19 @@ static Res traceScanSegRes(TraceSet ts, Rank rank, Arena arena, Seg seg)
     /* .verify.segsummary: were the seg contents, as found by this 
      * scan, consistent with the recorded SegSummary?
      */
-    AVER(RefSetSub(ss.unfixedSummary, SegSummary(seg)));
+    AVER(RefSetSub(ScanStateUnfixedSummary(ss), SegSummary(seg)));
 
     if(res != ResOK || !wasTotal) {
       /* scan was partial, so... */
       /* scanned summary should be ORed into segment summary. */
-      SegSetSummary(seg, RefSetUnion(SegSummary(seg), ScanStateSummary(&ss)));
+      SegSetSummary(seg, RefSetUnion(SegSummary(seg), ScanStateSummary(ss)));
     } else {
       /* all objects on segment have been scanned, so... */
       /* scanned summary should replace the segment summary. */
-      SegSetSummary(seg, ScanStateSummary(&ss));
+      SegSetSummary(seg, ScanStateSummary(ss));
     }
 
-    ScanStateFinish(&ss);
+    ScanStateFinish(ss);
   }
 
   if(res == ResOK) {
@@ -1293,33 +1295,39 @@ void TraceSegAccess(Arena arena, Seg seg, AccessSet mode)
 }
 
 
-/* TraceFix2 -- second stage of fixing a reference
+/* _mps_fix2 (a.k.a. "TraceFix") -- second stage of fixing a reference
  *
- * TraceFix is on the critical path.  A one-instruction difference in the
- * early parts of this code will have a significant impact on overall run
- * time.  The priority is to eliminate irrelevant references early and fast
- * using the colour information stored in the tract table.
+ * _mps_fix2 is on the [critical path](../design/critical-path.txt).  A
+ * one-instruction difference in the early parts of this code will have a
+ * significant impact on overall run time.  The priority is to eliminate
+ * irrelevant references early and fast using the colour information stored
+ * in the tract table.
+ *
+ * The name "TraceFix" is pervasive in the MPS and its documents to describe
+ * this function.  Optimisation and strict aliasing rules have meant that we
+ * need to use the external name for it here.
  */
 
-static Res TraceFix2(ScanState ss, Ref *refIO)
+mps_res_t _mps_fix2(mps_ss_t mps_ss, mps_addr_t *mps_ref_io)
 {
+  ScanState ss = PARENT(ScanStateStruct, ss_s, mps_ss);
   Ref ref;
   Tract tract;
 
   /* Special AVER macros are used on the critical path. */
   /* See <design/trace/#fix.noaver> */
   AVERT_CRITICAL(ScanState, ss);
-  AVER_CRITICAL(refIO != NULL);
+  AVER_CRITICAL(mps_ref_io != NULL);
 
-  ref = *refIO;
+  ref = (Ref)*mps_ref_io;
 
   /* The zone test should already have been passed by MPS_FIX1 in mps.h. */
-  AVER_CRITICAL(ZoneSetInter(ss->white,
+  AVER_CRITICAL(ZoneSetInter(ScanStateWhite(ss),
                              ZoneSetAdd(ss->arena, ZoneSetEMPTY, ref)) !=
                 ZoneSetEMPTY);
 
   STATISTIC(++ss->fixRefCount);
-  EVENT4(TraceFix, ss, refIO, ref, ss->rank);
+  EVENT4(TraceFix, ss, mps_ref_io, ref, ss->rank);
 
   TRACT_OF_ADDR(&tract, ss->arena, ref);
   if(tract) {
@@ -1333,7 +1341,7 @@ static Res TraceFix2(ScanState ss, Ref *refIO)
         EVENT1(TraceFixSeg, seg);
         EVENT0(TraceFixWhite);
         pool = TractPool(tract);
-        res = (*ss->fix)(pool, ss, seg, refIO);
+        res = (*ss->fix)(pool, ss, seg, &ref);
         if(res != ResOK) {
           /* PoolFixEmergency should never fail. */
           AVER_CRITICAL(ss->fix != PoolFixEmergency);
@@ -1344,7 +1352,7 @@ static Res TraceFix2(ScanState ss, Ref *refIO)
            * C: the code (here) already assumes this: it returns without 
            *    updating ss->fixedSummary.  RHSK 2007-03-21.
            */
-          AVER(*refIO == ref);
+          AVER(ref == (Ref)*mps_ref_io);
           return res;
         }
       } else {
@@ -1375,24 +1383,10 @@ static Res TraceFix2(ScanState ss, Ref *refIO)
   }
 
   /* See <design/trace/#fix.fixed.all> */
-  ss->fixedSummary = RefSetAdd(ss->arena, ss->fixedSummary, *refIO);
-
+  ss->fixedSummary = RefSetAdd(ss->arena, ss->fixedSummary, ref);
+  
+  *mps_ref_io = (mps_addr_t)ref;
   return ResOK;
-}
-
-
-/* mps_fix2 -- external interface to TraceFix
- *
- * We rely on compiler inlining to make this equivalent to TraceFix, because
- * the name "TraceFix" is pervasive in the MPS.  That's also why this
- * function is in trace.c and not mpsi.c.
- */
-
-mps_res_t mps_fix2(mps_ss_t mps_ss, mps_addr_t *mps_ref_io)
-{
-  ScanState ss = (ScanState)mps_ss;
-  Ref *refIO = (Ref *)mps_ref_io;
-  return TraceFix2(ss, refIO);
 }
 
 

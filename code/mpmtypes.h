@@ -1,6 +1,6 @@
 /* mpmtypes.h: MEMORY POOL MANAGER TYPES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#23 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#25 $
  * Copyright (c) 2001-2002, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2001 Global Graphics Software.
  *
@@ -67,9 +67,7 @@ typedef BufferClass SegBufClass;        /* <design/buffer/> */
 typedef BufferClass RankBufClass;       /* <design/buffer/> */
 typedef unsigned BufferMode;            /* <design/buffer/> */
 typedef unsigned FrameState;            /* <design/alloc-frame/> */
-typedef struct APStruct *AP;            /* <design/buffer/> */
 typedef struct FormatStruct *Format;    /* design.mps.format */
-typedef struct LDStruct *LD;            /* design.mps.ld */
 typedef struct LockStruct *Lock;        /* <code/lock.c>* */
 typedef struct PoolStruct *Pool;        /* <design/pool/> */
 typedef struct PoolClassStruct *PoolClass; /* <code/poolclas.c> */
@@ -94,7 +92,7 @@ typedef struct SegPrefStruct *SegPref;  /* design.mps.pref, <code/locus.c> */
 typedef int SegPrefKind;                /* design.mps.pref, <code/locus.c> */
 typedef struct ArenaClassStruct *ArenaClass; /* <design/arena/> */
 typedef ArenaClass AbstractArenaClass;  /* <code/arena.c> */
-typedef struct ArenaStruct *Arena;      /* <design/arena/> */
+typedef struct mps_arena_s *Arena;      /* <design/arena/> */
 typedef struct GlobalsStruct *Globals;  /* <design/arena/> */
 typedef struct VMStruct *VM;            /* <code/vm.c>* */
 typedef struct RootStruct *Root;        /* <code/root.c> */
@@ -248,7 +246,7 @@ typedef struct TraceMessageStruct *TraceMessage;  /* trace end */
 /* .fmt-methods: These methods must match those defined in the */
 /* MPS C Interface.  (See <code/mps.h#fmt-methods>.) */
 
-typedef Res  (*FormatScanMethod)(ScanState ss, Addr base, Addr limit);
+typedef Res  (*FormatScanMethod)(mps_ss_t ss, Addr base, Addr limit);
 typedef Addr (*FormatSkipMethod)(Addr object);
 typedef void (*FormatMoveMethod)(Addr object, Addr to);
 typedef Addr (*FormatIsMovedMethod)(Addr object);
@@ -261,8 +259,8 @@ typedef Addr (*FormatClassMethod)(Addr object);
 /* .root-methods: These methods must match those defined in the */
 /* MPS C Interface.  (See <code/mps.h#root-methods>.) */
 
-typedef Res (*RootScanMethod)(ScanState ss, void *p, size_t s);
-typedef Res (*RootScanRegMethod)(ScanState ss, Thread thread, void *p, size_t s);
+typedef Res (*RootScanMethod)(mps_ss_t ss, void *p, size_t s);
+typedef Res (*RootScanRegMethod)(mps_ss_t ss, Thread thread, void *p, size_t s);
 
 
 /* CONSTANTS */

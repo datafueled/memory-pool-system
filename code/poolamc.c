@@ -1,6 +1,6 @@
 /* poolamc.c: AUTOMATIC MOSTLY-COPYING MEMORY POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#37 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#39 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -12,7 +12,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#37 $");
+SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#39 $");
 
 /* PType enumeration -- distinguishes AMCGen and AMCNailboard */
 enum {AMCPTypeGen = 1, AMCPTypeNailboard};
@@ -217,7 +217,7 @@ static void AMCSegSketch(Seg seg, char *pbSketch, size_t cbSketch)
     Bool mut = BufferIsMutator(buffer);
     Bool flipped = ((buffer->mode & BufferModeFLIPPED) != 0);
     Bool trapped = BufferIsTrapped(buffer);
-    Bool limitzeroed = (buffer->apStruct.limit == 0);
+    Bool limitzeroed = (buffer->ap_s.limit == 0);
 
     pbSketch[3] = 'X';  /* I don't know what's going on! */
 
@@ -1453,7 +1453,7 @@ static Res amcScanNailedOnce(Bool *totalReturn, Bool *moreReturn,
       Addr q;
       q = (*format->skip)(p);
       if(amcNailGetMark(seg, p)) {
-        res = (*format->scan)(ss, p, q);
+        res = (*format->scan)(&ss->ss_s, p, q);
         if(res != ResOK) {
           *totalReturn = FALSE;
           *moreReturn = TRUE;
@@ -1476,7 +1476,7 @@ static Res amcScanNailedOnce(Bool *totalReturn, Bool *moreReturn,
     Addr q;
     q = (*format->skip)(p);
     if(amcNailGetMark(seg, p)) {
-      res = (*format->scan)(ss, p, q);
+      res = (*format->scan)(&ss->ss_s, p, q);
       if(res != ResOK) {
         *totalReturn = FALSE;
         *moreReturn = TRUE;
@@ -1540,10 +1540,10 @@ static Res amcScanNailed(Bool *totalReturn, ScanState ss, Pool pool,
     DIAG_SINGLEF(( "amcScanNailed_loop",
       "scan completed, but had to loop $U times:\n", (WriteFU)loops,
       " SegSummary:        $B\n", (WriteFB)SegSummary(seg),
-      " ss.white:          $B\n", (WriteFB)ss->white,
-      " ss.unfixedSummary: $B", (WriteFB)ss->unfixedSummary,
+      " ss.white:          $B\n", (WriteFB)ScanStateWhite(ss),
+      " ss.unfixedSummary: $B", (WriteFB)ScanStateUnfixedSummary(ss),
         "$S\n", (WriteFS)( 
-          (RefSetSub(ss->unfixedSummary, SegSummary(seg)))
+          (RefSetSub(ScanStateUnfixedSummary(ss), SegSummary(seg)))
           ? ""
           : " <=== This would have failed .verify.segsummary!"
           ),
@@ -1601,7 +1601,7 @@ static Res AMCScan(Bool *totalReturn, ScanState ss, Pool pool, Seg seg)
       *totalReturn = TRUE;
       return ResOK;
     }
-    res = (*format->scan)(ss, base, limit);
+    res = (*format->scan)(&ss->ss_s, base, limit);
     if(res != ResOK) {
       *totalReturn = FALSE;
       return res;
@@ -1615,7 +1615,7 @@ static Res AMCScan(Bool *totalReturn, ScanState ss, Pool pool, Seg seg)
   AVER(SegBase(seg) <= base);
   AVER(base <= AddrAdd(SegLimit(seg), format->headerSize));
   if(base < limit) {
-    res = (*format->scan)(ss, base, limit);
+    res = (*format->scan)(&ss->ss_s, base, limit);
     if(res != ResOK) {
       *totalReturn = FALSE;
       return res;

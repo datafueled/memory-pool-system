@@ -1,6 +1,6 @@
 /* locv.c: LEAF OBJECT POOL CLASS COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/locv.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/locv.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * This is (not much of) a coverage test for the Leaf Object
@@ -52,7 +52,7 @@ int main(void)
 
   die(mps_arena_create(&arena, mps_arena_class_vm(), testArenaSIZE),
       "mps_arena_create");
-  die(mps_root_create_table(&root, arena, MPS_RANK_EXACT,
+  die(mps_root_create_table(&root, arena, mps_rank_exact(),
                             (mps_rm_t)0,
                             roots, (sizeof(roots)/sizeof(*roots))),
       "RootCreate");
@@ -61,7 +61,7 @@ int main(void)
 
   die(mps_pool_create(&pool, arena, mps_class_lo(), format), "LOCreate");
 
-  die(mps_ap_create(&ap, pool, MPS_RANK_EXACT), "APCreate");
+  die(mps_ap_create(&ap, pool, mps_rank_exact()), "APCreate");
 
   die(mps_reserve(&p, ap, sizeof(void *)), "mps_reserve min");
   *(mps_word_t *)p = sizeof(void *);

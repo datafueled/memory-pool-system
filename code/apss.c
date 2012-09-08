@@ -1,6 +1,6 @@
 /* apss.c: AP MANUAL ALLOC STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/apss.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/apss.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */
@@ -57,7 +57,7 @@ static mps_res_t stress(mps_class_t class, size_t (*size)(int i),
   if (res != MPS_RES_OK)
     return res;
 
-  die(mps_ap_create(&ap, pool, MPS_RANK_EXACT), "BufferCreate");
+  die(mps_ap_create(&ap, pool, mps_rank_exact()), "BufferCreate");
 
   /* allocate a load of objects */
   for (i=0; i<testSetSIZE; ++i) {

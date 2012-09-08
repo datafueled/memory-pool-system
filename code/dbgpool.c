@@ -1,6 +1,6 @@
 /* dbgpool.c: POOL DEBUG MIXIN
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/dbgpool.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/dbgpool.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -13,7 +13,7 @@
 #include "mpm.h"
 #include <stdarg.h>
 
-SRCID(dbgpool, "$Id: //info.ravenbrook.com/project/mps/master/code/dbgpool.c#12 $");
+SRCID(dbgpool, "$Id: //info.ravenbrook.com/project/mps/master/code/dbgpool.c#13 $");
 
 
 /* tagStruct -- tags for storing info about allocated objects */
@@ -416,9 +416,10 @@ static Res tagAlloc(PoolDebugMixin debug,
 {
   Tag tag;
   Res res;
+  Addr addr;
 
   UNUSED(pool);
-  res = PoolAlloc((Addr*)&tag, debug->tagPool, debug->tagSize, FALSE);
+  res = PoolAlloc(&addr, debug->tagPool, debug->tagSize, FALSE);
   if (res != ResOK) {
     if (withReservoir) { /* <design/object-debug/#out-of-space */
       debug->missingTags++;
@@ -427,6 +428,7 @@ static Res tagAlloc(PoolDebugMixin debug,
       return res;
     }
   }
+  tag = (Tag)addr;
   tag->addr = new; tag->size = size;
   SplayNodeInit(&tag->splayNode);
   /* In the future, we might call debug->tagInit here. */

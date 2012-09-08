@@ -1,6 +1,6 @@
 /* testlib.h: TEST LIBRARY INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/testlib.h#19 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/testlib.h#20 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -118,7 +118,7 @@ typedef long longest_t;
  * argument on stderr and exits the program.  Otherwise does nothing.
  *
  * Typical use:
- *   die(mps_ap_create(&ap, pool, MPS_RANK_EXACT), "APCreate");
+ *   die(mps_ap_create(&ap, pool, mps_rank_exact()), "APCreate");
  */
 
 extern void die(mps_res_t res, const char *s);
