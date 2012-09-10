@@ -1,6 +1,6 @@
 # Makefile.in -- source for autoconf Makefile
 #
-# $Id: //info.ravenbrook.com/project/mps/master/Makefile.in#6 $
+# $Id: //info.ravenbrook.com/project/mps/master/Makefile.in#7 $
 # Copyright (C) 2012 Ravenbrook Limited.  See end of file for license.
 #
 # YOU DON'T NEED AUTOCONF TO BUILD THE MPS
@@ -9,6 +9,7 @@
 # to build and integrate the MPS.
 #
 
+MAKE=@MAKE@
 MPS_TARGET_PF=@MPS_TARGET_PF@
 MPS_TARGET_NAME=@MPS_TARGET_NAME@
 
@@ -16,7 +17,6 @@ BUILD_TARGET=@BUILD_TARGET@
 CLEAN_TARGET=@CLEAN_TARGET@
 
 all: @BUILD_TARGET@
-	$(BUILD)
 
 build-via-make:
 	$(MAKE) -C code -f $(MPS_TARGET_NAME).gmk

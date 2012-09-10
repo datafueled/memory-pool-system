@@ -1,6 +1,6 @@
 # configure.ac -- autoconf configuration for the MPS    -*- Autoconf -*-
 #
-# $Id: //info.ravenbrook.com/project/mps/master/configure.ac#6 $
+# $Id: //info.ravenbrook.com/project/mps/master/configure.ac#7 $
 # Copyright (C) 2012 Ravenbrook Limited.  See end of file for license.
 #
 # YOU DON'T NEED AUTOCONF TO BUILD THE MPS
@@ -68,6 +68,11 @@ case $host in
   *)
     AC_MSG_ERROR([MPS does not support this platform out of the box.  See manual/build.txt])
 esac
+
+AC_CHECK_PROGS([MAKE],[gnumake gmake make],[AC_MSG_ERROR([Unable to find a make program.])])
+if ! $MAKE --version | grep -q "GNU" 2> /dev/null; then
+  AC_MSG_ERROR([MPS requires GNU make to build from configure, but see manual/build.txt])
+fi
 
 AC_SUBST(MPS_TARGET_PF)
 AC_SUBST(MPS_TARGET_NAME)
