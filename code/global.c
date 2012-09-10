@@ -1,6 +1,6 @@
 /* global.c: ARENA-GLOBAL INTERFACES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#31 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#32 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#31 $");
+SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#32 $");
 
 
 /* All static data objects are declared here. See .static */
@@ -940,8 +940,14 @@ Ref ArenaRead(Arena arena, Ref *p)
 
   /* .read.conservative: Scan according to rank phase-of-trace, */
   /* See <code/trace.c#scan.conservative> */
-  rank = TraceRankForAccess(arena, seg);
-  TraceScanSingleRef(arena->flippedTraces, rank, arena, seg, p);
+  /* If the segment isn't grey it doesn't need scanning, and in fact it
+     would be wrong to even ask what rank to scan it at, since there might
+     not be any traces running. */
+  if (TraceSetInter(SegGrey(seg), arena->flippedTraces) != TraceSetEMPTY) {
+    rank = TraceRankForAccess(arena, seg);
+    TraceScanSingleRef(arena->flippedTraces, rank, arena, seg, p);
+  }
+
   /* We don't need to update the Seg Summary as in PoolSingleAccess
    * because we are not changing it after it has been scanned. */
   
