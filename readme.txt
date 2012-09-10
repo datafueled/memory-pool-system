@@ -46,8 +46,9 @@ index.
 
 The MPS Kit is distributed in source form.  You need to build it before
 using it.  The basic case is straightforward on supported platforms
-(see below).  Change to the code directory then
+(see below).
 
+    cd code
     cc -O2 -c mps.c     Unix / Mac OS X (with Xcode command line)
     cl /O2 /c mps.c     Windows (with Microsoft SDK or Visual Studio 2010)
 
@@ -163,4 +164,4 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-$Id: //info.ravenbrook.com/project/mps/master/readme.txt#31 $
+$Id: //info.ravenbrook.com/project/mps/master/readme.txt#32 $

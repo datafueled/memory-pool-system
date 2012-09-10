@@ -1,6 +1,6 @@
 /* mpmst.h: MEMORY POOL MANAGER DATA STRUCTURES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpmst.h#23 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpmst.h#24 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -474,7 +474,6 @@ typedef struct TraceStruct {
   TraceId ti;                   /* index into TraceSets */
   Arena arena;                  /* owning arena */
   int why;                      /* why the trace began */
-  Align whiteMinAlign;          /* minimum alignment of references in white set */
   ZoneSet white;                /* zones in the white set */
   ZoneSet mayMove;              /* zones containing possibly moving objs */
   TraceState state;             /* current state of trace */

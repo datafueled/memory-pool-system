@@ -1,6 +1,6 @@
 /* global.c: ARENA-GLOBAL INTERFACES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#28 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#31 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#28 $");
+SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#31 $");
 
 
 /* All static data objects are declared here. See .static */
@@ -847,70 +847,64 @@ Res ArenaDefinalize(Arena arena, Ref obj)
 
 /* Peek / Poke */
 
-Ref ArenaPeek(Arena arena, Addr addr)
+Ref ArenaPeek(Arena arena, Ref *p)
 {
   Seg seg;
-  Bool b;
+  Ref ref;
 
   AVERT(Arena, arena);
 
-  b = SegOfAddr(&seg, arena, addr);
-  if (b) {
-    return ArenaPeekSeg(arena, seg, addr);
-  } else {
-    Ref ref;
-    ref = *(Ref *)addr;
-    return ref;
-  }
+  if (SegOfAddr(&seg, arena, (Addr)p))
+    ref = ArenaPeekSeg(arena, seg, p);
+  else
+    ref = *p;
+  return ref;
 }
 
-Ref ArenaPeekSeg(Arena arena, Seg seg, Addr addr)
+Ref ArenaPeekSeg(Arena arena, Seg seg, Ref *p)
 {
   Ref ref;
 
   AVERT(Arena, arena);
   AVERT(Seg, seg);
 
-  AVER(SegBase(seg) <= addr);
-  AVER(addr < SegLimit(seg));
-  /* Consider checking addr's alignment using seg->pool->alignment */
+  AVER(SegBase(seg) <= (Addr)p);
+  AVER((Addr)p < SegLimit(seg));
+  /* TODO: Consider checking addr's alignment using seg->pool->alignment */
 
   ShieldExpose(arena, seg);
-  ref = *(Ref *)addr;
+  ref = *p;
   ShieldCover(arena, seg);
   return ref;
 }
 
-void ArenaPoke(Arena arena, Addr addr, Ref ref)
+void ArenaPoke(Arena arena, Ref *p, Ref ref)
 {
   Seg seg;
-  Bool b;
 
   AVERT(Arena, arena);
   /* Can't check addr as it is arbitrary */
   /* Can't check ref as it is arbitrary */
 
-  b = SegOfAddr(&seg, arena, addr);
-  if (b) {
-    ArenaPokeSeg(arena, seg, addr, ref);
-  } else {
-    *(Ref *)addr = ref;
-  }
+  if (SegOfAddr(&seg, arena, (Addr)p))
+    ArenaPokeSeg(arena, seg, p, ref);
+  else
+    *p = ref;
 }
 
-void ArenaPokeSeg(Arena arena, Seg seg, Addr addr, Ref ref)
+void ArenaPokeSeg(Arena arena, Seg seg, Ref *p, Ref ref)
 {
   RefSet summary;
 
   AVERT(Arena, arena);
   AVERT(Seg, seg);
-  AVER(SegBase(seg) <= addr);
-  AVER(addr < SegLimit(seg));
-  /* Consider checking addr's alignment using seg->pool->alignment */
+  AVER(SegBase(seg) <= (Addr)p);
+  AVER((Addr)p < SegLimit(seg));
+  /* TODO: Consider checking addr's alignment using seg->pool->alignment */
   /* ref is arbitrary and can't be checked */
 
   ShieldExpose(arena, seg);
-  *(Ref *)addr = ref;
+  *p = ref;
   summary = SegSummary(seg);
   summary = RefSetAdd(arena, summary, (Addr)ref);
   SegSetSummary(seg, summary);
@@ -921,16 +915,19 @@ void ArenaPokeSeg(Arena arena, Seg seg, Addr addr, Ref ref)
 /* ArenaRead -- read a single reference, possibly through a barrier
  *
  * This forms part of a software barrier.  It provides fine-grain access
- * to single references in segments.  */
+ * to single references in segments.
+ * 
+ * See also PoolSingleAccess and PoolSegAccess. */
 
-Ref ArenaRead(Arena arena, Addr addr)
+Ref ArenaRead(Arena arena, Ref *p)
 {
   Bool b;
   Seg seg = NULL;       /* suppress "may be used uninitialized" */
+  Rank rank;
 
   AVERT(Arena, arena);
 
-  b = SegOfAddr(&seg, arena, addr);
+  b = SegOfAddr(&seg, arena, (Addr)p);
   AVER(b == TRUE);
 
   /* .read.flipped: We AVER that the reference that we are reading */
@@ -941,13 +938,15 @@ Ref ArenaRead(Arena arena, Addr addr)
   /* it somewhere after having read it) references that are white. */
   AVER(TraceSetSub(SegWhite(seg), arena->flippedTraces));
 
-  /* .read.conservative: @@@@ Should scan at rank phase-of-trace, */
-  /* not RankEXACT which is conservative.  See also */
-  /* <code/trace.c#scan.conservative> for a similar nasty. */
-  TraceScanSingleRef(arena->flippedTraces, RankEXACT, arena,
-                     seg, (Ref *)addr);
+  /* .read.conservative: Scan according to rank phase-of-trace, */
+  /* See <code/trace.c#scan.conservative> */
+  rank = TraceRankForAccess(arena, seg);
+  TraceScanSingleRef(arena->flippedTraces, rank, arena, seg, p);
+  /* We don't need to update the Seg Summary as in PoolSingleAccess
+   * because we are not changing it after it has been scanned. */
+  
   /* get the possibly fixed reference */
-  return ArenaPeekSeg(arena, seg, addr);
+  return ArenaPeekSeg(arena, seg, p);
 }
 
 
