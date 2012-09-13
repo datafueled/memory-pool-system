@@ -1,6 +1,6 @@
 /* format.c: OBJECT FORMATS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/format.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/format.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -11,7 +11,7 @@
 
 #include "mpm.h"
 
-SRCID(format, "$Id: //info.ravenbrook.com/project/mps/master/code/format.c#11 $");
+SRCID(format, "$Id: //info.ravenbrook.com/project/mps/master/code/format.c#12 $");
 
 
 /* FormatCheck -- check a format */
@@ -40,11 +40,11 @@ Bool FormatCheck(Format format)
 }
 
 
-static Addr FormatDefaultClass(Addr object)
+static mps_addr_t FormatDefaultClass(mps_addr_t object)
 {
   AVER(object != NULL);
 
-  return ((Addr *)object)[0];
+  return ((mps_addr_t *)object)[0];
 }
 
 
@@ -53,13 +53,13 @@ static Addr FormatDefaultClass(Addr object)
 Res FormatCreate(Format *formatReturn, Arena arena,
                  Align alignment,
                  FormatVariety variety,
-                 FormatScanMethod scan,
-                 FormatSkipMethod skip,
-                 FormatMoveMethod move,
-                 FormatIsMovedMethod isMoved,
-                 FormatCopyMethod copy,
-                 FormatPadMethod pad,
-                 FormatClassMethod class,
+                 mps_fmt_scan_t scan,
+                 mps_fmt_skip_t skip,
+                 mps_fmt_fwd_t move,
+                 mps_fmt_isfwd_t isMoved,
+                 mps_fmt_copy_t copy,
+                 mps_fmt_pad_t pad,
+                 mps_fmt_class_t class,
                  Size headerSize)
 {
   Format format;

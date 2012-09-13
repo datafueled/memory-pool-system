@@ -1,6 +1,6 @@
 /* chain.h: GENERATION CHAINS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/chain.h#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/chain.h#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -64,7 +64,7 @@ typedef struct PoolGenStruct {
 
 #define ChainSig ((Sig)0x519C8A14)  /* SIGnature CHAIN */
 
-typedef struct ChainStruct {
+typedef struct mps_chain_s {
   Sig sig;
   Arena arena;
   RingStruct chainRing; /* list of chains in the arena */

@@ -1,6 +1,6 @@
 # configure.ac -- autoconf configuration for the MPS    -*- Autoconf -*-
 #
-# $Id: //info.ravenbrook.com/project/mps/master/configure.ac#7 $
+# $Id: //info.ravenbrook.com/project/mps/master/configure.ac#8 $
 # Copyright (C) 2012 Ravenbrook Limited.  See end of file for license.
 #
 # YOU DON'T NEED AUTOCONF TO BUILD THE MPS

@@ -1,6 +1,6 @@
 /* mpsi.c: MEMORY POOL SYSTEM C INTERFACE LAYER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#28 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#32 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -53,7 +53,7 @@
 #include "sac.h"
 #include "chain.h"
 
-SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#28 $");
+SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#32 $");
 
 
 /* mpsi_check -- check consistency of interface mappings
@@ -165,12 +165,6 @@ size_t mps_arena_reserved(mps_arena_t arena)
   return (size_t)size;
 }
 
-/* for backward compatibility */
-size_t mps_space_reserved(mps_space_t mps_space)
-{
-  return mps_arena_reserved(mps_space);
-}
-
 size_t mps_arena_committed(mps_arena_t arena)
 {
   Size size;
@@ -180,12 +174,6 @@ size_t mps_arena_committed(mps_arena_t arena)
   ArenaLeave(arena);
 
   return (size_t)size;
-}
-
-/* for backward compatibility */
-size_t mps_space_committed(mps_space_t mps_space)
-{
-  return mps_arena_committed(mps_space);
 }
 
 size_t mps_arena_spare_committed(mps_arena_t arena)
@@ -248,12 +236,6 @@ void mps_arena_clamp(mps_arena_t arena)
   ArenaLeave(arena);
 }
 
-/* for backward compatibility */
-void mps_space_clamp(mps_space_t mps_space)
-{
-  mps_arena_clamp(mps_space);
-}
-
 
 void mps_arena_release(mps_arena_t arena)
 {
@@ -262,26 +244,14 @@ void mps_arena_release(mps_arena_t arena)
   ArenaLeave(arena);
 }
 
-/* for backward compatibility */
-void mps_space_release(mps_space_t mps_space)
-{
-  mps_arena_release(mps_space);
-}
 
-
-void mps_arena_park(mps_space_t mps_space)
+void mps_arena_park(mps_arena_t arena)
 {
-  Arena arena = (Arena)mps_space;
   ArenaEnter(arena);
   ArenaPark(ArenaGlobals(arena));
   ArenaLeave(arena);
 }
 
-/* for backward compatibility */
-void mps_space_park(mps_space_t mps_space)
-{
-  mps_arena_park(mps_space);
-}
 
 void mps_arena_expose(mps_arena_t arena)
 {
@@ -306,20 +276,18 @@ void mps_arena_unsafe_restore_protection(mps_arena_t arena)
 }
 
 
-mps_res_t mps_arena_start_collect(mps_space_t mps_space)
+mps_res_t mps_arena_start_collect(mps_arena_t arena)
 {
   Res res;
-  Arena arena = (Arena)mps_space;
   ArenaEnter(arena);
   res = ArenaStartCollect(ArenaGlobals(arena), TraceStartWhyCLIENTFULL_INCREMENTAL);
   ArenaLeave(arena);
   return res;
 }
 
-mps_res_t mps_arena_collect(mps_space_t mps_space)
+mps_res_t mps_arena_collect(mps_arena_t arena)
 {
   Res res;
-  Arena arena = (Arena)mps_space;
   ArenaEnter(arena);
   res = ArenaCollect(ArenaGlobals(arena), TraceStartWhyCLIENTFULL_BLOCK);
   ArenaLeave(arena);
@@ -335,12 +303,6 @@ mps_bool_t mps_arena_step(mps_arena_t arena,
   b = ArenaStep(ArenaGlobals(arena), interval, multiplier);
   ArenaLeave(arena);
   return b;
-}
-
-/* for backward compatibility */
-mps_res_t mps_space_collect(mps_space_t mps_space)
-{
-  return mps_arena_collect(mps_space);
 }
 
 
@@ -362,7 +324,7 @@ mps_res_t mps_arena_create(mps_arena_t *mps_arena_o,
 /* mps_arena_create_v -- create an arena object */
 
 mps_res_t mps_arena_create_v(mps_arena_t *mps_arena_o,
-                             mps_arena_class_t mps_arena_class, va_list args)
+                             mps_arena_class_t arena_class, va_list args)
 {
   Arena arena;
   Res res;
@@ -373,7 +335,7 @@ mps_res_t mps_arena_create_v(mps_arena_t *mps_arena_o,
 
   AVER(mps_arena_o != NULL);
 
-  res = ArenaCreateV(&arena, (ArenaClass)mps_arena_class, args);
+  res = ArenaCreateV(&arena, arena_class, args);
   if (res != ResOK)
     return res;
 
@@ -501,12 +463,12 @@ mps_res_t mps_fmt_create_A(mps_fmt_t *mps_fmt_o,
                      arena,
                      (Align)mps_fmt_A->align,
                      FormatVarietyA,
-                     (FormatScanMethod)mps_fmt_A->scan,
-                     (FormatSkipMethod)mps_fmt_A->skip,
-                     (FormatMoveMethod)mps_fmt_A->fwd,
-                     (FormatIsMovedMethod)mps_fmt_A->isfwd,
-                     (FormatCopyMethod)mps_fmt_A->copy,
-                     (FormatPadMethod)mps_fmt_A->pad,
+                     mps_fmt_A->scan,
+                     mps_fmt_A->skip,
+                     mps_fmt_A->fwd,
+                     mps_fmt_A->isfwd,
+                     mps_fmt_A->copy,
+                     mps_fmt_A->pad,
                      NULL,
                      (Size)0);
 
@@ -535,13 +497,13 @@ mps_res_t mps_fmt_create_B(mps_fmt_t *mps_fmt_o,
                      arena,
                      (Align)mps_fmt_B->align,
                      FormatVarietyB,
-                     (FormatScanMethod)mps_fmt_B->scan,
-                     (FormatSkipMethod)mps_fmt_B->skip,
-                     (FormatMoveMethod)mps_fmt_B->fwd,
-                     (FormatIsMovedMethod)mps_fmt_B->isfwd,
-                     (FormatCopyMethod)mps_fmt_B->copy,
-                     (FormatPadMethod)mps_fmt_B->pad,
-                     (FormatClassMethod)mps_fmt_B->mps_class,
+                     mps_fmt_B->scan,
+                     mps_fmt_B->skip,
+                     mps_fmt_B->fwd,
+                     mps_fmt_B->isfwd,
+                     mps_fmt_B->copy,
+                     mps_fmt_B->pad,
+                     mps_fmt_B->mps_class,
                      (Size)0);
 
   ArenaLeave(arena);
@@ -569,12 +531,12 @@ mps_res_t mps_fmt_create_auto_header(mps_fmt_t *mps_fmt_o,
                      arena,
                      (Align)mps_fmt->align,
                      FormatVarietyAutoHeader,
-                     (FormatScanMethod)mps_fmt->scan,
-                     (FormatSkipMethod)mps_fmt->skip,
-                     (FormatMoveMethod)mps_fmt->fwd,
-                     (FormatIsMovedMethod)mps_fmt->isfwd,
+                     mps_fmt->scan,
+                     mps_fmt->skip,
+                     mps_fmt->fwd,
+                     mps_fmt->isfwd,
                      NULL,
-                     (FormatPadMethod)mps_fmt->pad,
+                     mps_fmt->pad,
                      NULL,
                      (Size)mps_fmt->mps_headerSize);
 
@@ -603,12 +565,12 @@ mps_res_t mps_fmt_create_fixed(mps_fmt_t *mps_fmt_o,
                      arena,
                      (Align)mps_fmt_fixed->align,
                      FormatVarietyFixed,
-                     (FormatScanMethod)mps_fmt_fixed->scan,
+                     mps_fmt_fixed->scan,
                      NULL,
-                     (FormatMoveMethod)mps_fmt_fixed->fwd,
-                     (FormatIsMovedMethod)mps_fmt_fixed->isfwd,
+                     mps_fmt_fixed->fwd,
+                     mps_fmt_fixed->isfwd,
                      NULL,
-                     (FormatPadMethod)mps_fmt_fixed->pad,
+                     mps_fmt_fixed->pad,
                      NULL,
                      (Size)0);
 
@@ -622,9 +584,8 @@ mps_res_t mps_fmt_create_fixed(mps_fmt_t *mps_fmt_o,
 
 /* mps_fmt_destroy -- destroy a format object */
 
-void mps_fmt_destroy(mps_fmt_t mps_fmt)
+void mps_fmt_destroy(mps_fmt_t format)
 {
-  Format format = (Format)mps_fmt;
   Arena arena;
 
   AVER(TESTT(Format, format));
@@ -650,10 +611,9 @@ mps_res_t mps_pool_create(mps_pool_t *mps_pool_o, mps_arena_t arena,
 }
 
 mps_res_t mps_pool_create_v(mps_pool_t *mps_pool_o, mps_arena_t arena,
-                            mps_class_t mps_class, va_list args)
+                            mps_class_t class, va_list args)
 {
   Pool pool;
-  PoolClass class = (PoolClass)mps_class;
   Res res;
 
   ArenaEnter(arena);
@@ -671,9 +631,8 @@ mps_res_t mps_pool_create_v(mps_pool_t *mps_pool_o, mps_arena_t arena,
   return res;
 }
 
-void mps_pool_destroy(mps_pool_t mps_pool)
+void mps_pool_destroy(mps_pool_t pool)
 {
-  Pool pool = (Pool)mps_pool;
   Arena arena;
 
   AVER(TESTT(Pool, pool));
@@ -687,9 +646,8 @@ void mps_pool_destroy(mps_pool_t mps_pool)
 }
 
 
-mps_res_t mps_alloc(mps_addr_t *p_o, mps_pool_t mps_pool, size_t size, ...)
+mps_res_t mps_alloc(mps_addr_t *p_o, mps_pool_t pool, size_t size, ...)
 {
-  Pool pool = (Pool)mps_pool;
   Arena arena;
   Addr p;
   Res res;
@@ -731,9 +689,8 @@ mps_res_t mps_alloc_v(mps_addr_t *p_o, mps_pool_t mps_pool, size_t size,
 }
 
 
-void mps_free(mps_pool_t mps_pool, mps_addr_t p, size_t size)
+void mps_free(mps_pool_t pool, mps_addr_t p, size_t size)
 {
-  Pool pool = (Pool)mps_pool;
   Arena arena;
 
   AVER(TESTT(Pool, pool));
@@ -754,9 +711,8 @@ void mps_free(mps_pool_t mps_pool, mps_addr_t p, size_t size)
 
 /* mps_ap_create -- create an allocation point */
 
-mps_res_t mps_ap_create(mps_ap_t *mps_ap_o, mps_pool_t mps_pool, ...)
+mps_res_t mps_ap_create(mps_ap_t *mps_ap_o, mps_pool_t pool, ...)
 {
-  Pool pool = (Pool)mps_pool;
   Arena arena;
   Buffer buf;
   BufferClass bufclass;
@@ -771,7 +727,7 @@ mps_res_t mps_ap_create(mps_ap_t *mps_ap_o, mps_pool_t mps_pool, ...)
 
   AVERT(Pool, pool);
 
-  va_start(args, mps_pool);
+  va_start(args, pool);
   bufclass = PoolDefaultBufferClass(pool);
   res = BufferCreateV(&buf, bufclass, pool, TRUE, args);
   va_end(args);
@@ -787,10 +743,9 @@ mps_res_t mps_ap_create(mps_ap_t *mps_ap_o, mps_pool_t mps_pool, ...)
 
 /* mps_ap_create_v -- create an allocation point, with varargs */
 
-mps_res_t mps_ap_create_v(mps_ap_t *mps_ap_o, mps_pool_t mps_pool,
+mps_res_t mps_ap_create_v(mps_ap_t *mps_ap_o, mps_pool_t pool,
                           va_list args)
 {
-  Pool pool = (Pool)mps_pool;
   Arena arena;
   Buffer buf;
   BufferClass bufclass;
@@ -1081,12 +1036,10 @@ mps_bool_t mps_ap_trip(mps_ap_t mps_ap, mps_addr_t p, size_t size)
 
 /* mps_sac_create -- create an SAC object */
 
-mps_res_t mps_sac_create(mps_sac_t *mps_sac_o, mps_pool_t mps_pool,
-                         size_t classes_count, mps_sac_classes_s *mps_classes)
+mps_res_t mps_sac_create(mps_sac_t *mps_sac_o, mps_pool_t pool,
+                         size_t classes_count, mps_sac_classes_s *classes)
 {
-  Pool pool = (Pool)mps_pool;
   Arena arena;
-  SACClasses classes;
   SAC sac;
   Res res;
 
@@ -1096,7 +1049,6 @@ mps_res_t mps_sac_create(mps_sac_t *mps_sac_o, mps_pool_t mps_pool,
 
   ArenaEnter(arena);
 
-  classes = (SACClasses)mps_classes;
   res = SACCreate(&sac, pool, (Count)classes_count, classes);
 
   ArenaLeave(arena);
@@ -1232,8 +1184,7 @@ mps_res_t mps_root_create(mps_root_t *mps_root_o, mps_arena_t arena,
   AVER(mps_rm == (mps_rm_t)0);
 
   /* See .root-mode. */
-  res = RootCreateFun(&root, arena, rank,
-                      (RootScanMethod)mps_root_scan, p, s);
+  res = RootCreateFun(&root, arena, rank, mps_root_scan, p, s);
 
   ArenaLeave(arena);
 
@@ -1304,11 +1255,10 @@ mps_res_t mps_root_create_table_masked(mps_root_t *mps_root_o,
 
 mps_res_t mps_root_create_fmt(mps_root_t *mps_root_o, mps_arena_t arena,
                               mps_rank_t mps_rank, mps_rm_t mps_rm,
-                              mps_fmt_scan_t mps_fmt_scan,
+                              mps_fmt_scan_t scan,
                               mps_addr_t base, mps_addr_t limit)
 {
   Rank rank = (Rank)mps_rank;
-  FormatScanMethod scan = (FormatScanMethod)mps_fmt_scan;
   Root root;
   RootMode mode = (RootMode)mps_rm;
   Res res;
@@ -1327,11 +1277,10 @@ mps_res_t mps_root_create_fmt(mps_root_t *mps_root_o, mps_arena_t arena,
 
 mps_res_t mps_root_create_reg(mps_root_t *mps_root_o, mps_arena_t arena,
                               mps_rank_t mps_rank, mps_rm_t mps_rm,
-                              mps_thr_t mps_thr, mps_reg_scan_t mps_reg_scan,
+                              mps_thr_t thread, mps_reg_scan_t mps_reg_scan,
                               void *reg_scan_p, size_t mps_size)
 {
   Rank rank = (Rank)mps_rank;
-  Thread thread = (Thread)mps_thr;
   Root root;
   Res res;
 
@@ -1346,8 +1295,7 @@ mps_res_t mps_root_create_reg(mps_root_t *mps_root_o, mps_arena_t arena,
 
   /* See .root-mode. */
   res = RootCreateReg(&root, arena, rank, thread,
-                      (RootScanRegMethod)mps_reg_scan,
-                      reg_scan_p, mps_size);
+                      mps_reg_scan, reg_scan_p, mps_size);
 
   ArenaLeave(arena);
 
@@ -1362,10 +1310,9 @@ mps_res_t mps_root_create_reg(mps_root_t *mps_root_o, mps_arena_t arena,
  * See .reg-scan.  */
 
 mps_res_t mps_stack_scan_ambig(mps_ss_t mps_ss,
-                               mps_thr_t mps_thr, void *p, size_t s)
+                               mps_thr_t thread, void *p, size_t s)
 {
   ScanState ss = PARENT(ScanStateStruct, ss_s, mps_ss);
-  Thread thread = (Thread)mps_thr;
   UNUSED(s);
   return ThreadScan(ss, thread, p);
 }
@@ -1417,9 +1364,8 @@ mps_res_t mps_thread_reg(mps_thr_t *mps_thr_o, mps_arena_t arena)
   return MPS_RES_OK;
 }
 
-void mps_thread_dereg(mps_thr_t mps_thr)
+void mps_thread_dereg(mps_thr_t thread)
 {
-  Thread thread = (Thread)mps_thr;
   Arena arena;
 
   AVER(ThreadCheckSimple(thread));
@@ -1602,10 +1548,8 @@ mps_bool_t mps_message_get(mps_message_t *mps_message_return,
 }
 
 void mps_message_discard(mps_arena_t arena,
-                         mps_message_t mps_message)
+                         mps_message_t message)
 {
-  Message message = (Message)mps_message;
-
   ArenaEnter(arena);
 
   MessageDiscard(arena, message);
@@ -1619,9 +1563,8 @@ void mps_message_discard(mps_arena_t arena,
 /* -- All Message Types */
 
 mps_message_type_t mps_message_type(mps_arena_t arena,
-                                    mps_message_t mps_message)
+                                    mps_message_t message)
 {
-  Message message = (Message)mps_message;
   MessageType type;
 
   ArenaEnter(arena);
@@ -1634,9 +1577,8 @@ mps_message_type_t mps_message_type(mps_arena_t arena,
 }
 
 mps_clock_t mps_message_clock(mps_arena_t arena,
-                              mps_message_t mps_message)
+                              mps_message_t message)
 {
-  Message message = (Message)mps_message;
   Clock postedClock;
 
   ArenaEnter(arena);
@@ -1653,9 +1595,8 @@ mps_clock_t mps_message_clock(mps_arena_t arena,
 
 void mps_message_finalization_ref(mps_addr_t *mps_addr_return,
                                   mps_arena_t arena,
-                                  mps_message_t mps_message)
+                                  mps_message_t message)
 {
-  Message message = (Message)mps_message;
   Ref ref;
 
   AVER(mps_addr_return != NULL);
@@ -1672,9 +1613,8 @@ void mps_message_finalization_ref(mps_addr_t *mps_addr_return,
 /* -- mps_message_type_gc */
 
 size_t mps_message_gc_live_size(mps_arena_t arena,
-                                              mps_message_t mps_message)
+                                              mps_message_t message)
 {
-  Message message = (Message)mps_message;
   Size size;
 
   ArenaEnter(arena);
@@ -1687,9 +1627,8 @@ size_t mps_message_gc_live_size(mps_arena_t arena,
 }
 
 size_t mps_message_gc_condemned_size(mps_arena_t arena,
-                                     mps_message_t mps_message)
+                                     mps_message_t message)
 {
-  Message message = (Message)mps_message;
   Size size;
 
   ArenaEnter(arena);
@@ -1702,9 +1641,8 @@ size_t mps_message_gc_condemned_size(mps_arena_t arena,
 }
 
 size_t mps_message_gc_not_condemned_size(mps_arena_t arena,
-                                         mps_message_t mps_message)
+                                         mps_message_t message)
 {
-  Message message = (Message)mps_message;
   Size size;
 
   ArenaEnter(arena);
@@ -1719,10 +1657,9 @@ size_t mps_message_gc_not_condemned_size(mps_arena_t arena,
 /* -- mps_message_type_gc_start */
 
 const char *mps_message_gc_start_why(mps_arena_t arena,
-  mps_message_t mps_message)
+  mps_message_t message)
 {
   const char *s;
-  Message message = (Message)mps_message;
 
   ArenaEnter(arena);
 
@@ -1926,10 +1863,9 @@ mps_res_t mps_chain_create(mps_chain_t *chain_o, mps_arena_t arena,
 
 /* mps_chain_destroy -- destroy a chain */
 
-void mps_chain_destroy(mps_chain_t mps_chain)
+void mps_chain_destroy(mps_chain_t chain)
 {
   Arena arena;
-  Chain chain = (Chain)mps_chain;
 
   AVER(TESTT(Chain, chain));
   arena = chain->arena;

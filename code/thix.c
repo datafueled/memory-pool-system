@@ -1,6 +1,6 @@
 /* thix.c: Threads Manager for Posix threads
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/thix.c#1 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/thix.c#2 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is a pthreads implementation of the threads manager.
@@ -38,12 +38,12 @@
 #include <pthread.h>
 #include "pthrdext.h"
 
-SRCID(thix, "$Id: //info.ravenbrook.com/project/mps/master/code/thix.c#1 $");
+SRCID(thix, "$Id: //info.ravenbrook.com/project/mps/master/code/thix.c#2 $");
 
 
 /* ThreadStruct -- thread desriptor */
 
-typedef struct ThreadStruct {    /* PThreads thread structure */
+typedef struct mps_thr_s {       /* PThreads thread structure */
   Sig sig;                       /* <design/sig/> */
   Serial serial;                 /* from arena->threadSerial */
   Arena arena;                   /* owning arena */

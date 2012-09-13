@@ -1,6 +1,6 @@
 /* mps.h: RAVENBROOK MEMORY POOL SYSTEM C INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mps.h#30 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mps.h#33 $
  * Copyright (c) 2001-2012 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -48,7 +48,6 @@
 /* Abstract Types */
 
 typedef struct mps_arena_s  *mps_arena_t;  /* arena */
-typedef mps_arena_t          mps_space_t;  /* space, for backward comp. */
 typedef struct mps_arena_class_s *mps_arena_class_t;  /* arena class */
 typedef struct mps_pool_s   *mps_pool_t;   /* pool */
 typedef struct mps_chain_s  *mps_chain_t;  /* chain */
@@ -179,8 +178,8 @@ typedef struct mps_ld_s {       /* location dependency descriptor */
 
 
 /* Format and Root Method Types */
-/* .fmt-methods: Keep in sync with <code/mpmtypes.h#fmt-methods> */
-/* .root-methods: Keep in sync with <code/mpmtypes.h#root-methods> */
+/* see design.mps.root-interface */
+/* see design.mps.format-interface */
 
 typedef mps_res_t (*mps_root_scan_t)(mps_ss_t, void *, size_t);
 typedef mps_res_t (*mps_fmt_scan_t)(mps_ss_t, mps_addr_t, mps_addr_t);
@@ -273,10 +272,6 @@ extern void mps_arena_unsafe_restore_protection(mps_arena_t);
 extern mps_res_t mps_arena_start_collect(mps_arena_t);
 extern mps_res_t mps_arena_collect(mps_arena_t);
 extern mps_bool_t mps_arena_step(mps_arena_t, double, double);
-extern void mps_space_clamp(mps_space_t);
-extern void mps_space_release(mps_space_t);
-extern void mps_space_park(mps_space_t);
-extern mps_res_t mps_space_collect(mps_space_t);
 
 extern mps_res_t mps_arena_create(mps_arena_t *, mps_arena_class_t, ...);
 extern mps_res_t mps_arena_create_v(mps_arena_t *, mps_arena_class_t, va_list);
@@ -290,9 +285,6 @@ extern size_t mps_arena_commit_limit(mps_arena_t);
 extern mps_res_t mps_arena_commit_limit_set(mps_arena_t, size_t);
 extern void mps_arena_spare_commit_limit_set(mps_arena_t, size_t);
 extern size_t mps_arena_spare_commit_limit(mps_arena_t);
-
-extern size_t mps_space_reserved(mps_space_t);
-extern size_t mps_space_committed(mps_space_t);
 
 extern mps_bool_t mps_arena_has_addr(mps_arena_t, mps_addr_t);
 extern mps_bool_t mps_addr_pool(mps_pool_t *, mps_arena_t, mps_addr_t);

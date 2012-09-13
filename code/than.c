@@ -1,6 +1,6 @@
 /* than.c: ANSI THREADS MANAGER
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/than.c#10 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/than.c#11 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  This is a single-threaded implementation of the threads manager.
@@ -14,10 +14,10 @@
 
 #include "mpm.h"
 
-SRCID(than, "$Id: //info.ravenbrook.com/project/mps/master/code/than.c#10 $");
+SRCID(than, "$Id: //info.ravenbrook.com/project/mps/master/code/than.c#11 $");
 
 
-typedef struct ThreadStruct {   /* ANSI fake thread structure */
+typedef struct mps_thr_s {      /* ANSI fake thread structure */
   Sig sig;                      /* <design/sig/> */
   Serial serial;                /* from arena->threadSerial */
   Arena arena;                  /* owning arena */

@@ -184,4 +184,4 @@ os.system("echo DONE")
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
-# $Id: //info.ravenbrook.com/project/mps/master/tool/test-runner.py#13 $
+# $Id: //info.ravenbrook.com/project/mps/master/tool/test-runner.py#14 $

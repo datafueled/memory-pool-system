@@ -1,6 +1,6 @@
 /* thw3.h: WIN32 THREAD MANAGER HEADER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/thw3.h#2 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/thw3.h#3 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * This is used in <code/thw3.c> and <code/thw3i3.c> and <code/thw3i6.c>
@@ -21,7 +21,7 @@
 
 #include "mpswin.h"
 
-typedef struct ThreadStruct {   /* Win32 thread structure */
+typedef struct mps_thr_s {      /* Win32 thread structure */
   Sig sig;                      /* <design/sig/> */
   Serial serial;                /* from arena->threadSerial */
   Arena arena;                  /* owning arena */

@@ -1,6 +1,6 @@
 /* config.h: MPS CONFIGURATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/config.h#40 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/config.h#41 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -391,6 +391,14 @@
 
 /* AMC treats segments of this many pages (or more) as "Large" */
 #define AMCLargeSegPAGES ((Count)8)
+
+
+/* Pool Class AWL configuration -- see poolawl.c for usage */
+
+#define AWL_HAVE_SEG_SA_LIMIT   TRUE
+#define AWL_SEG_SA_LIMIT        200     /* TODO: Improve guesswork with measurements */
+#define AWL_HAVE_TOTAL_SA_LIMIT FALSE
+#define AWL_TOTAL_SA_LIMIT      0
 
 
 #endif /* config_h */
