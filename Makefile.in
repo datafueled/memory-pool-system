@@ -21,7 +21,7 @@ build-via-make:
 clean-make-build:
 	$(MAKE) -C code -f $(MPS_TARGET_NAME).gmk clean
 
-install-make-build: make-install-dirs
+install-make-build: make-install-dirs build-via-make
 	cp -p code/mps*.h $(prefix)/include/
 	cp -p code/$(MPS_TARGET_NAME)/cool/mps.a $(prefix)/lib/libmps-debug.a
 	cp -p code/$(MPS_TARGET_NAME)/hot/mps.a $(prefix)/lib/libmps.a
@@ -33,7 +33,7 @@ build-via-xcode:
 clean-xcode-build:
 	xcodebuild -project code/mps.xcodeproj clean
 
-install-xcode-build: make-install-dirs
+install-xcode-build: make-install-dirs build-via-xcode
 	cp -p code/mps*.h $(prefix)/include/
 	cp -p code/build/Release/libmps.a $(prefix)/lib/libmps.a
 	cp -p code/build/Release/eventcnv $(prefix)/bin/mpseventcnv
