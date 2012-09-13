@@ -33,6 +33,11 @@ build-via-xcode:
 clean-xcode-build:
 	xcodebuild -project code/mps.xcodeproj clean
 
+install-xcode-build: make-install-dirs
+	cp -p code/mps*.h $(prefix)/include/
+	cp -p code/build/Release/libmps.a $(prefix)/lib/libmps.a
+	cp -p code/build/Release/eventcnv $(prefix)/bin/mpseventcnv
+
 Makefile: Makefile.in config.status
 	./config.status Makefile
 
