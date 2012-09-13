@@ -12,6 +12,7 @@
 MAKE=@MAKE@
 MPS_TARGET_PF=@MPS_TARGET_PF@
 MPS_TARGET_NAME=@MPS_TARGET_NAME@
+prefix=$(DESTDIR)@prefix@
 
 BUILD_TARGET=@BUILD_TARGET@
 CLEAN_TARGET=@CLEAN_TARGET@
@@ -23,6 +24,12 @@ build-via-make:
 
 clean-make-build:
 	$(MAKE) -C code -f $(MPS_TARGET_NAME).gmk clean
+
+install-make-build: make-install-dirs
+	cp -p code/mps*.h $(prefix)/include/
+	cp -p code/$(MPS_TARGET_NAME)/cool/mps.a $(prefix)/lib/libmps-debug.a
+	cp -p code/$(MPS_TARGET_NAME)/hot/mps.a $(prefix)/lib/libmps.a
+	cp -p code/$(MPS_TARGET_NAME)/hot/eventcnv $(prefix)/bin/mpseventcnv
 
 build-via-xcode:
 	xcodebuild -project code/mps.xcodeproj
@@ -40,3 +47,10 @@ configure: configure.ac
 
 distclean: clean
 	rm -rf autom4te.cache/ config.log config.status Makefile
+
+make-install-dirs:
+	mkdir -p $(prefix)/bin
+	mkdir -p $(prefix)/lib
+	mkdir -p $(prefix)/include
+
+install: @INSTALL_TARGET@

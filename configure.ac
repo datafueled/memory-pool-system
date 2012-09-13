@@ -30,6 +30,7 @@ AC_CANONICAL_HOST
 AC_MSG_CHECKING([target platform])
 BUILD_TARGET=build-via-make
 CLEAN_TARGET=clean-make-build
+INSTALL_TARGET=install-make-build
 case $host in
   i*86-*-linux*)
       AC_MSG_RESULT([Linux x86])
@@ -47,6 +48,7 @@ case $host in
       MPS_TARGET_NAME=xci3ll
       BUILD_TARGET=build-via-xcode
       CLEAN_TARGET=clean-xcode-build
+      INSTALL_TARGET=install-xcode-build
     ;;
   x86_64-apple-darwin*)
       AC_MSG_RESULT([Mac OS X x86_64])
@@ -54,6 +56,7 @@ case $host in
       MPS_TARGET_NAME=xci6ll
       BUILD_TARGET=build-via-xcode
       CLEAN_TARGET=clean-xcode-build
+      INSTALL_TARGET=install-xcode-build
     ;;
   i*86-*-freebsd*)
       AC_MSG_RESULT([FreeBSD x86])
@@ -78,6 +81,7 @@ AC_SUBST(MPS_TARGET_PF)
 AC_SUBST(MPS_TARGET_NAME)
 AC_SUBST(BUILD_TARGET)
 AC_SUBST(CLEAN_TARGET)
+AC_SUBST(INSTALL_TARGET)
 AC_CONFIG_FILES(Makefile)
 
 AC_OUTPUT
