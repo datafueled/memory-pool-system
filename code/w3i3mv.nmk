@@ -1,6 +1,6 @@
 # w3i3mv.nmk: WINDOWS (INTEL) NMAKE FILE
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/w3i3mv.nmk#24 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/w3i3mv.nmk#25 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = w3i3mv
@@ -19,7 +19,7 @@ MPM = <ring> <mpm> <bt> <protocol> <boot> \
       <shield> <vmw3> <table> \
       <thw3> <thw3i3> <ss> <ssw3i3mv> <mpsi> <mpsiw3> <ld> <spi3> \
       <event> <seg> <sac> <poolmrg> <message> <dbgpool> <dbgpooli> \
-      <abq> <meter> <cbs> <poolmv2> <splay> <diag> <version>
+      <abq> <meter> <cbs> <poolmv2> <splay> <diag>
 PLINTH = <mpsliban> <mpsioan>
 AMC = <poolamc>
 AMS = <poolams> <poolamsi>

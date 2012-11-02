@@ -1,6 +1,6 @@
 /* <code/eventdef.h> -- Event Logging Definitions
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/eventdef.h#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventdef.h#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .source: <design/telemetry/>
@@ -614,11 +614,11 @@
 
 #define EVENT_AWLDeclineTotal_PARAMS(PARAM, X) \
   PARAM(X,  0, P, seg)          /* segment declined single access */ \
-  PARAM(X,  1, U, succAccesses) /* total successive accesses */
+  PARAM(X,  1, W, succAccesses) /* total successive accesses */
 
 #define EVENT_AWLDeclineSeg_PARAMS(PARAM, X) \
   PARAM(X,  0, P, seg)          /* segment declined single access */ \
-  PARAM(X,  1, U, singleAccesses) /* single accesses this cycle */
+  PARAM(X,  1, W, singleAccesses) /* single accesses this cycle */
 
 
 #endif /* eventdef_h */

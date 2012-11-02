@@ -1,6 +1,6 @@
 /* version.c: VERSION INSPECTION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/version.c#23 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/version.c#24 $
  * Copyright (c) 2001-2002, 2006-2010 Ravenbrook Limited.  
  * See end of file for license.
  *
@@ -17,7 +17,7 @@
 
 #include "mpm.h"
 
-SRCID(version, "$Id: //info.ravenbrook.com/project/mps/master/code/version.c#23 $");
+SRCID(version, "$Id: //info.ravenbrook.com/project/mps/master/code/version.c#24 $");
 
 
 /* MPS_RELEASE -- the release name
@@ -29,7 +29,7 @@ SRCID(version, "$Id: //info.ravenbrook.com/project/mps/master/code/version.c#23 
  * (Note: before 2006-02-01 the style was "release.epcore.chub")
  */
 
-#define MPS_RELEASE "release/1.109.0"
+#define MPS_RELEASE "release/1.110.0"
 
 
 /* MPSCopyrightNotice -- copyright notice for the binary

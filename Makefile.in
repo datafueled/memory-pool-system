@@ -1,6 +1,6 @@
 # Makefile.in -- source for autoconf Makefile
 #
-# $Id: //info.ravenbrook.com/project/mps/master/Makefile.in#10 $
+# $Id: //info.ravenbrook.com/project/mps/master/Makefile.in#11 $
 # Copyright (C) 2012 Ravenbrook Limited.  See end of file for license.
 #
 # YOU DON'T NEED AUTOCONF TO BUILD THE MPS
@@ -63,3 +63,7 @@ make-install-dirs:
 	mkdir -p $(prefix)/include
 
 install: @INSTALL_TARGET@
+
+test: @BUILD_TARGET@
+	$(MAKE) -C code VARIETY=cool testrun
+	$(MAKE) -C code VARIETY=hot testrun

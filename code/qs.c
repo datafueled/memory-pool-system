@@ -1,6 +1,6 @@
 /* qs.c: QUICKSORT
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/qs.c#12 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/qs.c#13 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  The purpose of this program is to act as a "real" client of the MM.
@@ -183,9 +183,9 @@ static void swap(void)
 }
 
 
-static void makerndlist(int l)
+static void makerndlist(unsigned l)
 {
-  int i;
+  unsigned i;
   mps_word_t r;
 
   cdie(l > 0, "list len");

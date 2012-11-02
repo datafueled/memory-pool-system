@@ -1,6 +1,6 @@
 /* arena.c: ARENA ALLOCATION FEATURES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/arena.c#21 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/arena.c#22 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .sources: <design/arena/> is the main design document.  */
@@ -9,7 +9,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/master/code/arena.c#21 $");
+SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/master/code/arena.c#22 $");
 
 
 /* ArenaControlPool -- get the control pool */
@@ -675,8 +675,16 @@ Size ArenaAvail(Arena arena)
   Size sSwap;
 
   sSwap = ArenaReserved(arena);
-  if (sSwap > arena->commitLimit) sSwap = arena->commitLimit;
-  /* @@@@ sSwap should take actual paging file size into account */
+  if (sSwap > arena->commitLimit)
+    sSwap = arena->commitLimit;
+
+  /* TODO: sSwap should take into account the amount of backing store
+     available to supply the arena with memory.  This would be the amount
+     available in the paging file, which is possibly the amount of free
+     disk space in some circumstances.  We'd have to see whether we can get
+     this information from the operating system.  It also depends on the
+     arena class, of course. */
+
   return sSwap - arena->committed + arena->spareCommitted;
 }
 

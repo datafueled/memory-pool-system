@@ -1,6 +1,6 @@
 /* poolmv.c: MANUAL VARIABLE POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#15 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -31,7 +31,7 @@
 #include "poolmfs.h"
 #include "mpm.h"
 
-SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#15 $");
+SRCID(poolmv, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmv.c#16 $");
 
 
 #define mvBlockPool(mv) MFSPool(&(mv)->blockPoolStruct)
@@ -859,7 +859,7 @@ Bool MVCheck(MV mv)
   CHECKL(mv->extendBy > 0);
   CHECKL(mv->avgSize > 0);
   CHECKL(mv->extendBy >= mv->avgSize);
-  /* @@@@ Could do more checks here. */
+  /* TODO: More checks are possible.  Consider what else could be checked. */
   return TRUE;
 }
 

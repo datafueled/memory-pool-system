@@ -1,6 +1,6 @@
 /* format.c: OBJECT FORMATS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/format.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/format.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -11,7 +11,7 @@
 
 #include "mpm.h"
 
-SRCID(format, "$Id: //info.ravenbrook.com/project/mps/master/code/format.c#12 $");
+SRCID(format, "$Id: //info.ravenbrook.com/project/mps/master/code/format.c#13 $");
 
 
 /* FormatCheck -- check a format */
@@ -26,7 +26,10 @@ Bool FormatCheck(Format format)
          || format->variety == FormatVarietyAutoHeader);
   CHECKL(RingCheck(&format->arenaRing));
   CHECKL(AlignCheck(format->alignment));
-  /* @@@@ alignment should be less than maximum allowed */
+  /* TODO: Define the concept of the maximum alignment it is possible to
+     request from the MPS, document and provide an interface to it, and then
+     check that this alignment is not greater than that, as well as all other
+     alignments. */
   CHECKL(FUNCHECK(format->scan));
   CHECKL(format->variety == FormatVarietyFixed
          ? format->skip == NULL : FUNCHECK(format->skip));

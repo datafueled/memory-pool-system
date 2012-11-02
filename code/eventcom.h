@@ -1,7 +1,7 @@
 /* <code/eventcom.h> -- Event Logging Common Definitions
  *
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
- * $Id: //info.ravenbrook.com/project/mps/master/code/eventcom.h#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventcom.h#15 $
  *
  * .sources: mps.design.telemetry
  */
@@ -12,95 +12,7 @@
 #include <limits.h>
 #include "mpmtypes.h" /* for Word */
 #include "eventdef.h"
-
-
-/* EVENT_CLOCK -- fast event timestamp clock
- *
- * On platforms that support it, we want to stamp events with a very cheap
- * and fast high-resolution timer.
- */
-
-/* TODO: Clang supposedly provides a cross-platform builtin for a fast
-   timer, but it doesn't seem to be present on Mac OS X 10.8.  We should
-   use it if it ever appears.
-   <http://clang.llvm.org/docs/LanguageExtensions.html#builtins> */
-#if defined(MPS_BUILD_LL)
-
-#if __has_builtin(__builtin_readcyclecounter)
-#error "__builtin_readcyclecounter is available but not used"
-#endif /* __has_builtin(__builtin_readcyclecounter) */
-
-#endif
-
-/* Microsoft C provides an intrinsic for the Intel rdtsc instruction.
-   <http://msdn.microsoft.com/en-US/library/twchhe95%28v=vs.100%29.aspx> */
-#if (defined(MPS_ARCH_I3) || defined(MPS_ARCH_I6)) && defined(MPS_BUILD_MV)
-
-#pragma intrinsic(__rdtsc)
-
-typedef unsigned __int64 EventClock;
-
-#define EVENT_CLOCK(lvalue) \
-  BEGIN \
-    (lvalue) = __rdtsc(); \
-  END
-
-#define EVENT_CLOCK_PRINT(stream, clock) fprintf(stream, "%llX", clock)
-
-#if defined(MPS_ARCH_I3)
-#define EVENT_CLOCK_WRITE(stream, clock) \
-  WriteF(stream, "$W$W", (WriteFW)((clock) >> 32), (WriteFW)clock, NULL)
-#elif defined(MPS_ARCH_I6)
-#define EVENT_CLOCK_WRITE(stream, clock) \
-  WriteF(stream, "$W", (WriteFW)(clock), NULL)
-#endif
-
-#endif /* Microsoft C on Intel */
-
-/* If we have GCC or Clang, assemble the rdtsc instruction */
-#if !defined(EVENT_CLOCK) && \
-    (defined(MPS_ARCH_I3) || defined(MPS_ARCH_I6)) && \
-      (defined(MPS_BUILD_GC) || defined(MPS_BUILD_LL))
-
-/* Use __extension__ to enable use of a 64-bit type on 32-bit pedantic GCC */
-__extension__ typedef unsigned long long EventClock;
-
-#define EVENT_CLOCK(lvalue) \
-  BEGIN \
-    unsigned _l, _h; \
-    __asm__ __volatile__("rdtsc" : "=a"(_l), "=d"(_h)); \
-    (lvalue) = ((EventClock)_h << 32) | _l; \
-  END
-
-/* The __extension__ keyword doesn't work on printf formats, so we
-   concatenate two 32-bit hex numbers to print the 64-bit value. */
-#define EVENT_CLOCK_PRINT(stream, clock) \
-  fprintf(stream, "%08lX%08lX", \
-          (unsigned long)((clock) >> 32), \
-          (unsigned long)(clock))
-
-#define EVENT_CLOCK_WRITE(stream, clock) \
-  WriteF(stream, "$W$W", (WriteFW)((clock) >> 32), (WriteFW)clock, NULL)
-
-#endif /* Intel, GCC or Clang */
-
-/* no fast clock, use plinth, probably from the C library */
-#ifndef EVENT_CLOCK
-
-typedef mps_clock_t EventClock;
-
-#define EVENT_CLOCK(lvalue) \
-  BEGIN \
-    (lvalue) = mps_clock(); \
-  END
-
-#define EVENT_CLOCK_PRINT(stream, clock) \
-  fprintf(stream, "%lu", (unsigned long)clock)
-
-#define EVENT_CLOCK_WRITE(stream, clock) \
-  WriteF(stream, "$W", (WriteFW)clock, NULL)
-
-#endif
+#include "clock.h"
 
 
 /* Event Kinds --- see <design/telemetry/>

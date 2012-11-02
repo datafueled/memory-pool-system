@@ -1,6 +1,6 @@
 /* cbs.c: COALESCING BLOCK STRUCTURE IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/cbs.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/cbs.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .intro: This is a portable implementation of coalescing block
@@ -18,7 +18,7 @@
 #include "poolmfs.h"
 #include "mpm.h"
 
-SRCID(cbs, "$Id: //info.ravenbrook.com/project/mps/master/code/cbs.c#12 $");
+SRCID(cbs, "$Id: //info.ravenbrook.com/project/mps/master/code/cbs.c#13 $");
 
 
 /* See <design/cbs/#align> */
@@ -314,7 +314,6 @@ Res CBSInit(Arena arena, CBS cbs, void *owner,
 
   AVERT(CBS, cbs);
   EVENT2(CBSInit, cbs, owner);
-  UNUSED(owner); /* @@@@ hack: unused in non-event varieties */
   CBSLeave(cbs);
   return ResOK;
 }

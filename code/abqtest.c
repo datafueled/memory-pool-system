@@ -1,6 +1,6 @@
 /* abqtest.c: AVAILABLE BLOCK QUEUE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -20,7 +20,7 @@ struct itimerspec; /* stop complaints from time.h */
 #include <math.h>
 
 
-SRCID(abqtest, "$Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#10 $");
+SRCID(abqtest, "$Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#11 $");
 
 
 static ABQStruct abq; /* the ABQ which we will use */
@@ -36,9 +36,9 @@ static unsigned long abqRnd(unsigned long n)
 }
 
 
-static int pushee = 1;
-static int popee = 1;
-static int deleted = 0;
+static unsigned pushee = 1;
+static unsigned popee = 1;
+static unsigned deleted = 0;
 
 
 typedef struct TestStruct *Test;
@@ -46,7 +46,7 @@ typedef struct TestStruct *Test;
 typedef struct TestStruct
 {
   Test next;
-  int id;
+  unsigned id;
   CBSBlockStruct cbsBlockStruct;
 } TestStruct;
 
@@ -65,7 +65,7 @@ static Test CBSBlockTest(CBSBlock c)
 static Test testBlocks = NULL;
 
 
-static CBSBlock CreateCBSBlock(int no)
+static CBSBlock CreateCBSBlock(unsigned no)
 {
   Test b = malloc(sizeof(TestStruct));
   cdie(b != NULL, "malloc");
@@ -133,7 +133,7 @@ static void step(void)
       if (!deleted & (pushee > popee)) {
         Test b;
      
-        deleted = abqRnd (pushee - popee) + popee;
+        deleted = (unsigned)abqRnd (pushee - popee) + popee;
         for (b = testBlocks; b != NULL; b = b->next)
           if (b->id == deleted)
             break;

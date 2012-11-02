@@ -1,0 +1,8 @@
+# example/scheme/Makefile -- Makefile for the MPS Scheme example
+#
+# $Id: //info.ravenbrook.com/project/mps/master/example/scheme/Makefile.in#1 $
+
+CFLAGS = @CFLAGS@
+
+scheme: scheme.c
+	$(CC) $(CFLAGS) -o scheme -I ../../code scheme.c ../../code/mps.c

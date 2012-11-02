@@ -1,6 +1,6 @@
 /* shield.c: SHIELD IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/shield.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/shield.c#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * See: idea.shield, design.mps.shield.
@@ -74,7 +74,7 @@
 
 #include "mpm.h"
 
-SRCID(shield, "$Id: //info.ravenbrook.com/project/mps/master/code/shield.c#10 $");
+SRCID(shield, "$Id: //info.ravenbrook.com/project/mps/master/code/shield.c#11 $");
 
 
 void (ShieldSuspend)(Arena arena)
@@ -267,6 +267,33 @@ void (ShieldLeave)(Arena arena)
   arena->insideShield = FALSE;
 }
 
+
+/* ShieldExpose -- allow the MPS access to a segment while denying the mutator
+ *
+ * The MPS currently does not collect concurrently, however the only thing
+ * that makes it not-concurrent is a critical point in the Shield
+ * abstraction where the MPS seeks to gain privileged access to memory
+ * (usually in order to scan it for GC). The critical point is where
+ * ShieldExpose in shield.c has to call ShieldSuspend to preserve the
+ * shield invariants. This is the only point in the MPS that prevents
+ * concurrency, and the rest of the MPS is designed to support it.
+ *
+ * The restriction could be removed if either:
+ * 
+ *  * the MPS could use a different set of protections to the mutator
+ *   program
+ * 
+ *  * the mutator program uses a software barrier
+ * 
+ * The first one is tricky, and the second one just hasn't come up in any
+ * implementation we've been asked to make yet. Given a VM, it could
+ * happen, and the MPS would be concurrent.
+ * 
+ * So, I believe there's nothing fundamentally non-concurrent about the
+ * MPS design. It's kind of waiting to happen.
+ *
+ * (Originally written at <http://news.ycombinator.com/item?id=4524036>.)
+ */
 
 void (ShieldExpose)(Arena arena, Seg seg)
 {

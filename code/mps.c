@@ -1,6 +1,6 @@
 /* mps.c: MEMORY POOL SYSTEM ALL-IN-ONE TRANSLATION UNIT
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mps.c#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mps.c#14 $
  * Copyright (C) 2012 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This file can be compiled to create the complete MPS library in

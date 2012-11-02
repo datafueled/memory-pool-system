@@ -1,6 +1,6 @@
 /* mpstd.h: RAVENBROOK MEMORY POOL SYSTEM TARGET DETECTION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpstd.h#24 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpstd.h#25 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -252,7 +252,7 @@
 
 
 #else
-#error "Unable to detect target platform"
+#error "The MPS Kit does not have a configuration for this platform out of the box; see manual/build.txt"
 #endif
 
 

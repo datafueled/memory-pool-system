@@ -1,6 +1,6 @@
 /* poolamc.c: AUTOMATIC MOSTLY-COPYING MEMORY POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#39 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#43 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -12,7 +12,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#39 $");
+SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#43 $");
 
 /* PType enumeration -- distinguishes AMCGen and AMCNailboard */
 enum {AMCPTypeGen = 1, AMCPTypeNailboard};
@@ -943,6 +943,16 @@ static Res amcInitComm(Pool pool, RankSet rankSet, va_list arg)
   Index i;
   size_t genArraySize;
   size_t genCount;
+  
+  /* Suppress a warning about this structure not being used when there
+     are no statistics.  Note that simply making the declaration conditional
+     does not work, because we carefully reference expressions inside
+     STATISTICS to prevent such warnings on parameters and local variables.
+     It's just that clang 4.0 on Mac OS X does some sort of extra check
+     that produces a special warnings about static variables. */
+#if !defined(STATISTICS)
+  UNUSED(pageretstruct_Zero);
+#endif
 
   AVER(pool != NULL);
 
@@ -1434,9 +1444,7 @@ static Res amcScanNailedOnce(Bool *totalReturn, Bool *moreReturn,
   Bool total = TRUE;
   Size bytesScanned = 0;
 
-  UNUSED(amc); /* Actually only unused when telemetry is off. @@@@ */
-
-  EVENT3(AMCScanBegin, amc, seg, ss); /* @@@@ use own event */
+  EVENT3(AMCScanBegin, amc, seg, ss); /* TODO: consider using own event */
 
   format = pool->format;
   amcSegNailboard(seg)->newMarks = FALSE;
@@ -1491,7 +1499,7 @@ static Res amcScanNailedOnce(Bool *totalReturn, Bool *moreReturn,
   AVER(p == limit);
 
 returnGood:
-  EVENT3(AMCScanEnd, amc, seg, ss); /* @@@@ use own event */
+  EVENT3(AMCScanEnd, amc, seg, ss); /* TODO: consider using own event */
 
   AVER(bytesScanned <= SegSize(seg));
   ss->scannedSize += bytesScanned;
@@ -1664,8 +1672,7 @@ static void amcFixInPlace(Pool pool, Seg seg, ScanState ss, Ref *refIO)
     return;
   }
   SegSetNailed(seg, TraceSetUnion(SegNailed(seg), ss->traces));
-  if(SegRankSet(seg) != RankSetEMPTY)
-    SegSetGrey(seg, TraceSetUnion(SegGrey(seg), ss->traces));
+  SegSetGrey(seg, TraceSetUnion(SegGrey(seg), ss->traces));
 }
 
 
@@ -1700,7 +1707,9 @@ static Res AMCFixEmergency(Pool pool, ScanState ss, Seg seg,
   ShieldCover(arena, seg);
   if(newRef != (Addr)0) {
     /* Object has been forwarded already, so snap-out pointer. */
-    /* Useful weak pointer semantics not implemented. @@@@ */
+    /* TODO: Implement weak pointer semantics in emergency fixing.  This
+       would be a good idea since we really want to reclaim as much as
+       possible in an emergency. */
     *refIO = newRef;
     return ResOK;
   }
@@ -1727,9 +1736,6 @@ Res AMCFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
   Buffer buffer;       /* buffer to allocate new copy into */
   amcGen gen;          /* generation of old copy of object */
   TraceSet grey;       /* greyness of object being relocated */
-  TraceSet toGrey;     /* greyness of object's destination */
-  RefSet summary;      /* summary of object being relocated */
-  RefSet toSummary;    /* summary of object's destination */
   Seg toSeg;           /* segment to which object is being relocated */
 
   /* <design/trace/#fix.noaver> */
@@ -1786,9 +1792,7 @@ Res AMCFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
       /* Segment only needs greying if there are new traces for */
       /* which we are nailing. */
       if(!TraceSetSub(ss->traces, SegNailed(seg))) {
-        if(SegRankSet(seg) != RankSetEMPTY) {
-          SegSetGrey(seg, TraceSetUnion(SegGrey(seg), ss->traces));
-        }
+        SegSetGrey(seg, TraceSetUnion(SegGrey(seg), ss->traces));
         SegSetNailed(seg, TraceSetUnion(SegNailed(seg), ss->traces));
       }
       res = ResOK;
@@ -1823,16 +1827,8 @@ Res AMCFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
       /* Since we're moving an object from one segment to another, */
       /* union the greyness and the summaries together. */
       grey = TraceSetUnion(ss->traces, SegGrey(seg));
-      toGrey = SegGrey(toSeg);
-      if(TraceSetDiff(grey, toGrey) != TraceSetEMPTY
-          && SegRankSet(seg) != RankSetEMPTY) {
-        SegSetGrey(toSeg, TraceSetUnion(toGrey, grey));
-      }
-      summary = SegSummary(seg);
-      toSummary = SegSummary(toSeg);
-      if(RefSetDiff(summary, toSummary) != RefSetEMPTY) {
-        SegSetSummary(toSeg, RefSetUnion(toSummary, summary));
-      }
+      SegSetGrey(toSeg, TraceSetUnion(SegGrey(toSeg), grey));
+      SegSetSummary(toSeg, RefSetUnion(SegSummary(toSeg), SegSummary(seg)));
 
       /* <design/trace/#fix.copy> */
       (void)AddrCopy(newRef, ref, length);  /* .exposed.seg */
@@ -1877,9 +1873,6 @@ static Res AMCHeaderFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
   Buffer buffer;       /* buffer to allocate new copy into */
   amcGen gen;          /* generation of old copy of object */
   TraceSet grey;       /* greyness of object being relocated */
-  TraceSet toGrey;     /* greyness of object's destination */
-  RefSet summary;      /* summary of object being relocated */
-  RefSet toSummary;    /* summary of object's destination */
   Seg toSeg;           /* segment to which object is being relocated */
 
   /* <design/trace/#fix.noaver> */
@@ -1937,8 +1930,7 @@ static Res AMCHeaderFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
       /* Segment only needs greying if there are new traces for */
       /* which we are nailing. */
       if(!TraceSetSub(ss->traces, SegNailed(seg))) {
-        if(SegRankSet(seg) != RankSetEMPTY)
-          SegSetGrey(seg, TraceSetUnion(SegGrey(seg), ss->traces));
+        SegSetGrey(seg, TraceSetUnion(SegGrey(seg), ss->traces));
         SegSetNailed(seg, TraceSetUnion(SegNailed(seg), ss->traces));
       }
       res = ResOK;
@@ -1976,14 +1968,8 @@ static Res AMCHeaderFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
       /* Since we're moving an object from one segment to another, */
       /* union the greyness and the summaries together. */
       grey = TraceSetUnion(ss->traces, SegGrey(seg));
-      toGrey = SegGrey(toSeg);
-      if(TraceSetDiff(grey, toGrey) != TraceSetEMPTY
-          && SegRankSet(seg) != RankSetEMPTY)
-        SegSetGrey(toSeg, TraceSetUnion(toGrey, grey));
-      summary = SegSummary(seg);
-      toSummary = SegSummary(toSeg);
-      if(RefSetDiff(summary, toSummary) != RefSetEMPTY)
-        SegSetSummary(toSeg, RefSetUnion(toSummary, summary));
+      SegSetGrey(toSeg, TraceSetUnion(SegGrey(toSeg), grey));
+      SegSetSummary(toSeg, RefSetUnion(SegSummary(toSeg), SegSummary(seg)));
 
       /* <design/trace/#fix.copy> */
       (void)AddrCopy(newBase, AddrSub(ref, headerSize), length);  /* .exposed.seg */

@@ -1,6 +1,6 @@
 /* buffer.c: ALLOCATION BUFFER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is (part of) the implementation of allocation buffers.
@@ -26,7 +26,7 @@
 
 #include "mpm.h"
 
-SRCID(buffer, "$Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#14 $");
+SRCID(buffer, "$Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#15 $");
 
 
 /* forward declarations */
@@ -874,10 +874,6 @@ Bool BufferTrip(Buffer buffer, Addr p, Size size)
       clientClass = (Addr)0;
     }
     EVENT4(BufferCommit, buffer, p, size, clientClass);
-    /* Of course, it's not _really_ unused unless you're not */
-    /* using telemetry.  This is a HACK @@@@.  It should be */
-    /* removed when telemetry is fixed to use its arguments. */
-    UNUSED(clientClass);
   }
   return TRUE;
 }

@@ -1,6 +1,6 @@
 /* zmess.c: Message test
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/zmess.c#4 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/zmess.c#5 $
  * Copyright (c) 2008 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -279,7 +279,7 @@ static void testscriptC(mps_arena_t arena, const char *script)
         return;
       }
     }
-    Insist(pmNext - am < NELEMS(am));
+    Insist(am <= pmNext && pmNext < am + NELEMS(am));
     script++;
   }
 }

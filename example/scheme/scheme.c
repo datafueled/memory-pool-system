@@ -1,10 +1,10 @@
 /* scheme.c -- SCHEME INTERPRETER EXAMPLE FOR THE MEMORY POOL SYSTEM
  *
- * $Id: //info.ravenbrook.com/project/mps/master/example/scheme/scheme.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/master/example/scheme/scheme.c#6 $
  * Copyright (c) 2001-2012 Ravenbrook Limited.  See end of file for license.
  *
  * This is a toy interpreter for a subset of the Scheme programming
- * language <http://en.wikipedia.org/wiki/Scheme_%28programming_language%29)>.
+ * language <http://en.wikipedia.org/wiki/Scheme_%28programming_language%29>.
  * It is by no means the best or even the right way to implement Scheme,
  * but it serves the purpose of showing how the Memory Pool System can be
  * used as part of a programming language run-time system.
@@ -41,7 +41,6 @@
  * - Quasiquote implementation is messy.
  * - Lots of library.
  * - \#foo unsatisfactory in read and print
- * - tail recursion (pass current function to eval)
  */
 
 #include <stdio.h>
@@ -284,6 +283,7 @@ static obj_t obj_error;		/* error indicator */
 static obj_t obj_true;		/* #t, boolean true */
 static obj_t obj_false;		/* #f, boolean false */
 static obj_t obj_undefined;	/* undefined result indicator */
+static obj_t obj_tail;          /* tail recursion indicator */
 
 
 /* predefined symbols
@@ -308,7 +308,7 @@ static obj_t obj_unquote_splic;	/* "unquote-splicing" symbol */
  * jmp_buf to which the "error" function longjmps if there is
  * any kind of error during evaluation.  It can be set up by
  * any enclosing function that wants to catch errors.  There
- * is a default error handler in main, in the read-eval-print
+ * is a default error handler in `start`, in the read-eval-print
  * loop.  The error function also writes an error message
  * into "error_message" before longjmping, and this can be
  * displayed to the user when catching the error.
@@ -317,7 +317,7 @@ static obj_t obj_unquote_splic;	/* "unquote-splicing" symbol */
  *  be decoded by enclosing code.]
  */
 
-static jmp_buf *error_handler;
+static jmp_buf *error_handler = NULL;
 static char error_message[MSGMAX+1];
 
 
@@ -363,13 +363,17 @@ static void error(char *format, ...)
 {
   va_list args;
 
-  assert(error_handler != NULL);
-
   va_start(args, format);
-  vsprintf(error_message, format, args);
+  vsnprintf(error_message, sizeof error_message, format, args);
   va_end(args);
 
-  longjmp(*error_handler, 1);
+  if (error_handler) {
+    longjmp(*error_handler, 1);
+  } else {
+    fprintf(stderr, "Fatal error during initialization: %s\n",
+            error_message);
+    abort();
+  }
 }
 
 
@@ -1110,40 +1114,53 @@ static obj_t eval(obj_t env, obj_t op_env, obj_t exp);
 
 static obj_t eval(obj_t env, obj_t op_env, obj_t exp)
 {
-  /* self-evaluating */
-  if(TYPE(exp) == TYPE_INTEGER ||
-     (TYPE(exp) == TYPE_SPECIAL && exp != obj_empty) ||
-     TYPE(exp) == TYPE_STRING ||
-     TYPE(exp) == TYPE_CHARACTER)
-    return exp;
-
-  /* symbol lookup */
-  if(TYPE(exp) == TYPE_SYMBOL) {
-    obj_t binding = lookup(env, exp);
-    if(binding == obj_undefined)
-      error("eval: unbound symbol \"%s\"", exp->symbol.string);
-    return CDR(binding);
-  }
-  
-  /* apply operator or function */
-  if(TYPE(exp) == TYPE_PAIR) {
+  for(;;) {
     obj_t operator;
+    obj_t result;
+
+    /* self-evaluating */
+    if(TYPE(exp) == TYPE_INTEGER ||
+       (TYPE(exp) == TYPE_SPECIAL && exp != obj_empty) ||
+       TYPE(exp) == TYPE_STRING ||
+       TYPE(exp) == TYPE_CHARACTER)
+      return exp;
+  
+    /* symbol lookup */
+    if(TYPE(exp) == TYPE_SYMBOL) {
+      obj_t binding = lookup(env, exp);
+      if(binding == obj_undefined)
+        error("eval: unbound symbol \"%s\"", exp->symbol.string);
+      return CDR(binding);
+    }
+    
+    if(TYPE(exp) != TYPE_PAIR) {
+      error("eval: unknown syntax");
+      return obj_error;
+    }
+
+    /* apply operator or function */
     if(TYPE(CAR(exp)) == TYPE_SYMBOL) {
       obj_t binding = lookup(op_env, CAR(exp));
       if(binding != obj_undefined) {
         operator = CDR(binding);
         assert(TYPE(operator) == TYPE_OPERATOR);
-        return (*operator->operator.entry)(env, op_env, operator, CDR(exp));
+        result = (*operator->operator.entry)(env, op_env, operator, CDR(exp));
+        goto found;
       }
     }
     operator = eval(env, op_env, CAR(exp));
     unless(TYPE(operator) == TYPE_OPERATOR)
       error("eval: application of non-function");
-    return (*operator->operator.entry)(env, op_env, operator, CDR(exp));
+    result = (*operator->operator.entry)(env, op_env, operator, CDR(exp));
+
+  found:
+    if (!(TYPE(result) == TYPE_PAIR && CAR(result) == obj_tail))
+      return result;
+
+    env = CADR(result);
+    op_env = CADDR(result);
+    exp = CAR(CDDDR(result));
   }
-  
-  error("eval: unknown syntax");
-  return obj_error;
 }
 
 
@@ -1241,6 +1258,42 @@ static void eval_args_rest(char *name, obj_t env, obj_t op_env,
 }
 
 
+/* eval_tail -- return an object that will cause eval to loop
+ *
+ * Rather than calling `eval` an operator can return a special object that
+ * causes a calling `eval` to loop, avoiding using up a C stack frame.
+ * This implements tail recursion (in a simple way).
+ */
+
+static obj_t eval_tail(obj_t env, obj_t op_env, obj_t exp)
+{
+  return make_pair(obj_tail,
+                   make_pair(env,
+                             make_pair(op_env,
+                                       make_pair(exp,
+                                                 obj_empty))));
+}
+
+
+/* eval_body -- evaluate a list of expressions, returning last result
+ *
+ * This is used for the bodies of forms such as let, begin, etc. where
+ * a list of expressions is allowed.
+ */
+
+static obj_t eval_body(obj_t env, obj_t op_env, obj_t operator, obj_t body)
+{
+  for (;;) {
+    if (TYPE(body) != TYPE_PAIR)
+      error("%s: illegal expression list", operator->operator.name);
+    if (CDR(body) == obj_empty)
+      return eval_tail(env, op_env, CAR(body));
+    (void)eval(env, op_env, CAR(body));
+    body = CDR(body);
+  }
+}
+
+
 /* BUILT-IN OPERATORS */
 
 
@@ -1287,7 +1340,7 @@ static obj_t entry_interpret(obj_t env, obj_t op_env, obj_t operator, obj_t oper
   if(arguments != obj_empty)
     error("eval: function applied to too few arguments");
 
-  return eval(fun_env, fun_op_env, operator->operator.body);
+  return eval_tail(fun_env, fun_op_env, operator->operator.body);
 }
 
 
@@ -1356,9 +1409,9 @@ static obj_t entry_if(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
   test = eval(env, op_env, CAR(operands));
   /* Anything which is not #f counts as true [R4RS 6.1]. */
   if(test != obj_false)
-    return eval(env, op_env, CADR(operands));
+    return eval_tail(env, op_env, CADR(operands));
   if(TYPE(CDDR(operands)) == TYPE_PAIR)
-    return eval(env, op_env, CADDR(operands));
+    return eval_tail(env, op_env, CADDR(operands));
   return obj_undefined;
 }
 
@@ -1385,14 +1438,9 @@ static obj_t entry_cond(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
     } else
       result = eval(env, op_env, CAR(clause));
     if(result != obj_false) {
-      for(;;) {
-        clause = CDR(clause);
-        if(TYPE(clause) != TYPE_PAIR) break;
-        result = eval(env, op_env, CAR(clause));
-      }
-      if(clause != obj_empty)
-        error("%s: illegal clause syntax", operator->operator.name);
-      return result;
+      if (CDR(clause) == obj_empty)
+        return result;
+      return eval_body(env, op_env, operator, CDR(clause));
     }
     operands = CDR(operands);
   }
@@ -1404,15 +1452,18 @@ static obj_t entry_cond(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 
 static obj_t entry_and(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 {
-  while(TYPE(operands) == TYPE_PAIR) {
-    obj_t test = eval(env, op_env, CAR(operands));
-    if(test == obj_false)
-      return obj_false;
+  obj_t test;
+  if (operands == obj_empty)
+    return obj_true;
+  do {
+    if (TYPE(operands) != TYPE_PAIR)
+      error("%s: illegal syntax", operator->operator.name);
+    if (CDR(operands) == obj_empty)
+      return eval_tail(env, op_env, CAR(operands));
+    test = eval(env, op_env, CAR(operands));
     operands = CDR(operands);
-  }
-  if(operands != obj_empty)
-    error("%s: illegal syntax", operator->operator.name);
-  return obj_true;
+  } while (test != obj_false);
+  return test;
 }
 
 
@@ -1420,15 +1471,18 @@ static obj_t entry_and(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 
 static obj_t entry_or(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 {
-  while(TYPE(operands) == TYPE_PAIR) {
-    obj_t test = eval(env, op_env, CAR(operands));
-    if(test != obj_false)
-      return obj_true;
+  obj_t test;
+  if (operands == obj_empty)
+    return obj_false;
+  do {
+    if (TYPE(operands) != TYPE_PAIR)
+      error("%s: illegal syntax", operator->operator.name);
+    if (CDR(operands) == obj_empty)
+      return eval_tail(env, op_env, CAR(operands));
+    test = eval(env, op_env, CAR(operands));
     operands = CDR(operands);
-  }
-  if(operands != obj_empty)
-    error("%s: illegal syntax", operator->operator.name);
-  return obj_false;
+  } while (test == obj_false);
+  return test;
 }
 
 
@@ -1437,7 +1491,7 @@ static obj_t entry_or(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 
 static obj_t entry_let(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 {
-  obj_t inner_env, bindings, result;
+  obj_t inner_env, bindings;
   unless(TYPE(operands) == TYPE_PAIR &&
          TYPE(CDR(operands)) == TYPE_PAIR)
     error("%s: illegal syntax", operator->operator.name);
@@ -1455,14 +1509,7 @@ static obj_t entry_let(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
   }
   if(bindings != obj_empty)
     error("%s: illegal bindings list", operator->operator.name);
-  operands = CDR(operands);
-  while(TYPE(operands) == TYPE_PAIR) {
-    result = eval(inner_env, op_env, CAR(operands));
-    operands = CDR(operands);
-  }
-  if(operands != obj_empty)
-    error("%s: illegal expression list", operator->operator.name);
-  return result;
+  return eval_body(inner_env, op_env, operator, CDR(operands));
 }
 
 
@@ -1471,7 +1518,7 @@ static obj_t entry_let(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 
 static obj_t entry_let_star(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 {
-  obj_t inner_env, bindings, result;
+  obj_t inner_env, bindings;
   unless(TYPE(operands) == TYPE_PAIR &&
          TYPE(CDR(operands)) == TYPE_PAIR)
     error("%s: illegal syntax", operator->operator.name);
@@ -1489,14 +1536,7 @@ static obj_t entry_let_star(obj_t env, obj_t op_env, obj_t operator, obj_t opera
   }
   if(bindings != obj_empty)
     error("%s: illegal bindings list", operator->operator.name);
-  operands = CDR(operands);
-  while(TYPE(operands) == TYPE_PAIR) {
-    result = eval(inner_env, op_env, CAR(operands));
-    operands = CDR(operands);
-  }
-  if(operands != obj_empty)
-    error("%s: illegal expression list", operator->operator.name);
-  return result;
+  return eval_body(inner_env, op_env, operator, CDR(operands));
 }
 
 
@@ -1505,7 +1545,7 @@ static obj_t entry_let_star(obj_t env, obj_t op_env, obj_t operator, obj_t opera
 
 static obj_t entry_letrec(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 {
-  obj_t inner_env, bindings, result;
+  obj_t inner_env, bindings;
   unless(TYPE(operands) == TYPE_PAIR &&
          TYPE(CDR(operands)) == TYPE_PAIR)
     error("%s: illegal syntax", operator->operator.name);
@@ -1529,14 +1569,7 @@ static obj_t entry_letrec(obj_t env, obj_t op_env, obj_t operator, obj_t operand
     define(inner_env, CAR(binding), eval(inner_env, op_env, CADR(binding)));
     bindings = CDR(bindings);
   }
-  operands = CDR(operands);
-  while(TYPE(operands) == TYPE_PAIR) {
-    result = eval(inner_env, op_env, CAR(operands));
-    operands = CDR(operands);
-  }
-  if(operands != obj_empty)
-    error("%s: illegal expression list", operator->operator.name);
-  return result;
+  return eval_body(inner_env, op_env, operator, CDR(operands));
 }
 
 
@@ -1699,14 +1732,7 @@ static obj_t entry_lambda(obj_t env, obj_t op_env, obj_t operator, obj_t operand
 
 static obj_t entry_begin(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 {
-  obj_t result;
-  do {
-    unless(TYPE(operands) == TYPE_PAIR)
-      error("%s: illegal syntax", operator->operator.name);
-    result = eval(env, op_env, CAR(operands));
-    operands = CDR(operands);
-  } while(operands != obj_empty);
-  return result;
+  return eval_body(env, op_env, operator, operands);
 }
 
 
@@ -2052,6 +2078,48 @@ static obj_t entry_divide(obj_t env, obj_t op_env, obj_t operator, obj_t operand
 }
 
 
+static obj_t entry_lessthan(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
+{
+  obj_t arg, args;
+  long last;
+  eval_args_rest(operator->operator.name, env, op_env, operands, &args, 1, &arg);
+  unless(TYPE(arg) == TYPE_INTEGER)
+    error("%s: first argument must be an integer", operator->operator.name);
+  last = arg->integer.integer;
+  while(TYPE(args) == TYPE_PAIR) {
+    unless(TYPE(CAR(args)) == TYPE_INTEGER)
+      error("%s: arguments must be integers", operator->operator.name);
+    if (last >= CAR(args)->integer.integer)
+      return obj_false;
+    last = CAR(args)->integer.integer;
+    args = CDR(args);
+  }
+  assert(args == obj_empty); /* eval_args_rest always returns a list */
+  return obj_true;
+}
+
+
+static obj_t entry_greaterthan(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
+{
+  obj_t arg, args;
+  long last;
+  eval_args_rest(operator->operator.name, env, op_env, operands, &args, 1, &arg);
+  unless(TYPE(arg) == TYPE_INTEGER)
+    error("%s: first argument must be an integer", operator->operator.name);
+  last = arg->integer.integer;
+  while(TYPE(args) == TYPE_PAIR) {
+    unless(TYPE(CAR(args)) == TYPE_INTEGER)
+      error("%s: arguments must be integers", operator->operator.name);
+    if (last <= CAR(args)->integer.integer)
+      return obj_false;
+    last = CAR(args)->integer.integer;
+    args = CDR(args);
+  }
+  assert(args == obj_empty); /* eval_args_rest always returns a list */
+  return obj_true;
+}
+
+
 static obj_t entry_reverse(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 {
   obj_t arg, result;
@@ -2293,7 +2361,8 @@ static struct {char *name; obj_t *varp;} sptab[] = {
   {"#[error]", &obj_error},
   {"#t", &obj_true},
   {"#f", &obj_false},
-  {"#[undefined]", &obj_undefined}
+  {"#[undefined]", &obj_undefined},
+  {"#[tail]", &obj_tail}
 };
 
 
@@ -2359,6 +2428,8 @@ static struct {char *name; entry_t entry;} funtab[] = {
   {"-", entry_subtract},
   {"*", entry_multiply},
   {"/", entry_divide},
+  {"<", entry_lessthan},
+  {">", entry_greaterthan},
   {"reverse", entry_reverse},
   {"the-environment", entry_environment},
   {"open-input-file", entry_open_in},
@@ -2748,7 +2819,11 @@ static void *start(void *p, size_t s)
   mps_res_t res;
   mps_root_t globals_root;
   
-  puts("MPS Toy Scheme Example");
+  puts("MPS Toy Scheme Example\n"
+       "The prompt shows total allocated bytes and number of collections.\n"
+       "Try (vector-length (make-vector 100000 1)) to see the MPS in action.\n"
+       "You can force a complete garbage collection with (gc).\n"
+       "If you recurse too much the interpreter may crash from using too much C stack.");
   
   total = (size_t)0;
   

@@ -1,6 +1,6 @@
 /* mpmss.c: MPM STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpmss.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpmss.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */
@@ -15,7 +15,9 @@
 #include <stdarg.h>
 
 
-/* @@@@ Hack due to missing mpscmfs.h */
+/* TODO: Decide whether we should support the MPS pool class externally,
+   create mpscmfs.h, and replace this extern with proper use of its
+   interface. */
 extern mps_class_t PoolClassMFS(void);
 
 
@@ -59,7 +61,7 @@ static mps_res_t stress(mps_class_t class, size_t (*size)(int i),
   for (k=0; k<testLOOPS; ++k) {
     /* shuffle all the objects */
     for (i=0; i<testSetSIZE; ++i) {
-      int j = rnd()%(testSetSIZE-i);
+      unsigned j = rnd()%(unsigned)(testSetSIZE-i);
       void *tp;
       size_t ts;
      

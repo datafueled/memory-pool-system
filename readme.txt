@@ -18,8 +18,9 @@ garbage collections.  It also includes a library of memory pool classes
 implementing specialized memory management policies.
 
 The MPS has been in development since 1994 and deployed in successful
-commercial products since 1997.  Bugs are almost unknown.  It is under
-continuous development and support by [Ravenbrook](http://www.ravenbrook.com/).
+commercial products since 1997.  Bugs are almost unknown in production. 
+It is under continuous development and support by
+[Ravenbrook](http://www.ravenbrook.com/).
 
 The MPS is distributed under an open source license (see
 [license.txt](license.txt)). The license is designed to make it possible
@@ -164,4 +165,4 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-$Id: //info.ravenbrook.com/project/mps/master/readme.txt#33 $
+$Id: //info.ravenbrook.com/project/mps/master/readme.txt#34 $

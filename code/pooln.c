@@ -1,13 +1,13 @@
 /* pooln.c: NULL POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "pooln.h"
 #include "mpm.h"
 
-SRCID(pooln, "$Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#11 $");
+SRCID(pooln, "$Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#12 $");
 
 
 /* PoolNStruct -- the pool structure */
@@ -141,7 +141,7 @@ static Res NDescribe(Pool pool, mps_lib_FILE *stream)
   poolN = PoolPoolN(pool);
   AVERT(PoolN, poolN);
 
-  UNUSED(stream); /* @@@@ should output something here */
+  UNUSED(stream); /* TODO: should output something here */
 
   return ResOK;
 }

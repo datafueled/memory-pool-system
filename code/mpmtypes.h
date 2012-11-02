@@ -1,6 +1,6 @@
 /* mpmtypes.h: MEMORY POOL MANAGER TYPES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#28 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#29 $
  * Copyright (c) 2001-2002, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2001 Global Graphics Software.
  *
@@ -103,6 +103,7 @@ typedef struct PoolDebugMixinStruct *PoolDebugMixin;
 typedef struct AllocPatternStruct *AllocPattern;
 typedef struct AllocFrameStruct *AllocFrame; /* <design/alloc-frame/> */
 typedef struct ReservoirStruct *Reservoir;   /* <design/reservoir/> */
+typedef struct StackContextStruct *StackContext;
 
 
 /* Arena*Method -- see <code/mpmst.h#ArenaClassStruct> */
