@@ -1,6 +1,6 @@
 /* mpstd.h: RAVENBROOK MEMORY POOL SYSTEM TARGET DETECTION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpstd.h#25 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpstd.h#26 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -97,7 +97,6 @@
 #define MPS_ARCH_I6
 #define MPS_BUILD_MV
 #define MPS_T_WORD      unsigned __int64
-#define MPS_T_LONGEST   __int64
 #define MPS_T_ULONGEST  unsigned __int64
 #define MPS_WORD_WIDTH  64
 #define MPS_WORD_SHIFT  6

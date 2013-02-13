@@ -1,6 +1,6 @@
 # fri3gc.gmk: BUILD FOR FreeBSD/i386/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/fri3gc.gmk#3 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/fri3gc.gmk#4 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = fri3gc
@@ -9,12 +9,13 @@ MPMPF = lockix.c thix.c pthrdext.c vmix.c \
         protix.c protsgix.c prmcan.c prmci3fr.c ssixi3.c span.c
 
 LIBS = -lm -pthread
+LINKFLAGS = -L/usr/local/lib
 
 include gc.gmk
 
 # FIXME: We pun types through the MPS interface, setting off this warning.
 # Can we avoid this?  The puns might indeed be dangerous.
-CFLAGSCOMPILER := $(CFLAGSCOMPILER) -Wno-strict-aliasing
+CFLAGSCOMPILER := $(CFLAGSCOMPILER) -Wno-strict-aliasing -I/usr/local/include
 
 CC = cc
 

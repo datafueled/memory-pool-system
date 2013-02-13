@@ -1,6 +1,6 @@
 # commpre.nmk: FIRST COMMON FRAGMENT FOR PLATFORMS USING MV AND NMAKE
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/commpre.nmk#19 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/commpre.nmk#20 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # DESCRIPTION
@@ -95,7 +95,9 @@ CRTFLAGSCOOL = /MTd
 LINKFLAGSHOT = libcmt.lib
 LINKFLAGSCOOL = libcmtd.lib
 
+CFLAGSSQLPRE = /nologo $(PFMDEFS)
 CFLAGSCOMMONPRE = /nologo /W4 /WX $(PFMDEFS) $(CFLAGSTARGETPRE)
+CFLAGSSQLPOST =
 CFLAGSCOMMONPOST = $(CFLAGSTARGETPOST)
 
 # Flags for use in the variety combinations

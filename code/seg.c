@@ -1,6 +1,6 @@
 /* seg.c: SEGMENTS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/seg.c#18 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/seg.c#19 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: The design for this module is <design/seg/>.
@@ -29,7 +29,7 @@
 #include "tract.h"
 #include "mpm.h"
 
-SRCID(seg, "$Id: //info.ravenbrook.com/project/mps/master/code/seg.c#18 $");
+SRCID(seg, "$Id: //info.ravenbrook.com/project/mps/master/code/seg.c#19 $");
 
 
 /* SegGCSeg -- convert generic Seg to GCSeg */
@@ -267,7 +267,7 @@ void SegSetGrey(Seg seg, TraceSet grey)
 {
   AVERT(Seg, seg);
   AVER(TraceSetCheck(grey));
-  AVER(SegRankSet(seg) != RankSetEMPTY);
+  AVER(grey == TraceSetEMPTY || SegRankSet(seg) != RankSetEMPTY);
 
   /* Don't dispatch to the class method if there's no actual change in
      greyness, or if the segment doesn't contain any references. */

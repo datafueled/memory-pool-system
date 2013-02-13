@@ -1,6 +1,6 @@
 /* buffer.c: ALLOCATION BUFFER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#15 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is (part of) the implementation of allocation buffers.
@@ -26,7 +26,7 @@
 
 #include "mpm.h"
 
-SRCID(buffer, "$Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#15 $");
+SRCID(buffer, "$Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#16 $");
 
 
 /* forward declarations */
@@ -1494,8 +1494,6 @@ DEFINE_CLASS(SegBufClass, class)
 
 static Res rankBufInit (Buffer buffer, Pool pool, va_list args)
 {
-  /* Assumes pun compatibility between Rank and mps_rank_t */
-  /* Which is checked by mpsi_check in <code/mpsi.c> */
   Rank rank = va_arg(args, Rank);
   BufferClass super;
   Res res;

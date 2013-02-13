@@ -1,6 +1,6 @@
 /* mv2test.c: POOLMVT STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mv2test.c#16 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mv2test.c#17 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -10,7 +10,7 @@
 #include "mpstd.h"
 #include <time.h>
 
-#include "mpscmv2.h"
+#include "mpscmvt.h"
 #include "mps.h"
 
 typedef MPS_T_WORD mps_count_t;  /* machine word (target dep.) */

@@ -1,6 +1,6 @@
 # configure.ac -- autoconf configuration for the MPS    -*- Autoconf -*-
 #
-# $Id: //info.ravenbrook.com/project/mps/master/configure.ac#11 $
+# $Id: //info.ravenbrook.com/project/mps/master/configure.ac#12 $
 # Copyright (C) 2012 Ravenbrook Limited.  See end of file for license.
 #
 # YOU DON'T NEED AUTOCONF TO BUILD THE MPS
@@ -36,6 +36,9 @@ CFLAGS_GC="-ansi -pedantic -Wall -Werror -Wpointer-arith \
 	-Winline -Waggregate-return -Wnested-externs \
 	-Wcast-qual -Wshadow -Wstrict-aliasing=2 -O -g3"
 CFLAGS_LL="$CFLAGS_GC -Wno-extended-offsetof"
+
+EXTRA_TARGETS="mpseventcnv mpseventtxt"
+AC_CHECK_HEADER([sqlite3.h], [EXTRA_TARGETS+=" mpseventsql"])
 
 AC_CANONICAL_HOST
 AC_MSG_CHECKING([target platform])
@@ -92,7 +95,10 @@ AC_SUBST(MPS_TARGET_NAME)
 AC_SUBST(BUILD_TARGET)
 AC_SUBST(CLEAN_TARGET)
 AC_SUBST(INSTALL_TARGET)
+AC_SUBST(EXTRA_TARGETS)
 AC_SUBST(CFLAGS)
+AC_SUBST(LDFLAGS)
+AC_SUBST(CPPFLAGS)
 AC_CONFIG_FILES(Makefile example/scheme/Makefile)
 
 AC_OUTPUT

@@ -1,6 +1,6 @@
 /* mpscamc.h: MEMORY POOL SYSTEM CLASS "AMC"
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpscamc.h#8 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpscamc.h#9 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -12,8 +12,8 @@
 extern mps_class_t mps_class_amc(void);
 extern mps_class_t mps_class_amcz(void);
 
-extern void mps_amc_apply(mps_pool_t,
-                          void (*)(mps_addr_t, void *, size_t),
+typedef void (*mps_amc_apply_stepper_t)(mps_addr_t, void *, size_t);
+extern void mps_amc_apply(mps_pool_t, mps_amc_apply_stepper_t,
                           void *, size_t);
 
 #endif /* mpscamc_h */

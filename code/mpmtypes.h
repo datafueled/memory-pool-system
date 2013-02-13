@@ -1,6 +1,6 @@
 /* mpmtypes.h: MEMORY POOL MANAGER TYPES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#29 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#30 $
  * Copyright (c) 2001-2002, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2001 Global Graphics Software.
  *
@@ -41,7 +41,7 @@ typedef unsigned Shift;                 /* <design/type/#shift> */
 typedef unsigned Serial;                /* <design/type/#serial> */
 typedef Addr Ref;                       /* <design/type/#ref> */
 typedef void *Pointer;                  /* <design/type/#pointer> */
-typedef unsigned long Clock;            /* processor time */
+typedef Word Clock;                     /* processor time */
 typedef MPS_T_ULONGEST ULongest;        /* <design/type/#ulongest> */
 
 typedef Word RefSet;                    /* design.mps.refset */

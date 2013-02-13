@@ -1,6 +1,6 @@
 /* poolmv2.c: MANUAL VARIABLE-SIZED TEMPORAL POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv2.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv2.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: A manual-variable pool designed to take advantage of
@@ -11,12 +11,12 @@
 
 #include "mpm.h"
 #include "poolmv2.h"
-#include "mpscmv2.h"
+#include "mpscmvt.h"
 #include "abq.h"
 #include "cbs.h"
 #include "meter.h"
 
-SRCID(poolmv2, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmv2.c#12 $");
+SRCID(poolmv2, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmv2.c#13 $");
 
 
 /* Signatures */
