@@ -41,7 +41,7 @@
 SRCID(thix, "$Id: //info.ravenbrook.com/project/mps/master/code/thix.c#2 $");
 
 
-/* ThreadStruct -- thread desriptor */
+/* ThreadStruct -- thread descriptor */
 
 typedef struct mps_thr_s {       /* PThreads thread structure */
   Sig sig;                       /* <design/sig/> */

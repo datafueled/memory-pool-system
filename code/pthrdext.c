@@ -37,7 +37,7 @@ SRCID(pthreadext, "$Id: //info.ravenbrook.com/project/mps/master/code/pthrdext.c
 #define PTHREADEXT_SIGRESUME SIGXCPU
 
 
-/* Static data initiatialized on first use of the module
+/* Static data initialized on first use of the module
  * See <design/pthreadext/#impl.static>.*
  */
 
