@@ -1,6 +1,6 @@
 /* trace.c: GENERIC TRACER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/trace.c#49 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/trace.c#50 $
  * Copyright (c) 2001-2003, 2006, 2007 Ravenbrook Limited.
  * See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
@@ -11,7 +11,7 @@
 #include "mpm.h"
 #include <limits.h> /* for LONG_MAX */
 
-SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/master/code/trace.c#49 $");
+SRCID(trace, "$Id: //info.ravenbrook.com/project/mps/master/code/trace.c#50 $");
 
 /* Forward declarations */
 Rank traceBand(Trace);
@@ -990,7 +990,7 @@ static Bool traceFindGrey(Seg *segReturn, Rank *rankReturn,
     Rank band = traceBand(trace);
 
     /* Within the R band we look for segments of rank R first,  */
-    /* then succesively earlier ones.  Slight hack: We never    */
+    /* then successively earlier ones.  Slight hack: We never    */
     /* expect to find any segments of RankAMBIG, so we use      */
     /* this as a terminating condition for the loop.            */
     for(rank = band; rank > RankAMBIG; --rank) {
@@ -1245,7 +1245,7 @@ void TraceSegAccess(Arena arena, Seg seg, AccessSet mode)
   AVER((mode & SegSM(seg) & AccessREAD) == 0
        || TraceSetInter(SegGrey(seg), arena->flippedTraces) != TraceSetEMPTY);
 
-  /* If it's a write acess, then the segment must have a summary that */
+  /* If it's a write access, then the segment must have a summary that */
   /* is smaller than the mutator's summary (which is assumed to be */
   /* RefSetUNIV). */
   AVER((mode & SegSM(seg) & AccessWRITE) == 0 || SegSummary(seg) != RefSetUNIV);

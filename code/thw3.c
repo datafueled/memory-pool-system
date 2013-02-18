@@ -1,6 +1,6 @@
 /* thw3i3.c: WIN32 THREAD MANAGER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/thw3.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/thw3.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * Implements thread registration, suspension, and stack
@@ -23,7 +23,7 @@
  *
  * Other errors are assumed to only happen in certain circumstances.
  * .error.resume: ResumeThread is assumed to succeed unless the thread
- * has been destroyed (in fact, perversely, it appears to succeeed even
+ * has been destroyed (in fact, perversely, it appears to succeed even
  * when the thread has been destroyed).
  * .error.suspend: SuspendThread is assumed to succeed unless the thread
  * has been destroyed.
@@ -52,7 +52,7 @@
 
 #include "mpswin.h"
 
-SRCID(thw3, "$Id: //info.ravenbrook.com/project/mps/master/code/thw3.c#1 $");
+SRCID(thw3, "$Id: //info.ravenbrook.com/project/mps/master/code/thw3.c#2 $");
 
 
 Bool ThreadCheck(Thread thread)

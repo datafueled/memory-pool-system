@@ -1,6 +1,6 @@
 /* table.h: A dictionary mapping a Word to a void*
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/table.c#15 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/table.c#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .note.good-hash: As is common in hash table implementations, we
@@ -13,7 +13,7 @@
 #include <stddef.h>
 
 
-SRCID(table, "$Id: //info.ravenbrook.com/project/mps/master/code/table.c#15 $");
+SRCID(table, "$Id: //info.ravenbrook.com/project/mps/master/code/table.c#16 $");
 
 
 /* tableHash -- return a hash value from an address
@@ -133,7 +133,7 @@ static TableEntry tableFind(Table table, Word key, Bool skip_deleted)
  *
  * .hash.initial: Any reasonable number.
  *
- * .hash.growth: A compromise between space inefficency (growing bigger 
+ * .hash.growth: A compromise between space inefficiency (growing bigger 
  * than required) and time inefficiency (growing too slowly, with all 
  * the rehash costs at every step).  A factor of 2 means that at the 
  * point of growing to a size X table, hash-work equivalent to filling 

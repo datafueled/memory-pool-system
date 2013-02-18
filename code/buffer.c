@@ -1,6 +1,6 @@
 /* buffer.c: ALLOCATION BUFFER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#16 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#17 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is (part of) the implementation of allocation buffers.
@@ -26,7 +26,7 @@
 
 #include "mpm.h"
 
-SRCID(buffer, "$Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#16 $");
+SRCID(buffer, "$Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#17 $");
 
 
 /* forward declarations */
@@ -223,7 +223,7 @@ static Res BufferInitV(Buffer buffer, BufferClass class,
   buffer->alignment = pool->alignment; /* .trans.mod */
   buffer->base = (Addr)0;
   buffer->initAtFlip = (Addr)0;
-  /* In the next three assignements we really mean zero, not NULL, because
+  /* In the next three assignments we really mean zero, not NULL, because
      the bit pattern is compared.  It's pretty unlikely we'll encounter
      a platform where this makes a difference. */
   buffer->ap_s.init = (mps_addr_t)0;
@@ -861,7 +861,7 @@ Bool BufferTrip(Buffer buffer, Addr p, Size size)
     return FALSE;
   }
 
-  /* Emit event including class if loggged */
+  /* Emit event including class if logged */
   if (buffer->mode & BufferModeLOGGED) {
     Bool b;
     Format format;
@@ -1170,7 +1170,7 @@ static void bufferNoSetRankSet (Buffer buffer, RankSet rankset)
 
 /* bufferNoReassignSeg -- basic BufferReassignSeg method
  *
- * .noseg: basic buffers don't support attachment to sements, so this
+ * .noseg: basic buffers don't support attachment to segments, so this
  * method should not be called.  */
 
 static void bufferNoReassignSeg (Buffer buffer, Seg seg)

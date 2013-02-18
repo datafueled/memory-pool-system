@@ -1,6 +1,6 @@
 /* <code/eventdef.h> -- Event Logging Definitions
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/eventdef.h#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventdef.h#15 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .source: <design/telemetry/>
@@ -195,7 +195,7 @@
 /* EVENT_*_PARAMS -- definition of event parameters
  *
  * For each event type in EVENT_LIST, these macros list the parameters of
- * the event.  THe columns are:
+ * the event.  The columns are:
  *   - the positional index of the parameter in the list, used to define
  *     numeric field names using the C preprocessor
  *   - the parameter sort, similar to writef (Pointer, Addr, Word, Unsigned,

@@ -1,6 +1,6 @@
 /* proti3.c: PROTECTION MUTATOR CONTEXT (INTEL 386)
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/proti3.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/proti3.c#12 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .design: See <design/prot/> for the generic design of the interface
@@ -44,7 +44,7 @@
  * .assume.i3: Assume the following about the i386 environment:
  *   Steppable instructions (.assume.want) use the CS, DS & SS
  *   segment registers only (see .source.i486 Table 2-3).
- *   The procesor runs in 32 bit mode.
+ *   The processor runs in 32 bit mode.
  *   The CS, DS and SS segment registers all describe identical 32-
  *   bit flat address spaces.
  */
@@ -52,7 +52,7 @@
 #include "mpm.h"
 #include "prmci3.h"
 
-SRCID(proti3, "$Id: //info.ravenbrook.com/project/mps/master/code/proti3.c#11 $");
+SRCID(proti3, "$Id: //info.ravenbrook.com/project/mps/master/code/proti3.c#12 $");
 
 
 /* DecodeCB -- Decode an Intel x86 control byte into Hi, Medium & Low fields */

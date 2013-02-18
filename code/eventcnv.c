@@ -31,7 +31,7 @@
  * If the environment variable does not exist, the default filename of
  * "mpsio.log" is used.
  * 
- * $Id: //info.ravenbrook.com/project/mps/master/code/eventcnv.c#18 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/eventcnv.c#19 $
  */
 
 #include "config.h"
@@ -84,7 +84,7 @@ static void evwarn(const char *format, ...)
   va_end(args);
 }
 
-/* everror -- flush stdout, mesage to stderr, exit */
+/* everror -- flush stdout, message to stderr, exit */
 
 static void everror(const char *format, ...)
 {

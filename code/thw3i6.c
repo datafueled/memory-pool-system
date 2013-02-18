@@ -1,6 +1,6 @@
 /* thw3i3.c: WIN32 THREAD MANAGER x86
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/thw3i6.c#1 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/thw3i6.c#2 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * Implements thread stack scanning.  See <design/thread-manager/>.
@@ -64,7 +64,7 @@
 
 #include "mpswin.h"
 
-SRCID(thw3i6, "$Id: //info.ravenbrook.com/project/mps/master/code/thw3i6.c#1 $");
+SRCID(thw3i6, "$Id: //info.ravenbrook.com/project/mps/master/code/thw3i6.c#2 $");
 
 
 Res ThreadScan(ScanState ss, Thread thread, void *stackBot)
@@ -81,7 +81,7 @@ Res ThreadScan(ScanState ss, Thread thread, void *stackBot)
 
     /* scan stack and register roots in other threads */
 
-    /* This dumps the relevent registers into the context */
+    /* This dumps the relevant registers into the context */
     /* .context.flags */
     context.ContextFlags = CONTEXT_CONTROL | CONTEXT_INTEGER;
     /* .thread.handle.get-context */
@@ -109,8 +109,8 @@ Res ThreadScan(ScanState ss, Thread thread, void *stackBot)
 
     /* (.context.regroots)
      * This scans the root registers (.context.regroots).  It also
-     * unecessarily scans the rest of the context.  The optimisation
-     * to scan only relevent parts would be machine dependent.
+     * unnecessarily scans the rest of the context.  The optimisation
+     * to scan only relevant parts would be machine dependent.
      */
     res = TraceScanAreaTagged(ss, (Addr *)&context,
            (Addr *)((char *)&context + sizeof(CONTEXT)));

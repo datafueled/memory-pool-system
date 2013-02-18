@@ -1,6 +1,6 @@
 /* arena.c: ARENA ALLOCATION FEATURES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/arena.c#22 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/arena.c#23 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .sources: <design/arena/> is the main design document.  */
@@ -9,7 +9,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/master/code/arena.c#22 $");
+SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/master/code/arena.c#23 $");
 
 
 /* ArenaControlPool -- get the control pool */
@@ -46,7 +46,7 @@ static Res ArenaTrivDescribe(Arena arena, mps_lib_FILE *stream)
 }
 
 
-/* AbstractArenaClass  -- The abstact arena class definition
+/* AbstractArenaClass  -- The abstract arena class definition
  *
  * .null: Most abstract class methods are set to NULL.  See
  * <design/arena/#class.abstract.null>.  */

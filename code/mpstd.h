@@ -1,6 +1,6 @@
 /* mpstd.h: RAVENBROOK MEMORY POOL SYSTEM TARGET DETECTION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpstd.h#26 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpstd.h#27 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -40,7 +40,7 @@
  * we want it to just work out of the box with whatever compiler is
  * being used.  In other words we do not require the client to define
  * CONFIG_PF_*.
- * (This is the case that justifes mpstd.h doing platform detection
+ * (This is the case that justifies mpstd.h doing platform detection
  * by looking at preprocessor symbols; otherwise we'd simply use
  * CONFIG_PF_*).
  *
