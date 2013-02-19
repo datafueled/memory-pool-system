@@ -1,6 +1,6 @@
 /* scheme.c -- SCHEME INTERPRETER EXAMPLE FOR THE MEMORY POOL SYSTEM
  *
- * $Id: //info.ravenbrook.com/project/mps/master/example/scheme/scheme.c#7 $
+ * $Id: //info.ravenbrook.com/project/mps/master/example/scheme/scheme.c#8 $
  * Copyright (c) 2001-2012 Ravenbrook Limited.  See end of file for license.
  *
  * This is a toy interpreter for a subset of the Scheme programming
@@ -1543,7 +1543,7 @@ static obj_t load(obj_t env, obj_t op_env, obj_t filename) {
 
 /* eval_list -- evaluate list of expressions giving list of results
  *
- * eval_list evaluates a list of expresions and yields a list of their
+ * eval_list evaluates a list of expressions and yields a list of their
  * results, in order.  If the list is badly formed, an error is thrown
  * using the message given.
  */
