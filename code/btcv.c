@@ -1,7 +1,7 @@
 /* btss.c: BIT TABLE COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/btcv.c#10 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/btcv.c#11 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MPS developers
  *
@@ -19,7 +19,7 @@
 
 #include <stdlib.h>
 
-SRCID(btcv, "$Id: //info.ravenbrook.com/project/mps/master/code/btcv.c#10 $");
+SRCID(btcv, "$Id: //info.ravenbrook.com/project/mps/master/code/btcv.c#11 $");
 
 
 /* bt*Symmetric -- Symmetric operations on bit tables
@@ -564,14 +564,14 @@ int main(int argc, char *argv[])
 
   btTests(btlo, bthi, btSize);
 
-  printf("\nNo problems detected.\n");
+  printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
   return 0;
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (c) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

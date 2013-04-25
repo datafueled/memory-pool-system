@@ -1,6 +1,6 @@
 /* mpsint.c: WIN32 MEMORY POOL SYSTEM INTERFACE LAYER EXTRAS
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/mpsiw3.c#8 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/mpsiw3.c#9 $
  *
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
@@ -10,11 +10,11 @@
 
 #include "mpswin.h"
 
-SRCID(mpsiw3, "$Id: //info.ravenbrook.com/project/mps/master/code/mpsiw3.c#8 $");
+SRCID(mpsiw3, "$Id: //info.ravenbrook.com/project/mps/master/code/mpsiw3.c#9 $");
 
 
 /* This is defined in protw3.c */
-extern LONG ProtSEHfilter(LPEXCEPTION_POINTERS info);
+extern LONG WINAPI ProtSEHfilter(LPEXCEPTION_POINTERS info);
 
 LONG mps_SEH_filter(LPEXCEPTION_POINTERS info,
                     void **hp_o, size_t *hs_o)

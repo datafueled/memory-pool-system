@@ -1,6 +1,8 @@
+# -*- makefile -*-
+#
 # fri3gc.gmk: BUILD FOR FreeBSD/i386/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/fri3gc.gmk#4 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/fri3gc.gmk#5 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = fri3gc

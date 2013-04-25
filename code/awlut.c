@@ -1,7 +1,7 @@
 /* awlut.c: POOL CLASS AWL UNIT TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/awlut.c#13 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/awlut.c#15 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
  *
@@ -192,7 +192,11 @@ static void test(mps_ap_t leafap, mps_ap_t exactap, mps_ap_t weakap,
 
   for(i = 0; i < TABLE_SLOTS; ++i) {
     mps_word_t *string;
-    if (rnd() % 2 == 0) {
+    /* Ensure that the last entry in the table is preserved, so that
+     * we don't get a false positive due to the local variable
+     * 'string' keeping this entry alive (see job003436).
+     */
+    if (rnd() % 2 == 0 || i + 1 == TABLE_SLOTS) {
       string = alloc_string("iamalive", leafap);
       preserve[i] = string;
     } else {
@@ -294,7 +298,7 @@ static void *setup(void *v, size_t s)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
   struct guff_s guff;
   mps_arena_t arena;
@@ -316,15 +320,14 @@ int main(int argc, char **argv)
   mps_thread_dereg(thread);
   mps_arena_destroy(arena);
 
-  fflush(stdout); /* synchronize */
-  fprintf(stderr, "\nConclusion:  Failed to find any defects.\n");
+  printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
   return 0;
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (c) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

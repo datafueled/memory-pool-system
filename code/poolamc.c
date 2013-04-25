@@ -1,6 +1,6 @@
 /* poolamc.c: AUTOMATIC MOSTLY-COPYING MEMORY POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#44 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#45 $
  * Copyright (c) 2001-2012 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -12,7 +12,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#44 $");
+SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#45 $");
 
 /* PType enumeration -- distinguishes AMCGen and AMCNailboard */
 enum {AMCPTypeGen = 1, AMCPTypeNailboard};
@@ -1280,11 +1280,25 @@ static void AMCRampEnd(Pool pool, Buffer buf)
     PoolGen pgen = &amc->rampGen->pgen;
     Ring node, nextNode;
 
-    if(amc->rampMode == RampRAMPING) {
-      /* We were ramping, so clean up. */
-      amc->rampMode = RampFINISH;
-    } else {
-      amc->rampMode = RampOUTSIDE;
+    switch(amc->rampMode) {
+      case RampRAMPING:
+        /* We were ramping, so clean up. */
+        amc->rampMode = RampFINISH;
+        break;
+      case RampBEGIN:
+        /* short-circuit for short ramps */
+        amc->rampMode = RampOUTSIDE;
+        break;
+      case RampCOLLECTING:
+        /* we have finished a circuit of the state machine */
+        amc->rampMode = RampOUTSIDE;
+        break;
+      case RampFINISH:
+        /* stay in FINISH because we need to pass through COLLECTING */
+        break;
+      default:
+        /* can't get here if already OUTSIDE */
+        NOTREACHED;
     }
 
     /* Adjust amc->rampGen->pgen.newSize: Now count all the segments */
@@ -2497,9 +2511,15 @@ static Bool AMCCheck(AMC amc)
     CHECKD(amcGen, amc->rampGen);
     CHECKD(amcGen, amc->afterRampGen);
   }
-  /* nothing to check for rampCount */
+
   CHECKL(amc->rampMode >= RampOUTSIDE);
   CHECKL(amc->rampMode <= RampCOLLECTING);
+
+  /* if OUTSIDE, count must be zero. */
+  CHECKL((amc->rampCount == 0) || (amc->rampMode != RampOUTSIDE));
+  /* if BEGIN or RAMPING, count must not be zero. */
+  CHECKL((amc->rampCount != 0) || ((amc->rampMode != RampBEGIN) &&
+                                   (amc->rampMode != RampRAMPING)));
   /* pageretstruct[ti] is statistics only, currently unchecked */
 
   return TRUE;

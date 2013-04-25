@@ -1,6 +1,6 @@
 /* prmci3li.c: PROTECTION MUTATOR CONTEXT INTEL 386 (LINUX)
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/prmci3li.c#15 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/prmci3li.c#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This module implements the part of the protection module
@@ -29,7 +29,7 @@
 #include "prmcix.h"
 #include "prmci3.h"
 
-SRCID(prmci3li, "$Id: //info.ravenbrook.com/project/mps/master/code/prmci3li.c#15 $");
+SRCID(prmci3li, "$Id: //info.ravenbrook.com/project/mps/master/code/prmci3li.c#16 $");
 
 
 /* Prmci3AddressHoldingReg -- return an address of a register in a context */
@@ -84,7 +84,7 @@ void Prmci3StepOverIns(MutatorFaultContext mfc, Size inslen)
 
 Addr MutatorFaultContextSP(MutatorFaultContext mfc)
 {
-  return (Addr)mfc->ucontext->uc_stack.ss_sp;
+  return (Addr)mfc->ucontext->uc_mcontext.gregs[REG_ESP];
 }
 
 

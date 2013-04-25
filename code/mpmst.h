@@ -1,6 +1,6 @@
 /* mpmst.h: MEMORY POOL MANAGER DATA STRUCTURES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpmst.h#26 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpmst.h#27 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -647,9 +647,6 @@ typedef struct mps_arena_s {
   /* finalization fields (<design/finalize/>), <code/poolmrg.c> */
   Bool isFinalPool;             /* indicator for finalPool */
   Pool finalPool;               /* either NULL or an MRG pool */
-
-  /* alert fields <code/trace.c> */
-  mps_alert_collection_fn_t alertCollection;  /* client alert fn or 0 */
 
   /* thread fields (<code/thread.c>) */
   RingStruct threadRing;        /* ring of attached threads */

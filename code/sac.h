@@ -1,6 +1,6 @@
 /* sac.h: SEGREGATED ALLOCATION CACHES INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/sac.h#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/sac.h#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -25,7 +25,7 @@ typedef struct SACStruct {
   Pool pool;
   Count classesCount;  /* number of classes */
   Index middleIndex;   /* index of the middle */
-  mps_sac_s esac_s;     /* variable length, must be last */
+  _mps_sac_s esac_s;   /* variable length, must be last */
 } SACStruct;
 
 #define SACOfExternalSAC(esac) PARENT(SACStruct, esac_s, esac)

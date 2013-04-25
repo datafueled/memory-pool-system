@@ -1,6 +1,6 @@
 /* traceanc.c: ANCILLARY SUPPORT FOR TRACER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/traceanc.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/traceanc.c#3 $
  * Copyright (c) 2001-2003, 2006-2008 Ravenbrook Limited.
  * See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
@@ -247,10 +247,6 @@ void TracePostStartMessage(Trace trace)
 
   /* We have consumed the pre-allocated message */
   AVER(!arena->tsMessage[ti]);
-
-  if(arena->alertCollection) {
-    (*arena->alertCollection)(MPS_ALERT_COLLECTION_BEGIN, trace->why);
-  }
 }
 
 
@@ -418,10 +414,6 @@ void TracePostMessage(Trace trace)
   
   /* We have consumed the pre-allocated message */
   AVER(!arena->tMessage[ti]);
-
-  if(arena->alertCollection) {
-    (*arena->alertCollection)(MPS_ALERT_COLLECTION_END, trace->why);
-  }
 }
 
 

@@ -1,16 +1,16 @@
 /* sac.c: SEGREGATED ALLOCATION CACHES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/sac.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/sac.c#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "mpm.h"
 #include "sac.h"
 
-SRCID(sac, "$Id: //info.ravenbrook.com/project/mps/master/code/sac.c#9 $");
+SRCID(sac, "$Id: //info.ravenbrook.com/project/mps/master/code/sac.c#10 $");
 
 
-typedef mps_sac_freelist_block_s *SACFreeListBlock;
+typedef _mps_sac_freelist_block_s *SACFreeListBlock;
 
 
 /* SACCheck -- check function for SACs */

@@ -1,6 +1,8 @@
+# -*- makefile -*-
+#
 # gc.gmk: GNUMAKEFILE FRAGMENT FOR GNU CC
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/gc.gmk#13 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/gc.gmk#14 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 #
 # This file is included by platform makefiles that use the GNU CC

@@ -1,7 +1,7 @@
 /* lockcov.c: LOCK COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/lockcov.c#8 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/lockcov.c#10 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "mpm.h"
@@ -9,10 +9,11 @@
 #include <stdlib.h>             /* for malloc & free */
 
 
-int main(void)
+int main(int argc, char *argv[])
 {
   Lock a = malloc(LockSize());
   Lock b = malloc(LockSize());
+  testlib_unused(argc);
 
   Insist(a != NULL);
   Insist(b != NULL);
@@ -44,15 +45,14 @@ int main(void)
   free(a);
   free(b);
 
-  fflush(stdout); /* synchronize */
-  fprintf(stderr, "\nConclusion:  Failed to find any defects.\n");
+  printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
   return 0;
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (c) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

@@ -1,6 +1,6 @@
 /* prmci6li.c: PROTECTION MUTATOR CONTEXT x64 (LINUX)
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/prmci6li.c#2 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/prmci6li.c#3 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This module implements the part of the protection module
@@ -26,7 +26,7 @@
 #include "prmcix.h"
 #include "prmci6.h"
 
-SRCID(prmci6li, "$Id: //info.ravenbrook.com/project/mps/master/code/prmci6li.c#2 $");
+SRCID(prmci6li, "$Id: //info.ravenbrook.com/project/mps/master/code/prmci6li.c#3 $");
 
 
 /* Prmci6AddressHoldingReg -- return an address of a register in a context */
@@ -88,7 +88,7 @@ void Prmci6StepOverIns(MutatorFaultContext mfc, Size inslen)
 
 Addr MutatorFaultContextSP(MutatorFaultContext mfc)
 {
-  return (Addr)mfc->ucontext->uc_stack.ss_sp;
+  return (Addr)mfc->ucontext->uc_mcontext.gregs[REG_RSP];
 }
 
 

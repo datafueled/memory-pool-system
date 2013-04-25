@@ -1,7 +1,7 @@
 /* abqtest.c: AVAILABLE BLOCK QUEUE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#11 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#12 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "abq.h"
@@ -20,7 +20,7 @@ struct itimerspec; /* stop complaints from time.h */
 #include <math.h>
 
 
-SRCID(abqtest, "$Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#11 $");
+SRCID(abqtest, "$Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#12 $");
 
 
 static ABQStruct abq; /* the ABQ which we will use */
@@ -149,7 +149,6 @@ static void step(void)
 
 extern int main(int argc, char *argv[])
 {
-  Res res;
   mps_arena_t arena;
   int i;
 
@@ -160,26 +159,23 @@ extern int main(int argc, char *argv[])
   die(mps_arena_create(&arena, mps_arena_class_vm(), testArenaSIZE),
       "mps_arena_create");
 
-  res = ABQInit((Arena)arena, &abq, NULL, ABQ_SIZE);
-  if (res == ResOK) {
-    abqSize = ABQ_SIZE;
-  } else {
-    printf("ABQCreate returned %d\n",res);
-    return 1;
-  }
+  die(ABQInit((Arena)arena, &abq, NULL, ABQ_SIZE),
+      "ABQInit");
+
+  abqSize = ABQ_SIZE;
 
   for (i = 0; i < TEST_ITER; i++) {
     step();
   }
 
-  printf("All tests passed.\n");
+  printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
   return 0;
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (c) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

@@ -152,9 +152,9 @@ operate on objects generically, testing <tt class="docutils literal"><span class
 </pre></div>
 </div>
 <p>Objects are never freed, because it is necessary to prove that they
-are <a class="reference internal" href="../glossary/d.html#term-dead"><em class="xref std std-term">dead</em></a> before their memory can be <a class="reference internal" href="../glossary/t.html#term-trace"><em class="xref std std-term">reclaimed `. To
-prove that they are dead, we need a :term:`tracing</em></a>
-<a class="reference internal" href="../glossary/g.html#term-garbage-collector"><em class="xref std std-term">garbage collector</em></a>. Which the MPS will provide.</p>
+are <a class="reference internal" href="../glossary/d.html#term-dead"><em class="xref std std-term">dead</em></a> before their memory can be <a class="reference internal" href="../glossary/r.html#term-reclaim"><em class="xref std std-term">reclaimed</em></a>. To
+prove that they are dead, we need a <a class="reference internal" href="../glossary/t.html#term-trace"><em class="xref std std-term">tracing</em></a>
+<a class="reference internal" href="../glossary/g.html#term-garbage-collector"><em class="xref std std-term">garbage collector</em></a>, which the MPS will provide.</p>
 </div>
 <div class="section" id="choosing-an-arena-class">
 <span id="index-2"></span><h2>3.2. Choosing an arena class<a class="headerlink" href="#choosing-an-arena-class" title="Permalink to this headline">¶</a></h2>
@@ -934,53 +934,6 @@ position within the stack. As long as you don&#8217;t exit from this
 function while the MPS is running, your program&#8217;s active local
 variables will always be higher up on the stack than <tt class="docutils literal"><span class="pre">marker</span></tt>, and
 so will be scanned for references by the MPS.</p>
-<p>The condition &#8220;don&#8217;t exit from this function while the MPS is running&#8221;
-will always be satisfied, because you must run your program via the
-<em>MPS trampoline</em> (see the documentation for <a class="reference internal" href="../topic/thread.html#mps_tramp" title="mps_tramp"><tt class="xref c c-func docutils literal"><span class="pre">mps_tramp()</span></tt></a> for
-the reason). That is, if your program was previously organized like
-this:</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="cm">/* ... your program here ... */</span>
-    <span class="k">return</span> <span class="n">EXIT_CODE</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>it now must be organized like this:</p>
-<div class="highlight-c"><div class="highlight"><pre><span class="k">typedef</span> <span class="k">struct</span> <span class="n">tramp_s</span> <span class="p">{</span>
-    <span class="kt">int</span> <span class="n">argc</span><span class="p">;</span>
-    <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">;</span>
-    <span class="kt">int</span> <span class="n">exit_code</span><span class="p">;</span>
-<span class="p">}</span> <span class="n">tramp_s</span><span class="p">;</span>
-
-<span class="k">static</span> <span class="kt">void</span> <span class="o">*</span><span class="nf">start</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="kt">size_t</span> <span class="n">s</span><span class="p">)</span>
-<span class="p">{</span>
-    <span class="n">tramp_s</span> <span class="o">*</span><span class="n">tramp</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span>
-    <span class="kt">int</span> <span class="n">argc</span> <span class="o">=</span> <span class="n">tramp</span><span class="o">-&gt;</span><span class="n">argc</span><span class="p">;</span>
-    <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span> <span class="o">=</span> <span class="n">tramp</span><span class="o">-&gt;</span><span class="n">argv</span><span class="p">;</span>
-
-    <span class="cm">/* ... your program here ... */</span>
-
-    <span class="n">tramp</span><span class="o">-&gt;</span><span class="n">exit_code</span> <span class="o">=</span> <span class="n">EXIT_CODE</span><span class="p">;</span>
-    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
-<span class="p">{</span>
-    <span class="cm">/* ... set up the MPS ... */</span>
-
-    <span class="n">tramp_s</span> <span class="n">tramp</span><span class="p">;</span>
-    <span class="n">tramp</span><span class="p">.</span><span class="n">argc</span> <span class="o">=</span> <span class="n">argc</span><span class="p">;</span>
-    <span class="n">tramp</span><span class="p">.</span><span class="n">argv</span> <span class="o">=</span> <span class="n">argv</span><span class="p">;</span>
-    <span class="kt">void</span> <span class="o">*</span><span class="n">dummy</span><span class="p">;</span>
-    <span class="n">mps_tramp</span><span class="p">(</span><span class="o">&amp;</span><span class="n">dummy</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">tramp</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
-
-    <span class="cm">/* ... tear down the MPS ... */</span>
-
-    <span class="k">return</span> <span class="n">tramp</span><span class="p">.</span><span class="n">exit_code</span><span class="p">;</span>
-<span class="p">}</span>
-</pre></div>
-</div>
 <div class="admonition-topic admonition">
 <p class="first admonition-title">Topic</p>
 <p class="last"><a class="reference internal" href="../topic/thread.html#topic-thread"><em>Threads</em></a>.</p>
@@ -1194,7 +1147,19 @@ then you&#8217;ll be more interested in the chapter <a class="reference internal
                         title="previous chapter">2. Building the Memory Pool System</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="debug.html"
-                        title="next chapter">4. Debugging with the Memory Pool System</a></p><h4>Contact us</h4>
+                        title="next chapter">4. Debugging with the Memory Pool System</a></p><h4>Downloads</h4>
+
+<p class="topless">
+<a href="http://www.ravenbrook.com/project/mps/release/1.111.0/">MPS Kit release 1.111.0</a><br>
+<a href="http://www.ravenbrook.com/project/mps/release/">All MPS Kit releases</a>
+</p>
+
+<h4>Issues</h4>
+
+<p class="topless">
+<a href="http://www.ravenbrook.com/project/mps/issue/?action=list&amp;view=status%3dopen&amp;display=Job:Priority:Title&amp;sort=Priority">Known issues</a><br>
+<a href="http://www.ravenbrook.com/project/mps/issue/?action=fixed&release_fixed=1.111.0">Issues fixed in release 1.111.0</a>
+</p><h4>Contact us</h4>
 
 <p class="topless"><a href="mailto:mps-questions@ravenbrook.com">mps-questions@ravenbrook.com</a></p>
         </div>
@@ -1218,7 +1183,7 @@ then you&#8217;ll be more interested in the chapter <a class="reference internal
       </ul>
     </div>
     <div class="footer">
-        &copy; <a href="../copyright.html">Copyright</a> 2012, Ravenbrook Limited.
+        &copy; <a href="../copyright.html">Copyright</a> 2013, Ravenbrook Limited.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

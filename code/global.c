@@ -1,6 +1,6 @@
 /* global.c: ARENA-GLOBAL INTERFACES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#33 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#35 $
  * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#33 $");
+SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#35 $");
 
 
 /* All static data objects are declared here. See .static */
@@ -35,6 +35,7 @@ SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#33 $"
 /* <design/arena/#static.ring.init> */
 static Bool arenaRingInit = FALSE;
 static RingStruct arenaRing;       /* <design/arena/#static.ring> */
+static Serial arenaSerial;         /* <design/arena/#static.serial> */
 
 /* forward declarations */
 void arenaEnterLock(Arena, int);
@@ -117,6 +118,7 @@ Bool GlobalsCheck(Globals arenaGlobals)
 
   CHECKS(Globals, arenaGlobals);
   arena = GlobalsArena(arenaGlobals);
+  CHECKL(arena->serial < arenaSerial); 
   CHECKL(RingCheck(&arenaGlobals->globalRing));
 
   CHECKL(MPSVersion() == arenaGlobals->mpsVersionString);
@@ -240,11 +242,15 @@ Res GlobalsInit(Globals arenaGlobals)
     /* <design/arena/#static.init> */
     arenaRingInit = TRUE;
     RingInit(&arenaRing);
+    arenaSerial = (Serial)0;
     ProtSetup();
   }
-  arenaReleaseRingLock();
-
   arena = GlobalsArena(arenaGlobals);
+  /* Ensure updates to arenaSerial do not race by doing the update
+   * while the ring lock is claimed. */
+  arena->serial = arenaSerial;
+  ++ arenaSerial;
+  arenaReleaseRingLock();
 
   RingInit(&arenaGlobals->globalRing);
 
@@ -788,9 +794,13 @@ Bool ArenaStep(Globals globals, double interval, double multiplier)
   if (arenaShouldCollectWorld(arena, interval, multiplier,
                               start, clocks_per_sec))
   {
-    ArenaStartCollect(globals, TraceStartWhyOPPORTUNISM);
-    arena->lastWorldCollect = start;
-    stepped = TRUE;
+    Res res;
+    Trace trace;
+    res = TraceStartCollectAll(&trace, arena, TraceStartWhyOPPORTUNISM);
+    if (res == ResOK) {
+      arena->lastWorldCollect = start;
+      stepped = TRUE;
+    }
   }
 
   /* loop while there is work to do and time on the clock. */

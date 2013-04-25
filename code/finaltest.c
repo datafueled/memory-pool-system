@@ -1,7 +1,7 @@
 /* finaltest.c: LARGE-SCALE FINALIZATION TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/finaltest.c#6 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/finaltest.c#8 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
  * DESIGN
@@ -239,11 +239,12 @@ static void *test(void *arg, size_t s)
 }
 
 
-int main(void)
+int main(int argc, char *argv[])
 {
   mps_arena_t arena;
   mps_thr_t thread;
   void *r;
+  testlib_unused(argc);
 
   die(mps_arena_create(&arena, mps_arena_class_vm(), testArenaSIZE),
       "arena_create\n");
@@ -252,14 +253,14 @@ int main(void)
   mps_thread_dereg(thread);
   mps_arena_destroy(arena);
 
-  fflush(stdout); /* synchronize */
+  printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
   return 0;
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (c) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  *

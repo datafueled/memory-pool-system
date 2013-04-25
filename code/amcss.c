@@ -1,7 +1,7 @@
 /* amcss.c: POOL CLASS AMC STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/amcss.c#25 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/amcss.c#30 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */
 
@@ -41,31 +41,10 @@ static mps_gen_param_s testChain[genCOUNT] = {
 #define objNULL           ((mps_addr_t)MPS_WORD_CONST(0xDECEA5ED))
 
 
-static mps_pool_t pool;
 static mps_ap_t ap;
 static mps_addr_t exactRoots[exactRootsCOUNT];
 static mps_addr_t ambigRoots[ambigRootsCOUNT];
 
-
-/* alert -- synchronous alert of collection start/stop */
-
-static void alertfn(int alertcode, int whycode)
-{
-  switch(alertcode) {
-    case MPS_ALERT_COLLECTION_BEGIN: {
-      printf("\n^^^^^^ BEGIN (why: %d) ^^^^^^\n", whycode);
-      break;
-    }
-    case MPS_ALERT_COLLECTION_END: {
-      printf("vvvvvv END (why: %d)  vvvvvv\n", whycode);
-      break;
-    }
-    default: {
-      cdie(0, "unknown alertcode");
-      break;
-    }
-  }
-}
 
 /* report -- report statistics from any messages */
 
@@ -104,9 +83,13 @@ static void report(mps_arena_t arena)
       if(condemned > (gen1SIZE + gen2SIZE + (size_t)128) * 1024) {
         /* When condemned size is larger than could happen in a gen 2
          * collection (discounting ramps, natch), guess that was a dynamic
-         * collection, and reset the commit limit, so it doesn't run out. */
-        die(mps_arena_commit_limit_set(arena, 2 * testArenaSIZE),
-          "set limit");
+         * collection, and reset the commit limit, so it doesn't run out.
+         *
+         * GDR 2013-03-12: Fiddling with the commit limit was causing
+         * the test to fail sometimes (see job003440), so I've commented
+         * out this feature.
+         */
+        /* die(mps_arena_commit_limit_set(arena, 2 * testArenaSIZE), "set limit"); */
       }
 
     } else {
@@ -145,10 +128,10 @@ static mps_addr_t make(void)
 
 /* test_stepper -- stepping function for walk */
 
-static void test_stepper(mps_addr_t object, mps_fmt_t fmt, mps_pool_t pol,
+static void test_stepper(mps_addr_t object, mps_fmt_t fmt, mps_pool_t pool,
                          void *p, size_t s)
 {
-  testlib_unused(object); testlib_unused(fmt); testlib_unused(pol);
+  testlib_unused(object); testlib_unused(fmt); testlib_unused(pool);
   testlib_unused(s);
   (*(unsigned long *)p)++;
 }
@@ -156,9 +139,8 @@ static void test_stepper(mps_addr_t object, mps_fmt_t fmt, mps_pool_t pol,
 
 /* test -- the body of the test */
 
-static void *test(void *arg, size_t s)
+static void test(mps_arena_t arena)
 {
-  mps_arena_t arena;
   mps_fmt_t format;
   mps_chain_t chain;
   mps_root_t exactRoot, ambigRoot;
@@ -168,9 +150,7 @@ static void *test(void *arg, size_t s)
   int ramping;
   mps_ap_t busy_ap;
   mps_addr_t busy_init;
-
-  arena = (mps_arena_t)arg;
-  (void)s; /* unused */
+  mps_pool_t pool;
 
   die(dylan_fmt(&format, arena), "fmt_create");
   die(mps_chain_create(&chain, arena, genCOUNT, testChain), "chain_create");
@@ -317,15 +297,12 @@ static void *test(void *arg, size_t s)
   mps_pool_destroy(pool);
   mps_chain_destroy(chain);
   mps_fmt_destroy(format);
-
-  return NULL;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
   mps_arena_t arena;
   mps_thr_t thread;
-  void *r;
 
   randomize(argc, argv);
 
@@ -333,23 +310,25 @@ int main(int argc, char **argv)
       "arena_create");
   mps_message_type_enable(arena, mps_message_type_gc());
   mps_message_type_enable(arena, mps_message_type_gc_start());
-  mps_alert_collection_set(arena, &alertfn);
-  die(mps_arena_commit_limit_set(arena, testArenaSIZE), "set limit");
+  /* GDR 2013-03-12: Fiddling with the commit limit was causing
+   * the test to fail sometimes (see job003440), so I've commented
+   * out this feature.
+   */
+  /*die(mps_arena_commit_limit_set(arena, testArenaSIZE), "set limit");*/
   die(mps_thread_reg(&thread, arena), "thread_reg");
-  mps_tramp(&r, test, arena, 0);
+  test(arena);
   mps_thread_dereg(thread);
   report(arena);
   mps_arena_destroy(arena);
 
-  fflush(stdout); /* synchronize */
-  fprintf(stderr, "\nConclusion:  Failed to find any defects.\n");
+  printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
   return 0;
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (c) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

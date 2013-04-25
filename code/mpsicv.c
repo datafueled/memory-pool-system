@@ -1,7 +1,7 @@
 /* mpsicv.c: MPSI COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpsicv.c#22 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpsicv.c#25 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  */
 
@@ -334,13 +334,13 @@ static void arena_commit_test(mps_arena_t arena)
   void *p;
   mps_res_t res;
 
-  committed = mps_arena_committed(arena);
-  reserved = mps_arena_reserved(arena);
-  cdie(reserved >= committed, "reserved < committed");
   die(mps_pool_create(&pool, arena, mps_class_mv(),
       (size_t)0x1000, (size_t)1024, (size_t)16384),
       "commit pool create");
   limit = mps_arena_commit_limit(arena);
+  committed = mps_arena_committed(arena);
+  reserved = mps_arena_reserved(arena);
+  cdie(reserved >= committed, "reserved < committed");
   die(mps_arena_commit_limit_set(arena, committed), "commit_limit_set before");
   do {
     res = mps_alloc(&p, pool, FILLER_OBJECT_SIZE);
@@ -552,6 +552,7 @@ static void *test(void *arg, size_t s)
   alignmentTest(arena);
 
   die(mps_arena_collect(arena), "collect");
+  mps_arena_release(arena);
 
   mps_free(mv, alloced_obj, 32);
   alloc_v_test(mv);
@@ -572,7 +573,7 @@ static void *test(void *arg, size_t s)
 #define TEST_ARENA_SIZE              ((size_t)16<<20)
 
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
   mps_arena_t arena;
   mps_thr_t thread;
@@ -598,15 +599,14 @@ int main(int argc, char **argv)
   mps_thread_dereg(thread);
   mps_arena_destroy(arena);
 
-  fflush(stdout); /* synchronize */
-  fprintf(stderr, "\nConclusion:  Failed to find any defects.\n");
+  printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
   return 0;
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002, 2008 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (c) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

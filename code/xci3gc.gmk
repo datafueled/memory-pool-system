@@ -1,6 +1,8 @@
+# -*- makefile -*-
+#
 # xci3gc.gmk: BUILD FOR MACOS X (CARBON)/INTEL IA32/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/xci3gc.gmk#10 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/xci3gc.gmk#11 $
 # Copyright (c) 2001,2006 Ravenbrook Limited.  See end of file for license.
 #
 # Naively copied from xcppgc.gmk, could do with going over properly.

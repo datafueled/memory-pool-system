@@ -1,7 +1,7 @@
 /* steptest.c: TEST FOR ARENA STEPPING
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/steptest.c#11 $
- * Copyright (C) 1998 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/steptest.c#13 $
+ * Copyright (c) 1998-2013 Ravenbrook Limited.  See end of file for license.
  *
  * Loosely based on <code/amcss.c>.
  */
@@ -9,6 +9,7 @@
 #include "fmtdy.h"
 #include "fmtdytst.h"
 #include "testlib.h"
+#include "mpm.h"
 #include "mpscamc.h"
 #include "mpsavm.h"
 #include "mpstd.h"
@@ -278,6 +279,7 @@ static void test_step(mps_arena_t arena, double multiplier)
     mps_bool_t res;
     double t1 = my_clock();
     res = mps_arena_step(arena, 0.1, multiplier);
+    cdie(ArenaGlobals(arena)->clamped, "arena was unclamped");
     t1 = time_since(t1);
     if (res) {
         if (t1 > max_step_time)
@@ -485,7 +487,7 @@ static void *test(void *arg, size_t s)
     return NULL;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     prepare_clock();
 
@@ -500,6 +502,7 @@ int main(int argc, char **argv)
         die(mps_arena_create(&arena, mps_arena_class_vm(),
                              testArenaSIZE),
             "arena_create");
+        mps_arena_clamp(arena);
         die(mps_thread_reg(&thread, arena), "thread_reg");
         mps_tramp(&r, test, arena, 0);
         mps_thread_dereg(thread);
@@ -507,15 +510,14 @@ int main(int argc, char **argv)
         ++ test_number;
     }
 
-    fflush(stdout); /* synchronize */
-    fprintf(stderr, "\nConclusion:  Failed to find any defects.\n");
+    printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
     return 0;
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (c) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  *

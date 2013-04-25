@@ -1,7 +1,7 @@
 /* messtest.c: MESSAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/messtest.c#11 $
- * Copyright (c) 2001-2003 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/messtest.c#12 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "mpm.h"
@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-SRCID(messtest, "$Id: //info.ravenbrook.com/project/mps/master/code/messtest.c#11 $");
+SRCID(messtest, "$Id: //info.ravenbrook.com/project/mps/master/code/messtest.c#12 $");
 
 
 /* Basic infrastructure for creating dummy messages */
@@ -268,14 +268,14 @@ extern int main(int argc, char *argv[])
   testInterleaving(arena);
   testDisabling(arena);
 
-  printf("\nNo problems detected.\n");
+  printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
   return 0;
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2003 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (c) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

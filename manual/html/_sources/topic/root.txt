@@ -33,7 +33,7 @@ Registering roots
 -----------------
 
 You can register a root at any time by calling one of the
-``mps_root_create`` functions. Roots may not be regstered twice, and
+``mps_root_create`` functions. Roots may not be registered twice, and
 no two roots may overlap (that is, each reference is :term:`fixed` by
 at most one root). Roots may be:
 
@@ -137,7 +137,6 @@ So the typical sequence of operations when creating a root is:
 
 .. index::
    pair: root; thread
-   single: trampoline
 
 .. _topic-root-thread:
 
@@ -152,25 +151,23 @@ system, the processor architecture, and in some cases on the compiler.
 For this reason, the MPS provides :c:func:`mps_stack_scan_ambig` (and
 in fact, this is the only supported stack scanner).
 
-A stack scanner needs to know how to find the bottom of the part of
-the stack to scan. Now, every thread that runs code that uses memory
-managed by the MPS must execute such code inside the MPS trampoline by
-calling :c:func:`mps_tramp`. This means that the bottom of the
-relevant part of stack can be found by taking the address of a local
-variable in the function that calls :c:func:`mps_tramp` (the variable
-``marker`` in the example below).
+A stack scanner needs to know how to find the bottom of the part of the
+stack to scan. The bottom of the relevant part of stack can be found by
+taking the address of a local variable in the function that calls the
+main work function of your thread. You should take care to ensure that
+the work function is not inlined so that the address is definitely in
+the stack frame below any potential roots.
 
 .. index::
    single: Scheme; thread root
-   single: Scheme; trampoline
 
 For example, here's the code from the toy Scheme interpreter that
-registers a thread root and then trampolines into the program::
+registers a thread root and then calls the program::
 
     mps_thr_t thread;
     mps_root_t reg_root;
+    int exit_code;
     void *marker = &marker;
-    void *r;
 
     res = mps_thread_reg(&thread, arena);
     if (res != MPS_RES_OK) error("Couldn't register thread");
@@ -185,7 +182,10 @@ registers a thread root and then trampolines into the program::
                               0);
     if (res != MPS_RES_OK) error("Couldn't create root");
 
-    mps_tramp(&r, start, NULL, 0);
+    exit_code = start(argc, argv);
+
+    mps_root_destroy(reg_root);
+    mps_thread_dereg(thread);
 
 
 .. index::
@@ -251,7 +251,7 @@ allowing the MPS to detect whether they have changed.
         This was introduced in the hope of being able to maintain a
         :term:`remembered set` for the root without needing a
         :term:`write barrier`, but it can't work as described, since
-        you can't reliably a valid registered constant root that
+        you can't reliably create a valid registered constant root that
         contains any references. (If you add the references before
         registering the root, they may have become invalid; but you
         can't add them afterwards because the root is supposed to be

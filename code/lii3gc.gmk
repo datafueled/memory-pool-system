@@ -1,6 +1,8 @@
+# -*- makefile -*-
+#
 # lii3gc.gmk: BUILD FOR LINUX/INTEL/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/lii3gc.gmk#4 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/lii3gc.gmk#5 $
 # Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
 
 PFM = lii3gc

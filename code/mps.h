@@ -1,6 +1,6 @@
 /* mps.h: RAVENBROOK MEMORY POOL SYSTEM C INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mps.h#34 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mps.h#37 $
  * Copyright (c) 2001-2012 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -36,13 +36,11 @@
  * Then Microsoft made unsigned long shorter than a pointer on Win64.  Ugh.
  */
 
-#ifndef MPS_T_WORD
 #if defined(_MSC_VER) && defined(_WIN32) && defined(_WIN64) && defined(_M_X64)
-#define MPS_T_WORD      unsigned __int64
+typedef unsigned __int64 mps_word_t;
 #else
-#define MPS_T_WORD      unsigned long       /* won't be true on W3I6MV */
+typedef unsigned long mps_word_t;
 #endif
-#endif /* MPS_T_WORD */
 
 
 /* Abstract Types */
@@ -67,7 +65,6 @@ typedef struct mps_frame_s
 
 /* Concrete Types */
 
-typedef MPS_T_WORD mps_word_t;  /* pointer-sized word */
 typedef int mps_bool_t;         /* boolean (int) */
 typedef int mps_res_t;          /* result code (int) */
 typedef void *mps_addr_t;       /* managed address (void *) */
@@ -142,22 +139,22 @@ typedef struct mps_ap_s {       /* allocation point descriptor */
 /* Segregated-fit Allocation Caches */
 /* .sac: Keep in sync with <code/sac.h>. */
 
-typedef struct mps_sac_s *mps_sac_t;
+typedef struct _mps_sac_s *mps_sac_t;
 
 #define MPS_SAC_CLASS_LIMIT ((size_t)8)
 
-typedef struct mps_sac_freelist_block_s {
+typedef struct _mps_sac_freelist_block_s {
   size_t _size;
   size_t _count;
   size_t _count_max;
   mps_addr_t _blocks;
-} mps_sac_freelist_block_s;
+} _mps_sac_freelist_block_s;
 
-typedef struct mps_sac_s {
+typedef struct _mps_sac_s {
   size_t _middle;
   mps_bool_t _trapped;
-  mps_sac_freelist_block_s _freelists[2 * MPS_SAC_CLASS_LIMIT];
-} mps_sac_s;
+  _mps_sac_freelist_block_s _freelists[2 * MPS_SAC_CLASS_LIMIT];
+} _mps_sac_s;
 
 /* .sacc: Keep in sync with <code/sac.h>. */
 typedef struct mps_sac_class_s {
@@ -561,24 +558,6 @@ extern const char *mps_message_gc_start_why(mps_arena_t, mps_message_t);
 
 extern mps_res_t mps_finalize(mps_arena_t, mps_addr_t *);
 extern mps_res_t mps_definalize(mps_arena_t, mps_addr_t *);
-
-
-/* Alert */
-
-/* Alert codes. */
-enum {
-  MPS_ALERT_COLLECTION_BEGIN,
-  MPS_ALERT_COLLECTION_END
-};
-typedef void (*mps_alert_collection_fn_t)(int, int);
-extern mps_res_t mps_alert_collection_set(mps_arena_t, 
-                                          mps_alert_collection_fn_t);
-/* The following _START and _STOP identifiers are obsolete and 
- * deprecated: use _BEGIN and _END instead. */
-enum {
-  MPS_ALERT_COLLECTION_START = MPS_ALERT_COLLECTION_BEGIN,
-  MPS_ALERT_COLLECTION_STOP = MPS_ALERT_COLLECTION_END
-};
 
 
 /* Telemetry */

@@ -1,6 +1,6 @@
 /* mpsi.c: MEMORY POOL SYSTEM C INTERFACE LAYER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#33 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#34 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -52,7 +52,7 @@
 #include "sac.h"
 #include "chain.h"
 
-SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#33 $");
+SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#34 $");
 
 
 /* mpsi_check -- check consistency of interface mappings
@@ -1671,18 +1671,6 @@ const char *mps_message_gc_start_why(mps_arena_t arena,
   ArenaLeave(arena);
 
   return s;
-}
-
-
-/* Alert */
-
-mps_res_t mps_alert_collection_set(mps_arena_t arena, 
-                                   mps_alert_collection_fn_t fn)
-{
-  ArenaEnter(arena);
-  arena->alertCollection = fn;
-  ArenaLeave(arena);
-  return MPS_RES_OK;  
 }
 
 

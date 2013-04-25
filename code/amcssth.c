@@ -1,7 +1,7 @@
 /* amcssth.c: POOL CLASS AMC STRESS TEST WITH TWO THREADS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/amcssth.c#13 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/amcssth.c#16 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
  * .posix: This is Posix only.
@@ -10,6 +10,7 @@
 #define _POSIX_C_SOURCE 199309L
 
 #include "fmtdy.h"
+#include "fmtdytst.h"
 #include "testlib.h"
 #include "mpscamc.h"
 #include "mpsavm.h"
@@ -45,13 +46,6 @@ static mps_pool_t pool;
 static mps_addr_t exactRoots[exactRootsCOUNT];
 static mps_addr_t ambigRoots[ambigRootsCOUNT];
 
-mps_arena_t arena;
-mps_fmt_t format;
-mps_chain_t chain;
-mps_root_t exactRoot, ambigRoot;
-unsigned long objs = 0;
-
-
 /* report - report statistics from any terminated GCs */
 
 static void report(mps_arena_t arena)
@@ -80,6 +74,13 @@ static void report(mps_arena_t arena)
       die(mps_arena_commit_limit_set(arena, 2 * testArenaSIZE), "set limit");
   }
 }
+
+
+mps_arena_t arena;
+mps_fmt_t format;
+mps_chain_t chain;
+mps_root_t exactRoot, ambigRoot;
+unsigned long objs = 0;
 
 
 /* make -- create one new object */
@@ -258,6 +259,8 @@ static void *test(void *arg, size_t s)
 
     churn(ap);
 
+    r = (size_t)rnd();
+
     if (r % initTestFREQ == 0)
       *(int*)busy_init = -1; /* check that the buffer is still there */
 
@@ -307,9 +310,11 @@ static void *fooey(void* childIsFinishedReturn)
 }
 
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
   mps_thr_t thread;
+  mps_root_t reg_root;
+  void *marker = &marker;
   pthread_t pthread1;
   void *r;
   int childIsFinished = 0;
@@ -321,8 +326,11 @@ int main(int argc, char **argv)
   mps_message_type_enable(arena, mps_message_type_gc());
   init();
   die(mps_thread_reg(&thread, arena), "thread_reg");
+  die(mps_root_create_reg(&reg_root, arena, mps_rank_ambig(), 0, thread,
+                          mps_stack_scan_ambig, marker, 0), "root_create");
   pthread_create(&pthread1, NULL, fooey, (void *)&childIsFinished);
   mps_tramp(&r, test, arena, 0);
+  mps_root_destroy(reg_root);
   mps_thread_dereg(thread);
 
   while (!childIsFinished) {
@@ -334,15 +342,14 @@ int main(int argc, char **argv)
   report(arena);
   mps_arena_destroy(arena);
 
-  fflush(stdout); /* synchronize */
-  fprintf(stderr, "\nConclusion:  Failed to find any defects.\n");
+  printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
   return 0;
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (c) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

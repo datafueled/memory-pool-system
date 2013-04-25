@@ -1,6 +1,6 @@
 /* zmess.c: Message test
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/zmess.c#5 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/zmess.c#7 $
  * Copyright (c) 2008 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -58,7 +58,8 @@
  *    the last two messages (note: no "."), to test that 
  *    mps_arena_destroy copes with ungot messages.
  *
- * Each script runs in a newly created arena.
+ * Each script runs in a newly created arena. The arena is clamped so
+ * that collections only happen when the script requests them.
  *
  *
  * CODE OVERVIEW
@@ -408,6 +409,7 @@ static void testscriptA(const char *script)
   /* arena */
   die(mps_arena_create(&arena, mps_arena_class_vm(), testArenaSIZE),
       "arena_create");
+  mps_arena_clamp(arena);
 
   /* thr: used to stop/restart multiple threads */
   die(mps_thread_reg(&thr, arena), "thread");
@@ -484,7 +486,7 @@ Bool TIMCA_remote(void)
 /* main -- runs various test scripts
  *
  */
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
 
   randomize(argc, argv);
@@ -563,15 +565,14 @@ int main(int argc, char **argv)
     TIMCA_setup("");  /* must reset it! */
   }
 
-  fflush(stdout); /* synchronize */
-  fprintf(stderr, "\nConclusion:  Failed to find any defects.\n");
+  printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
   return 0;
 }
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002, 2008 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (c) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 
