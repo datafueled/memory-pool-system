@@ -1,6 +1,6 @@
 /* protw3.c: PROTECTION FOR WIN32
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#12 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#13 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -18,7 +18,7 @@
 
 #include "mpswin.h"
 
-SRCID(protw3, "$Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#12 $");
+SRCID(protw3, "$Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#13 $");
 
 
 void ProtSet(Addr base, Addr limit, AccessSet mode)
@@ -126,7 +126,7 @@ void ProtSync(Arena arena)
 /* ProtTramp -- wrap a mutator thread in a Structured Exception Handler filter
  *
  * This was the method by which we installed an exception handler on Windows
- * prior to MPS 1.111.  Not we are using Vectored Exception Handlers, so this
+ * prior to MPS 1.111.  Now we are using Vectored Exception Handlers, so this
  * is deprecated and just calls through to the mutator function.
  */
 
