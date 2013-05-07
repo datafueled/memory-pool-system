@@ -1,6 +1,6 @@
 # configure.ac -- autoconf configuration for the MPS    -*- Autoconf -*-
 #
-# $Id: //info.ravenbrook.com/project/mps/master/configure.ac#13 $
+# $Id: //info.ravenbrook.com/project/mps/master/configure.ac#14 $
 # Copyright (C) 2012 Ravenbrook Limited.  See end of file for license.
 #
 # YOU DON'T NEED AUTOCONF TO BUILD THE MPS
@@ -81,6 +81,7 @@ case $host in
       CFLAGS="$CFLAGS_GC"
     ;;
   amd64-*-freebsd*)
+  x86_64-*-freebsd*)
       AC_MSG_RESULT([FreeBSD x86_64])
       MPS_TARGET_NAME=fri6gc
       CFLAGS="$CFLAGS_GC"
