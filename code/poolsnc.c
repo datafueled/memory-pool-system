@@ -1,7 +1,7 @@
 /* poolsnc.c: STACK NO CHECKING POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#14 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#17 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
  *
@@ -21,7 +21,7 @@
 #include "mpscsnc.h"
 #include "mpm.h"
 
-SRCID(poolsnc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#14 $");
+SRCID(poolsnc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolsnc.c#17 $");
 
 
 #define SNCGen  ((Serial)1) /* "generation" for SNC pools */
@@ -47,8 +47,8 @@ typedef struct SNCStruct {
 
 /* Forward declarations */
 
-static SegClass SNCSegClassGet(void);
-static BufferClass SNCBufClassGet(void);
+extern SegClass SNCSegClassGet(void);
+extern BufferClass SNCBufClassGet(void);
 static Bool SNCCheck(SNC snc);
 static void sncPopPartialSegChain(SNC snc, Buffer buf, Seg upTo);
 
@@ -127,7 +127,7 @@ static void sncBufferSetTopSeg(Buffer buffer, Seg seg)
 
 /* SNCBufInit -- Initialize an SNCBuf */
 
-static Res SNCBufInit (Buffer buffer, Pool pool, va_list args)
+static Res SNCBufInit(Buffer buffer, Pool pool, ArgList args)
 {
   SNCBuf sncbuf;
   Res res;
@@ -228,7 +228,7 @@ static Bool SNCSegCheck(SNCSeg sncseg)
 /* sncSegInit -- Init method for SNC segments */
 
 static Res sncSegInit(Seg seg, Pool pool, Addr base, Size size,
-                      Bool reservoirPermit, va_list args)
+                      Bool reservoirPermit, ArgList args)
 {
   SegClass super;
   SNCSeg sncseg;
@@ -359,19 +359,32 @@ static Bool sncFindFreeSeg(Seg *segReturn, SNC snc, Size size)
 }
 
 
+/* SNCVarargs -- decode obsolete varargs */
+
+static void SNCVarargs(ArgStruct args[MPS_ARGS_MAX], va_list varargs)
+{
+  args[0].key = MPS_KEY_FORMAT;
+  args[0].val.format = va_arg(varargs, Format);
+  args[1].key = MPS_KEY_ARGS_END;
+  AVER(ArgListCheck(args));
+}
+
+
 /* SNCInit -- initialize an SNC pool */
 
-static Res SNCInit(Pool pool, va_list arg)
+static Res SNCInit(Pool pool, ArgList args)
 {
   SNC snc;
   Format format;
+  ArgStruct arg;
 
   /* weak check, as half-way through initialization */
   AVER(pool != NULL);
 
   snc = Pool2SNC(pool);
 
-  format = va_arg(arg, Format);
+  ArgRequire(&arg, args, MPS_KEY_FORMAT);
+  format = arg.val.format;
 
   AVERT(Format, format);
   pool->format = format;
@@ -437,7 +450,7 @@ static Res SNCBufferFill(Addr *baseReturn, Addr *limitReturn,
   arena = PoolArena(pool);
   asize = SizeAlignUp(size, ArenaAlign(arena));
   res = SegAlloc(&seg, SNCSegClassGet(), &snc->segPrefStruct,
-                 asize, pool, withReservoirPermit);
+                 asize, pool, withReservoirPermit, argsNone);
   if (res != ResOK)
     return res;
 
@@ -662,6 +675,7 @@ DEFINE_POOL_CLASS(SNCPoolClass, this)
   this->name = "SNC";
   this->size = sizeof(SNCStruct);
   this->offset = offsetof(SNCStruct, poolStruct);
+  this->varargs = SNCVarargs;
   this->init = SNCInit;
   this->finish = SNCFinish;
   this->bufferFill = SNCBufferFill;
@@ -698,7 +712,7 @@ static Bool SNCCheck(SNC snc)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

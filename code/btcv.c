@@ -1,6 +1,6 @@
 /* btss.c: BIT TABLE COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/btcv.c#11 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/btcv.c#12 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MPS developers
@@ -16,10 +16,11 @@
 #include "mpsavm.h"
 #include "mps.h"
 #include "testlib.h"
+#include "mpslib.h"
 
 #include <stdlib.h>
 
-SRCID(btcv, "$Id: //info.ravenbrook.com/project/mps/master/code/btcv.c#11 $");
+SRCID(btcv, "$Id: //info.ravenbrook.com/project/mps/master/code/btcv.c#12 $");
 
 
 /* bt*Symmetric -- Symmetric operations on bit tables

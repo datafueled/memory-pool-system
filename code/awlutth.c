@@ -1,6 +1,6 @@
 /* awlutth.c: THREADING UNIT TEST USING POOL CLASS AWL
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/awlutth.c#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/awlutth.c#17 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -13,13 +13,14 @@
 #include "mpsavm.h"
 #include "fmtdy.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include "mps.h"
 #include "mpstd.h"
 #ifdef MPS_OS_W3
 #include "mpsw3.h"
 #endif
 #include <string.h>
-#if defined(MPS_OS_LI) || defined(MPS_OS_FR)
+#if defined(MPS_OS_LI) || defined(MPS_OS_FR) || defined(MPS_OS_XC)
 #include <pthread.h>
 #endif
 
@@ -46,7 +47,7 @@ static mps_word_t wrapper_wrapper[] = {
   UNINIT,                       /* class */
   0,                            /* Extra word */
   (mps_word_t)4<<2|2,                     /* F */
-  (mps_word_t)2<<(MPS_WORD_WIDTH - 8),    /* V */
+  (mps_word_t)2<<(MPS_WORD_WIDTH - 8),    /* V (version 2) */
   (mps_word_t)1<<2|1,                     /* VL */
   1                             /* patterns */
 };
@@ -119,7 +120,7 @@ static mps_word_t *alloc_table(unsigned long n, mps_ap_t ap)
   size_t objsize;
   void *p;
   mps_word_t *object;
-  objsize = (4 + n) * sizeof(mps_word_t);
+  objsize = (3 + n) * sizeof(mps_word_t);
   objsize = (objsize + MPS_PF_ALIGN-1)/MPS_PF_ALIGN*MPS_PF_ALIGN;
   do {
     unsigned long i;
@@ -203,6 +204,7 @@ static void test(mps_ap_t leafap, mps_ap_t exactap, mps_ap_t weakap,
       mps_word_t *string;
 
       string = alloc_string("spong", leafap);
+      UNUSED(string);
     }
   }
 
@@ -315,6 +317,7 @@ int main(int argc, char *argv[])
   pthread_t pthread1;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   initialise_wrapper(wrapper_wrapper);
   initialise_wrapper(string_wrapper);

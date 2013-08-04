@@ -20,50 +20,63 @@ of pools, choosing the most appropriate pool class for each.
     class in the open source MPS exactly matches your needs, then it
     is possible to develop new pool classes. See :ref:`pool-writing`.
 
-First, answer these questions about your data:
+First, do you need the MPS to :term:`automatically <automatic memory
+management>` :term:`reclaim` :term:`unreachable` blocks? If so, you
+need an automatically managed (garbage collected) pool class and you
+should consult :ref:`pool-choose-automatic` below.
+Otherwise, you need a manually managed pool class and you should
+consult :ref:`pool-choose-manual` below.
 
-1. Do you need the MPS to :term:`automatically <automatic memory
-   management>` :term:`reclaim` :term:`unreachable` blocks?
 
-2. Is it acceptable for the MPS to :term:`move <moving memory
+.. _pool-choose-automatic:
+
+Choosing an automatic pool class
+--------------------------------
+
+Answer these questions about your data:
+
+1. Is it acceptable for the MPS to :term:`move <moving memory
    manager>` blocks in memory and to place :term:`barriers (1)` on
    blocks? (For example, it might not be acceptable to move a block if
    it has been passed to :term:`foreign code` that remembered its
    location.)
 
-3. Do your blocks contain :term:`references` to blocks stored in
+2. Do your blocks contain :term:`references` to blocks stored in
    automatically managed pools (including references to other blocks
    in the same pool, if it's automatically managed)? And if so, are
-   these references :term:`exact <exact reference>`, :term:`ambiguous
-   <ambiguous reference>` or :term:`weak <weak reference (1)>`?
+   these references :term:`exact <exact reference>` or :term:`weak
+   <weak reference (1)>`?
 
 Second, look up your answers in this table to find the recommended
 pool class to use:
 
-==========  ======================  ===========  ====================================
-Automatic?  Movable & protectable?  References?  Use this pool class
-==========  ======================  ===========  ====================================
-yes         yes                     none         :ref:`pool-amcz`
-yes         yes                     exact        :ref:`pool-amc`
-yes         yes                     ambiguous    nothing suitable
-yes         yes                     weak         :ref:`pool-awl`
-yes         no                      none         :ref:`pool-lo`
-yes         no                      exact        :ref:`pool-ams`
-yes         no                      ambiguous    nothing suitable
-yes         no                      weak         nothing suitable
-no          *any*                   none         :ref:`pool-mvt`
-no          *any*                   exact        :ref:`pool-mvt` [1]_
-no          *any*                   ambiguous    :ref:`pool-mvt` [1]_
-no          *any*                   weak         :ref:`pool-mvt` [1]_
-==========  ======================  ===========  ====================================
+======================  ===========  ===================
+Movable & protectable?  References?  Use this pool class
+======================  ===========  ===================
+yes                     none         :ref:`pool-amcz`
+yes                     exact        :ref:`pool-amc`
+yes                     weak         :ref:`pool-awl`
+no                      none         :ref:`pool-lo`
+no                      exact        :ref:`pool-ams`
+no                      weak         nothing suitable
+======================  ===========  ===================
 
-.. note::
 
-    .. [1] :ref:`pool-mvt` doesn't scan for references, but you can
-           work around this by registering your blocks as
-           :term:`roots` (with the appropriate :term:`rank`) just
-           after they are allocated, and deregistering them just
-           before freeing them.
+.. _pool-choose-manual:
+
+Choosing a manual pool class
+----------------------------
+
+Answer these questions about your data:
+
+1. Are the blocks fixed in size? If so, use :ref:`pool-mfs`.
+
+2. Are the lifetimes of blocks predictable? If so, use
+   :ref:`pool-mvt`, and arrange that objects that are predicted to die
+   at about the same time are allocated from the same
+   :term:`allocation point`.
+
+3. Otherwise, use :ref:`pool-mvff`.
 
 
 .. Sources:
@@ -92,7 +105,7 @@ Property                                       AMC    AMCZ   AMS    AWL    LO   
 =============================================  =====  =====  =====  =====  =====  =====  =====  =====  =====  =====
 Supports :c:func:`mps_alloc`?                  no     no     no     no     no     yes    yes    yes    no     no
 Supports :c:func:`mps_free`?                   no     no     no     no     no     yes    yes    yes    yes    no
-Supports allocation points?                    yes    yes    yes    yes    yes    no     no     yes    yes    yes
+Supports allocation points?                    yes    yes    yes    yes    yes    no     yes    yes    yes    yes
 Supports allocation frames?                    yes    yes    yes    yes    yes    no     no     yes    yes    yes
 Supports segregated allocation caches?         no     no     no     no     no     yes    yes    yes    no     no
 Timing of collections? [2]_                    auto   auto   auto   auto   auto   ---    ---    ---    ---    ---
@@ -101,7 +114,7 @@ May contain exact references? [4]_             yes    ---    yes    yes    ---  
 May contain ambiguous references? [4]_         no     ---    no     no     ---    ---    ---    ---    ---    no
 May contain weak references? [4]_              no     ---    no     yes    ---    ---    ---    ---    ---    no
 Allocations fixed or variable in size?         var    var    var    var    var    fixed  var    var    var    var
-Alignment? [5]_                                conf   conf   conf   conf   conf   [6]_   [6]_   [7]_   [6]_   conf
+Alignment? [5]_                                conf   conf   conf   conf   conf   [6]_   [6]_   [7]_   [7]_   conf
 Dependent objects? [8]_                        no     ---    no     yes    ---    ---    ---    ---    ---    no
 May use remote references? [9]_                no     ---    no     no     ---    ---    ---    ---    ---    no
 Blocks are automatically managed? [10]_        yes    yes    yes    yes    yes    no     no     no     no     no
@@ -113,7 +126,7 @@ Blocks may be protected by barriers?           yes    no     yes    yes    yes  
 Blocks may move?                               yes    yes    no     no     no     no     no     no     no     no
 Blocks may be finalized?                       yes    yes    yes    yes    yes    no     no     no     no     no
 Blocks must be formatted? [11]_                yes    yes    yes    yes    yes    no     no     no     no     yes
-Blocks may belong to format auto-header?       yes    yes    yes    yes    yes    ---    ---    ---    ---    no
+Blocks may use :term:`in-band headers`?        yes    yes    yes    yes    yes    ---    ---    ---    ---    no
 =============================================  =====  =====  =====  =====  =====  =====  =====  =====  =====  =====
 
 .. note::
@@ -137,12 +150,13 @@ Blocks may belong to format auto-header?       yes    yes    yes    yes    yes  
     .. [5] "Alignment" is "conf" if the client program may specify
            :term:`alignment` for each pool.
 
-    .. [6] The alignment of blocks allocated from :ref:`pool-mv` and
-           :ref:`pool-mvt` pools is platform-dependent.
+    .. [6] The alignment of blocks allocated from :ref:`pool-mv` pools
+           is platform-dependent.
 
-    .. [7] :ref:`pool-mvff` pools have configurable alignment, but it
-           may not be smaller than the :term:`natural alignment` for
-           the :term:`platform` (see :c:macro:`MPS_PF_ALIGN`).
+    .. [7] :ref:`pool-mvt` and :ref:`pool-mvff` pools have
+           configurable alignment, but it may not be smaller than the
+           :term:`natural alignment` for the :term:`platform` (see
+           :c:macro:`MPS_PF_ALIGN`).
 
     .. [8] In pools with this property, each object may specify an
            :term:`dependent object` which the client program
@@ -174,9 +188,9 @@ Blocks may belong to format auto-header?       yes    yes    yes    yes    yes  
            location within the block is considered to be a reference
            to the block. It "supports base pointers only" if only a
            pointer to the base of the block (or, if the block belongs
-           to an object format of variant auto-header, a pointer just
-           past the end of the header) is considered to be a reference
-           to the block.
+           to an object format with :term:`in-band headers`, a pointer
+           just past the end of the header) is considered to be a
+           reference to the block.
 
 
 .. index::

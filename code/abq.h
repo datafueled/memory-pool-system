@@ -1,18 +1,17 @@
-/* abq.h: ABQ INTERFACE
+/* abq.h: QUEUE INTERFACE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/abq.h#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/abq.h#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
- * .purpose: A FIFO queue substrate for <code/poolmv2.c>
+ * .purpose: A fixed-length FIFO queue.
  *
- * .source: <design/poolmvt/>
+ * .design: <design/abq/>
  */
 
 #ifndef abq_h
 #define abq_h
 
 #include "meter.h"
-#include "cbs.h"
 #include "mpm.h"
 
 
@@ -24,17 +23,20 @@
 /* Prototypes  */
 
 typedef struct ABQStruct *ABQ;
-extern Res ABQInit(Arena arena, ABQ abq, void *owner, Count items);
+typedef Res (*ABQDescribeElement)(void *element, mps_lib_FILE *stream);
+typedef Bool (*ABQIterateMethod)(Bool *deleteReturn, void *element, void *closureP, Size closureS);
+
+extern Res ABQInit(Arena arena, ABQ abq, void *owner, Count elements, Size elementSize);
 extern Bool ABQCheck(ABQ abq);
 extern void ABQFinish(Arena arena, ABQ abq);
-extern Res ABQPush(ABQ abq, CBSBlock block);
-extern Res ABQPop(ABQ abq, CBSBlock *blockReturn);
-extern Res ABQPeek(ABQ abq, CBSBlock *blockReturn);
-extern Res ABQDelete(ABQ abq, CBSBlock block);
-extern Res ABQDescribe(ABQ abq, mps_lib_FILE *stream);
+extern Res ABQPush(ABQ abq, void *element);
+extern Res ABQPop(ABQ abq, void *elementReturn);
+extern Res ABQPeek(ABQ abq, void *elementReturn);
+extern Res ABQDescribe(ABQ abq, ABQDescribeElement describeElement, mps_lib_FILE *stream);
 extern Bool ABQIsEmpty(ABQ abq);
 extern Bool ABQIsFull(ABQ abq);
 extern Count ABQDepth(ABQ abq);
+extern void ABQIterate(ABQ abq, ABQIterateMethod iterate, void *closureP, Size closureS);
 
 
 /* Types */
@@ -42,9 +44,10 @@ extern Count ABQDepth(ABQ abq);
 typedef struct ABQStruct
 {
   Count elements;
+  Size elementSize;
   Index in;
   Index out;
-  CBSBlock *queue;
+  void *queue;
 
   /* Meter queue depth at each operation */
   METER_DECL(push);

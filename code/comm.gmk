@@ -2,7 +2,7 @@
 #
 # comm.gmk: COMMON GNUMAKEFILE FRAGMENT
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/comm.gmk#40 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/comm.gmk#52 $
 # Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
 #
 # DESCRIPTION
@@ -117,7 +117,6 @@ CFLAGSCOMMONLAX = $(PFMDEFS) $(CFLAGSCOMPILER) $(CFLAGSCOMPILERLAX)
 # These flags are added to compilations for the indicated variety.
 CFRASH = -DCONFIG_VAR_RASH -DNDEBUG $(CFLAGSOPT)
 CFHOT  = -DCONFIG_VAR_HOT  -DNDEBUG $(CFLAGSOPT)
-CFDIAG = -DCONFIG_VAR_DIAG -DNDEBUG $(CFLAGSOPT)
 CFCOOL = -DCONFIG_VAR_COOL          $(CFLAGSDEBUG)
 
 # Bind CFLAGS to the appropriate set of flags for the variety.
@@ -131,15 +130,10 @@ ifeq ($(VARIETY),hot)
 CFLAGS=$(CFLAGSCOMMON) $(CFHOT)
 CFLAGSLAX=$(CFLAGSCOMMONLAX) $(CFHOT)
 else
-ifeq ($(VARIETY),diag)
-CFLAGS=$(CFLAGSCOMMON) $(CFDIAG)
-CFLAGSLAX=$(CFLAGSCOMMONLAX) $(CFDIAG)
-else
 ifeq ($(VARIETY),cool)
 CFLAGS=$(CFLAGSCOMMON) $(CFCOOL)
 CFLAGSLAX=$(CFLAGSCOMMONLAX) $(CFCOOL)
 else
-endif
 endif
 endif
 endif
@@ -159,20 +153,20 @@ AWL = poolawl.c
 LO = poollo.c
 SNC = poolsnc.c
 POOLN = pooln.c
+MV2 = poolmv2.c
 MVFF = poolmvff.c
 TESTLIB = testlib.c
 FMTDY = fmtdy.c fmtno.c
 FMTDYTST = fmtdy.c fmtno.c fmtdytst.c
 FMTHETST = fmthe.c fmtdy.c fmtno.c fmtdytst.c
 PLINTH = mpsliban.c mpsioan.c
-EVENTPROC = eventcnv.c eventpro.c table.c
-MPMCOMMON = mpsi.c mpm.c arenavm.c arenacl.c arena.c global.c locus.c \
-            tract.c walk.c reserv.c protocol.c pool.c poolabs.c \
-            trace.c traceanc.c root.c seg.c format.c buffer.c ref.c \
-            bt.c ring.c shield.c ld.c event.c sac.c message.c \
-            poolmrg.c poolmfs.c poolmv.c dbgpool.c dbgpooli.c \
-            boot.c meter.c splay.c cbs.c diag.c \
-            ss.c table.c
+EVENTPROC = eventcnv.c table.c
+MPMCOMMON = abq.c arena.c arenacl.c arenavm.c arg.c boot.c bt.c         \
+    buffer.c cbs.c dbgpool.c dbgpooli.c event.c format.c         \
+    freelist.c global.c ld.c locus.c message.c meter.c mpm.c mpsi.c     \
+    pool.c poolabs.c poolmfs.c poolmrg.c poolmv.c protocol.c range.c    \
+    ref.c reserv.c ring.c root.c sac.c seg.c shield.c splay.c ss.c      \
+    table.c trace.c traceanc.c tract.c walk.c
 MPM = $(MPMCOMMON) $(MPMPF)
 
 
@@ -198,6 +192,8 @@ SNCOBJ = $(SNC:%.c=$(PFM)/$(VARIETY)/%.o)
 SNCDEP = $(SNC:%.c=$(PFM)/$(VARIETY)/%.d)
 POOLNOBJ = $(POOLN:%.c=$(PFM)/$(VARIETY)/%.o)
 POOLNDEP = $(POOLN:%.c=$(PFM)/$(VARIETY)/%.d)
+MV2OBJ = $(MV2:%.c=$(PFM)/$(VARIETY)/%.o)
+MV2DEP = $(MV2:%.c=$(PFM)/$(VARIETY)/%.d)
 MVFFOBJ = $(MVFF:%.c=$(PFM)/$(VARIETY)/%.o)
 MVFFDEP = $(MVFF:%.c=$(PFM)/$(VARIETY)/%.d)
 
@@ -215,53 +211,53 @@ EVENTPROCDEP = $(EVENTPROC:%.c=$(PFM)/$(VARIETY)/%.d)
 endif
 
 
+# == Test cases ==
+# 
+# %%TARGET: When adding a new target, add it to one of the variables
+# in this section. Library components go in LIB_TARGETS.
+
+LIB_TARGETS=mps.a mpsplan.a
+
+# If it is suitable for running regularly (for example, after every
+# build) as an automated test case, add it to AUTO_TEST_TARGETS.
+
+AUTO_TEST_TARGETS=abqtest amcss amcsshe amcssth amsss amssshe apss      \
+    arenacv awlut awluthe awlutth btcv exposet0 expt825 fbmtest finalcv \
+    finaltest fotest lockcov locv messtest mpmss mpsicv mv2test         \
+    poolncv qs sacss segsmss steptest walkt0 zmess
+
+# If it is not runnable as an automated test case, but is buildable,
+# add it to OTHER_TEST_TARGETS with a note.
+#
+# bttest and teletest -- interactive and so cannot be run unattended.
+# zcoll -- takes too long to be useful as a regularly run smoke test.
+
+OTHER_TEST_TARGETS=bttest teletest zcoll
+
+# This target records programs that we were once able to build but
+# can't at the moment:
+# 
+# replay -- depends on the EPVM pool.
+
+UNBUILDABLE_TARGETS=replay
+
+ALL_TARGETS=$(LIB_TARGETS) $(AUTO_TEST_TARGETS) $(OTHER_TEST_TARGETS) $(EXTRA_TARGETS)
+
+
 # == Pseudo-targets ==
 
-# %%TARGET: When adding a new target, add it to the all dependencies
-
-all: mpmss sacss amcss amcsshe amsss amssshe segsmss awlut awluthe \
-     mpsicv lockcov poolncv locv qs apss \
-     finalcv finaltest arenacv bttest teletest \
-     abqtest cbstest btcv mv2test messtest steptest \
-     walkt0 zcoll zmess \
-     $(EXTRA_TARGETS) \
-     mps.a mpsplan.a
+all: $(ALL_TARGETS)
 
 
-# Runs the automatic tests that are built with CONFIG_PROD_MPS.
-# These tests are run overnight (see design.buildsys.overnight).
-#   bttest & teletest cannot be run unattended
-#   mv2test cannot be run because MV2 is broken
-# %%TARGET: When adding a new target, if target is suitable for the
-# overnight tests, then add it here.
-TESTCASES=abqtest amcss amcsshe amcssth amsss amssshe apss arenacv awlut \
-          awluthe btcv cbstest finalcv finaltest lockcov locv \
-          messtest mpmss mpsicv poolncv qs sacss segsmss steptest \
-          walkt0
-testrun: $(TESTCASES)
-	OUTPUT=$$(mktemp /tmp/mps.log.XXXXXX); \
-	echo "Logging test output to $$OUTPUT"; \
-	$(^:%=(TESTCASE=$(PFM)/$(VARIETY)/%; \
-              echo "\n\n-- Running $$TESTCASE at $$(date) --" >> $$OUTPUT && \
-              echo "Running $$TESTCASE" && \
-              $$TESTCASE >> $$OUTPUT) &&) true
+# Run the automated tests.
+
+testrun: $(AUTO_TEST_TARGETS)
+	../tool/testrun.sh $(addprefix $(PFM)/$(VARIETY)/,$(AUTO_TEST_TARGETS))
 
 # These convenience targets allow one to type "make foo" to build target
 # foo in selected varieties (or none, for the latter rule).
-#
-# %%TARGET: When adding a new target, add a pseudo-target for it here.
 
-mpmss sacss amcss amcssth amcsshe amsss amssshe segsmss awlut awlutth \
-  awluthe mpsicv lockcov poolncv locv qs apss \
-  finalcv finaltest arenacv bttest teletest \
-  expt825 \
-  abqtest cbstest btcv mv2test \
-  messtest steptest \
-  walkt0 \
-  exposet0 \
-  zcoll zmess \
-  $(EXTRA_TARGETS) replay replaysw \
-  mps.a mpsplan.a: phony
+$(ALL_TARGETS): phony
 ifdef VARIETY
 	$(MAKE) -f $(PFM).gmk TARGET=$@ variety
 else
@@ -323,12 +319,9 @@ endif
 $(PFM)/rash/mps.a: $(PFM)/rash/mps.o
 $(PFM)/hot/mps.a: $(PFM)/hot/mps.o
 
-$(PFM)/diag/mps.a: \
-  $(MPMOBJ) $(AMCOBJ) $(AMSOBJ) $(AWLOBJ) $(LOOBJ) $(SNCOBJ) \
-  $(MVFFOBJ) $(PLINTHOBJ) $(POOLNOBJ)
 $(PFM)/cool/mps.a: \
   $(MPMOBJ) $(AMCOBJ) $(AMSOBJ) $(AWLOBJ) $(LOOBJ) $(SNCOBJ) \
-  $(MVFFOBJ) $(PLINTHOBJ) $(POOLNOBJ)
+  $(MV2OBJ) $(MVFFOBJ) $(PLINTHOBJ) $(POOLNOBJ)
 
 
 # OTHER GENUINE TARGETS
@@ -342,47 +335,17 @@ $(PFM)/cool/mps.a: \
 
 ifdef VARIETY
 
-$(PFM)/$(VARIETY)/finalcv: $(PFM)/$(VARIETY)/finalcv.o \
-	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/finaltest: $(PFM)/$(VARIETY)/finaltest.o \
-	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/expt825: $(PFM)/$(VARIETY)/expt825.o \
-	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/locv: $(PFM)/$(VARIETY)/locv.o \
+$(PFM)/$(VARIETY)/abqtest: $(PFM)/$(VARIETY)/abqtest.o \
 	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/mpmss: $(PFM)/$(VARIETY)/mpmss.o \
-	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/apss: $(PFM)/$(VARIETY)/apss.o \
-	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/sacss: $(PFM)/$(VARIETY)/sacss.o \
-	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/bttest: $(PFM)/$(VARIETY)/bttest.o \
-	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/teletest: $(PFM)/$(VARIETY)/teletest.o \
-	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/lockcov: $(PFM)/$(VARIETY)/lockcov.o \
-	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/mpsicv: $(PFM)/$(VARIETY)/mpsicv.o \
-	$(FMTDYTSTOBJ) $(FMTHETSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
 $(PFM)/$(VARIETY)/amcss: $(PFM)/$(VARIETY)/amcss.o \
 	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
-$(PFM)/$(VARIETY)/amcssth: $(PFM)/$(VARIETY)/amcssth.o \
-	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
 $(PFM)/$(VARIETY)/amcsshe: $(PFM)/$(VARIETY)/amcsshe.o \
 	$(FMTHETSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/amcssth: $(PFM)/$(VARIETY)/amcssth.o \
+	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
 $(PFM)/$(VARIETY)/amsss: $(PFM)/$(VARIETY)/amsss.o \
 	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
@@ -390,8 +353,11 @@ $(PFM)/$(VARIETY)/amsss: $(PFM)/$(VARIETY)/amsss.o \
 $(PFM)/$(VARIETY)/amssshe: $(PFM)/$(VARIETY)/amssshe.o \
 	$(FMTHETSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
-$(PFM)/$(VARIETY)/segsmss: $(PFM)/$(VARIETY)/segsmss.o \
-	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+$(PFM)/$(VARIETY)/apss: $(PFM)/$(VARIETY)/apss.o \
+	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/arenacv: $(PFM)/$(VARIETY)/arenacv.o \
+	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
 $(PFM)/$(VARIETY)/awlut: $(PFM)/$(VARIETY)/awlut.o \
 	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
@@ -402,38 +368,67 @@ $(PFM)/$(VARIETY)/awluthe: $(PFM)/$(VARIETY)/awluthe.o \
 $(PFM)/$(VARIETY)/awlutth: $(PFM)/$(VARIETY)/awlutth.o \
 	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
+$(PFM)/$(VARIETY)/btcv: $(PFM)/$(VARIETY)/btcv.o \
+	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/bttest: $(PFM)/$(VARIETY)/bttest.o \
+	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/exposet0: $(PFM)/$(VARIETY)/exposet0.o \
+	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/expt825: $(PFM)/$(VARIETY)/expt825.o \
+	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/fbmtest: $(PFM)/$(VARIETY)/fbmtest.o \
+	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/finalcv: $(PFM)/$(VARIETY)/finalcv.o \
+	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/finaltest: $(PFM)/$(VARIETY)/finaltest.o \
+	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/fotest: $(PFM)/$(VARIETY)/fotest.o \
+	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/lockcov: $(PFM)/$(VARIETY)/lockcov.o \
+	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/locv: $(PFM)/$(VARIETY)/locv.o \
+	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/messtest: $(PFM)/$(VARIETY)/messtest.o \
+	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/mpmss: $(PFM)/$(VARIETY)/mpmss.o \
+	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/mpsicv: $(PFM)/$(VARIETY)/mpsicv.o \
+	$(FMTDYTSTOBJ) $(FMTHETSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
+$(PFM)/$(VARIETY)/mv2test: $(PFM)/$(VARIETY)/mv2test.o \
+	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+
 $(PFM)/$(VARIETY)/poolncv: $(PFM)/$(VARIETY)/poolncv.o \
 	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
 $(PFM)/$(VARIETY)/qs: $(PFM)/$(VARIETY)/qs.o \
 	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
-$(PFM)/$(VARIETY)/arenacv: $(PFM)/$(VARIETY)/arenacv.o \
+$(PFM)/$(VARIETY)/sacss: $(PFM)/$(VARIETY)/sacss.o \
 	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
-$(PFM)/$(VARIETY)/abqtest: $(PFM)/$(VARIETY)/abqtest.o \
-	$(PFM)/$(VARIETY)/abq.o $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
+$(PFM)/$(VARIETY)/segsmss: $(PFM)/$(VARIETY)/segsmss.o \
+	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
-$(PFM)/$(VARIETY)/cbstest: $(PFM)/$(VARIETY)/cbstest.o \
-	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/btcv: $(PFM)/$(VARIETY)/btcv.o \
-	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/mv2test: $(PFM)/$(VARIETY)/mv2test.o \
-	$(PFM)/$(VARIETY)/poolmv2.o $(PFM)/$(VARIETY)/abq.o \
-	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/messtest: $(PFM)/$(VARIETY)/messtest.o \
+$(PFM)/$(VARIETY)/teletest: $(PFM)/$(VARIETY)/teletest.o \
 	$(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
 $(PFM)/$(VARIETY)/steptest: $(PFM)/$(VARIETY)/steptest.o \
 	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
 $(PFM)/$(VARIETY)/walkt0: $(PFM)/$(VARIETY)/walkt0.o \
-	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
-
-$(PFM)/$(VARIETY)/exposet0: $(PFM)/$(VARIETY)/exposet0.o \
 	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
 $(PFM)/$(VARIETY)/zcoll: $(PFM)/$(VARIETY)/zcoll.o \
@@ -443,7 +438,7 @@ $(PFM)/$(VARIETY)/zmess: $(PFM)/$(VARIETY)/zmess.o \
 	$(FMTDYTSTOBJ) $(TESTLIBOBJ) $(PFM)/$(VARIETY)/mps.a
 
 $(PFM)/$(VARIETY)/mpseventcnv: $(PFM)/$(VARIETY)/eventcnv.o \
-  $(PFM)/$(VARIETY)/eventpro.o $(PFM)/$(VARIETY)/mps.a
+  $(PFM)/$(VARIETY)/mps.a
 
 $(PFM)/$(VARIETY)/mpseventtxt: $(PFM)/$(VARIETY)/eventtxt.o \
   $(PFM)/$(VARIETY)/mps.a
@@ -453,7 +448,7 @@ $(PFM)/$(VARIETY)/mpseventsql: $(PFM)/$(VARIETY)/eventsql.o \
 
 $(PFM)/$(VARIETY)/replay: $(PFM)/$(VARIETY)/replay.o \
   $(PFM)/$(VARIETY)/eventrep.o \
-  $(PFM)/$(VARIETY)/eventpro.o $(PFM)/$(VARIETY)/table.o \
+  $(PFM)/$(VARIETY)/table.o \
   $(PFM)/$(VARIETY)/mps.a
 
 $(PFM)/$(VARIETY)/mpsplan.a: $(PLINTHOBJ)

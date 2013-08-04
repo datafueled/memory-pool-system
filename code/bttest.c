@@ -1,6 +1,6 @@
 /* bttest.c: BIT TABLE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/bttest.c#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/bttest.c#14 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -9,13 +9,14 @@
 #include "mps.h"
 #include "mpsavm.h"
 #include "testlib.h"
+#include "mpslib.h"
 
 #include <stdlib.h>
 #include <stdarg.h>
 #include "mpstd.h"
 #include <time.h>
 
-SRCID(bttest, "$Id: //info.ravenbrook.com/project/mps/master/code/bttest.c#13 $");
+SRCID(bttest, "$Id: //info.ravenbrook.com/project/mps/master/code/bttest.c#14 $");
 
 
 static BT bt; /* the BT which we will use */

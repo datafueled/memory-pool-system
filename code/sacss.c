@@ -1,6 +1,6 @@
 /* sacss.c: SAC MANUAL ALLOC STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/sacss.c#15 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/sacss.c#18 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */
@@ -12,6 +12,7 @@
 #include "mps.h"
 
 #include "testlib.h"
+#include "mpslib.h"
 
 #include <stdio.h>
 #include "mpstd.h"
@@ -172,7 +173,7 @@ static int testInArena(mps_arena_t arena)
 
   printf("MVFF\n\n");
   die(stress(mps_class_mvff(), classCOUNT, classes, randomSize8, arena,
-             (size_t)65536, (size_t)32, sizeof(void *), TRUE, TRUE, TRUE),
+             (size_t)65536, (size_t)32, (size_t)MPS_PF_ALIGN, TRUE, TRUE, TRUE),
       "stress MVFF");
   printf("MV debug\n\n");
   die(stress(mps_class_mv_debug(), classCOUNT, classes, randomSize8, arena,
@@ -191,6 +192,7 @@ int main(int argc, char *argv[])
   mps_arena_t arena;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   die(mps_arena_create(&arena, mps_arena_class_vmnz(), testArenaSIZE),
       "mps_arena_create");

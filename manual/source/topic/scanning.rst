@@ -85,8 +85,8 @@ passing them to :c:func:`MPS_FIX1` and :c:func:`MPS_FIX2`.
 
 The reference passed to :c:func:`MPS_FIX2` must be the address of the
 base of the block referred to (unless the referent belongs to an
-:term:`object format` of variant auto-header, in which case it must be
-a reference to the address just after the header).
+:term:`object format` with :term:`in-band headers`, in which case it
+must be a reference to the address just after the header).
 
 However, :c:func:`MPS_FIX1` allows some leeway: if you pass it a
 reference to the interior of an allocated block, then
@@ -116,7 +116,7 @@ is not of interest to the MPS.
 Similarly, if you use interior pointers, you do not need to convert
 them to base pointers before calling :c:func:`MPS_FIX1` (or, indeed,
 before calling :c:func:`MPS_FIX2`, if the target of the referent
-belongs to an :term:`object format` of variant auto-header).
+belongs to an :term:`object format` with :term:`in-band headers`).
 
 
 .. index::
@@ -143,7 +143,7 @@ references to non-references, on how often genuine references turn out
 to be "of interest", and what kind of code the compiler has
 generated. There is no substitute for measurement.
 
-See :ref:`topic-critical`.
+See :ref:`design-critical-path`.
 
 .. note::
 
@@ -212,7 +212,7 @@ The MPS does not require you to :term:`fix` all your :term:`references`. But if 
 
 These optimizations can be tricky to make correct, and can make the
 system fragile (for example, it may break if you start using a
-different :term:`pool class`), so it usually safest to fix all
+different :term:`pool class`), so it is usually safest to fix all
 references.
 
 
@@ -229,7 +229,7 @@ code. The MPS provides a convenience macro :c:func:`MPS_FIX12` for the
 common case of calling :c:func:`MPS_FIX1` and then immediately calling
 :c:func:`MPS_FIX2` if the reference is "of interest".
 
-.. warning::
+.. note::
 
     Some compilers generate better code if you use
     :c:func:`MPS_FIX12`, and some if you use :c:func:`MPS_FIX1` and
@@ -485,9 +485,8 @@ Fixing interface
         afterwards.
 
         The only exception is for references to objects belonging to a
-        format of variant auto-header (see
-        :c:type:`mps_fmt_auto_header_s`): the header size must not be
-        subtracted from these references.
+        format with :term:`in-band headers`: the header size must not
+        be subtracted from these references.
 
     .. note::
 

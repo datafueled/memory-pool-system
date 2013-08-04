@@ -1,6 +1,6 @@
 /* protw3.c: PROTECTION FOR WIN32
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#13 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#14 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -18,7 +18,7 @@
 
 #include "mpswin.h"
 
-SRCID(protw3, "$Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#13 $");
+SRCID(protw3, "$Id: //info.ravenbrook.com/project/mps/master/code/protw3.c#14 $");
 
 
 void ProtSet(Addr base, Addr limit, AccessSet mode)
@@ -44,7 +44,6 @@ void ProtSet(Addr base, Addr limit, AccessSet mode)
 LONG WINAPI ProtSEHfilter(LPEXCEPTION_POINTERS info)
 {
   LPEXCEPTION_RECORD er;
-  ULONG_PTR iswrite;
   ULONG_PTR address;
   AccessSet mode;
   Addr base, limit;
@@ -68,15 +67,22 @@ LONG WINAPI ProtSEHfilter(LPEXCEPTION_POINTERS info)
 
   AVER(er->NumberParameters >= 2);
 
-  iswrite = er->ExceptionInformation[0]; /* 0 read; 1 write */
-  AVER(iswrite == 0 || iswrite == 1);
-
-  /* Pages cannot be made write-only, so an attempt to write must
-   * also cause a read-access if necessary */
-  if(iswrite)
-    mode = AccessREAD | AccessWRITE;
-  else
+  switch (er->ExceptionInformation[0]) {
+  case 0:       /* read */
+  case 8:       /* execute */
     mode = AccessREAD;
+    break;
+  case 1:       /* write */
+    /* Pages cannot be made write-only, so an attempt to write must
+       also cause a read-access if necessary */
+    mode = AccessREAD | AccessWRITE;
+    break;
+  default:
+    /* <http://msdn.microsoft.com/en-us/library/aa363082%28VS.85%29.aspx> */
+    NOTREACHED;
+    mode = AccessREAD | AccessWRITE;
+    break;
+  }
 
   address = er->ExceptionInformation[1];
 

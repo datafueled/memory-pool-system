@@ -1,11 +1,12 @@
 /* lockcov.c: LOCK COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/lockcov.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/lockcov.c#11 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "mpm.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include <stdlib.h>             /* for malloc & free */
 
 

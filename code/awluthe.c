@@ -1,6 +1,6 @@
 /* awluthe.c: POOL CLASS AWL UNIT TEST WITH OBJECT HEADERS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/awluthe.c#7 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/awluthe.c#8 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
@@ -14,6 +14,7 @@
 #include "fmthe.h"
 #include "fmtdy.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include "mps.h"
 #include "mpstd.h"
 #ifdef MPS_OS_W3
@@ -305,6 +306,7 @@ int main(int argc, char *argv[])
   void *r;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   initialise_wrapper(wrapper_wrapper);
   initialise_wrapper(string_wrapper);

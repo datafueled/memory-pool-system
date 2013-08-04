@@ -1,4 +1,4 @@
-/* $HopeName: $
+/* $Id: //info.ravenbrook.com/project/mps/master/test/test/testlib/preGR.h#2 $
 Before grotesque interface;
  - "arena" was called "space" in several functions
 */

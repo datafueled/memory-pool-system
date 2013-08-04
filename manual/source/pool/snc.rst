@@ -39,7 +39,8 @@ SNC properties
 
 * Supports allocation via :term:`allocation points` only. If an
   allocation point is created in an SNC pool, the call to
-  :c:func:`mps_ap_create` takes no additional parameters.
+  :c:func:`mps_ap_create_k` requires one keyword argument,
+  :c:macro:`MPS_KEY_RANK`.
 
 * Does not support deallocation via :c:func:`mps_free`.
 
@@ -70,13 +71,13 @@ SNC properties
 
 * Blocks do not :term:`move <moving garbage collector>`.
 
-* Blocks may not be registered for :term:`finalization`. A consequence
-  of this is that the pool's :term:`object format` need not provide a
-  :term:`forward method` or an :term:`is-forwarded method`.
+* Blocks may not be registered for :term:`finalization`.
 
-* Blocks must belong to an :term:`object format`, but this may not be
-  a format of variant auto-header.
+* Blocks must belong to an :term:`object format` which provides
+  :term:`scan <scan method>`, :term:`skip <skip method>`, and
+  :term:`padding <padding method>` methods.
 
+* Blocks must not have :term:`in-band headers`.
 
 
 .. index::
@@ -95,23 +96,49 @@ SNC introspection
     Return the :term:`pool class` for an SNC (Stack No Check)
     :term:`pool`.
 
-    When creating an SNC pool, :c:func:`mps_pool_create` takes one
-    extra argument::
+    When creating an SNC pool, :c:func:`mps_pool_create_k` requires one
+    :term:`keyword argument`:
 
-        mps_res_t mps_pool_create(mps_pool_t *pool_o, mps_arena_t arena,
-                                  mps_class_t mps_class_snc(),
-                                  mps_fmt_t fmt)
+    * :c:macro:`MPS_KEY_FORMAT` (type :c:type:`mps_fmt_t`) specifies
+      the :term:`object format` for the objects allocated in the pool.
+      The format must provide a :term:`scan method`, a :term:`skip
+      method`, and a :term:`padding method`.
 
-    ``fmt`` specifies the :term:`object format` for the objects
-    allocated in the pool. The format must provide a :term:`scan
-    method`, a :term:`skip method`, and a :term:`padding method`.
+    For example::
 
-    When creating an allocation point on an SNC pool,
-    :c:func:`mps_ap_create` takes one extra argument::
+        MPS_ARGS_BEGIN(args) {
+            MPS_ARGS_ADD(args, MPS_KEY_FORMAT, fmt);
+            MPS_ARGS_DONE(args);
+            res = mps_pool_create_k(&pool, arena, mps_class_snc(), args);
+        } MPS_ARGS_END(args);
 
-        mps_res_t mps_ap_create(mps_ap_t *ap_o, mps_pool_t pool,
-                                mps_rank_t rank)
+    .. deprecated:: starting with version 1.112.
 
-    ``rank`` specifies the :term:`rank` of references in objects
-    allocated on this allocation point. It must be
-    :c:func:`mps_rank_exact`.
+        When using :c:func:`mps_pool_create`, pass the format like
+        this::
+
+            mps_res_t mps_pool_create(mps_pool_t *pool_o, mps_arena_t arena,
+                                      mps_class_t mps_class_snc(),
+                                      mps_fmt_t fmt)
+
+    When creating an :term:`allocation point` on an SNC pool,
+    :c:func:`mps_ap_create_k` requires one keyword argument:
+
+    * :c:macro:`MPS_KEY_RANK` (type :c:type:`mps_rank_t`) specifies
+      the :term:`rank` of references in objects allocated on this
+      allocation point. It must be :c:func:`mps_rank_exact`.
+
+    For example::
+
+        MPS_ARGS_BEGIN(args) {
+            MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+            MPS_ARGS_DONE(args);
+            res = mps_ap_create_k(&ap, awl_pool, args);
+        } MPS_ARGS_END(args);
+
+    .. deprecated:: starting with version 1.112.
+
+        When using :c:func:`mps_ap_create`, pass the rank like this::
+
+            mps_res_t mps_ap_create(mps_ap_t *ap_o, mps_pool_t pool,
+                                    mps_rank_t rank)

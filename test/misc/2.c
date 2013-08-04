@@ -1,6 +1,6 @@
 /* 
 TEST_HEADER
- id = $HopeName$
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/misc/2.c#2 $
  summary = access negative location.
  language = c
  link = testlib.o

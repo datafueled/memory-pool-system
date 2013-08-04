@@ -1,7 +1,7 @@
 /* vmix.c: VIRTUAL MEMORY MAPPING FOR UNIX (ISH)
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/vmix.c#7 $
- * Copyright (c) 2001,2007 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/vmix.c#10 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is the implementation of the virtual memory mapping
  * interface (vm.h) for Unix-like operating systems.  It was created
@@ -18,11 +18,11 @@
  * (MAP_PRIVATE) mapping with the flag MAP_ANON.
  *
  * .non-standard: Note that the MAP_ANON flag is non-standard; it is
- * available on Darwin and FreeBSD.  .non-standard.linux: Linux
- * seems to use MAP_ANONYMOUS instead.  Some Linux systems make MAP_ANON
- * available and deprecate it.  .non-standard.sesame: On Linux getting
- * a definition of MAP_ANON requires a macro to be defined prior to
- * <sys/mman.h>.
+ * available on Darwin and FreeBSD. .non-standard.linux: Linux seems
+ * to use MAP_ANONYMOUS instead. Some Linux systems make MAP_ANON
+ * available and deprecate it. .non-standard.sesame: On Linux getting
+ * a definition of MAP_ANON requires a _BSD_SOURCE to be defined prior
+ * to <sys/mman.h>; see config.h.
  *
  * .assume.not-last: The implementation of VMCreate assumes that
  * mmap() will not choose a region which contains the last page
@@ -38,12 +38,11 @@
  * seem to be a problem.
  */
 
-/* .non-standard.sesame */
-#define _BSD_SOURCE 1
+#include "mpm.h"
 
 /* for mmap(2), munmap(2) */
 #include <sys/types.h>
-#include <sys/mman.h>
+#include <sys/mman.h> /* see .feature.li in config.h */
 
 /* for errno(2) */
 #include <errno.h>
@@ -51,14 +50,12 @@
 /* for getpagesize(3) */
 #include <unistd.h>
 
-#include "mpm.h"
-
 
 #if !defined(MPS_OS_FR) && !defined(MPS_OS_XC) && !defined(MPS_OS_LI)
 #error "vmix.c is Unix-like specific, currently MPS_OS_FR XC LI"
 #endif
 
-SRCID(vmix, "$Id: //info.ravenbrook.com/project/mps/master/code/vmix.c#7 $");
+SRCID(vmix, "$Id: //info.ravenbrook.com/project/mps/master/code/vmix.c#10 $");
 
 
 /* VMStruct -- virtual memory structure */
@@ -98,9 +95,18 @@ Bool VMCheck(VM vm)
 }
 
 
+Res VMParamFromArgs(void *params, size_t paramSize, ArgList args)
+{
+  AVER(params != NULL);
+  AVERT(ArgList, args);
+  UNUSED(paramSize);
+  return ResOK;
+}
+
+
 /* VMCreate -- reserve some virtual address space, and create a VM structure */
 
-Res VMCreate(VM *vmReturn, Size size)
+Res VMCreate(VM *vmReturn, Size size, void *params)
 {
   Align align;
   VM vm;
@@ -109,6 +115,7 @@ Res VMCreate(VM *vmReturn, Size size)
   Res res;
 
   AVER(vmReturn != NULL);
+  AVER(params != NULL);
 
   /* Find out the page size from the OS */
   pagesize = getpagesize();
@@ -160,13 +167,6 @@ Res VMCreate(VM *vmReturn, Size size)
   AVERT(VM, vm);
 
   EVENT3(VMCreate, vm, vm->base, vm->limit);
-  DIAG_SINGLEF((
-    "VM_ix_Create_ok",
-    "[$W..<$W>..$W)", 
-    (WriteFW)vm->base,
-    (WriteFW)AddrOffset(vm->base, vm->limit),
-    (WriteFW)vm->limit,
-    NULL ));
 
   *vmReturn = vm;
   return ResOK;
@@ -185,14 +185,6 @@ void VMDestroy(VM vm)
 
   AVERT(VM, vm);
   AVER(vm->mapped == (Size)0);
-
-  DIAG_SINGLEF((
-    "VM_ix_Destroy",
-    "[$W..<$W>..$W)", 
-    (WriteFW)vm->base, 
-    (WriteFW)AddrOffset(vm->base, vm->limit),
-    (WriteFW)vm->limit,
-    NULL ));
 
   /* This appears to be pretty pointless, since the descriptor */
   /* page is about to vanish completely.  However, munmap might fail */
@@ -312,7 +304,7 @@ void VMUnmap(VM vm, Addr base, Addr limit)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2007 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

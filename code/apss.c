@@ -1,6 +1,6 @@
 /* apss.c: AP MANUAL ALLOC STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/apss.c#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/apss.c#17 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */
@@ -8,13 +8,16 @@
 
 #include "mpscmv.h"
 #include "mpscmvff.h"
+#include "mpscmvt.h"
 #include "mpslib.h"
+#include "mpsacl.h"
 #include "mpsavm.h"
 
 #include "testlib.h"
+#include "mpslib.h"
 
-#include <stdlib.h>
 #include <stdarg.h>
+#include <stdlib.h> /* malloc */
 
 
 #define testArenaSIZE   ((((size_t)3)<<24) - 4)
@@ -40,14 +43,14 @@ static mps_res_t make(mps_addr_t *p, mps_ap_t ap, size_t size)
 
 /* stress -- create a pool of the requested type and allocate in it */
 
-static mps_res_t stress(mps_class_t class, size_t (*size)(int i),
+static mps_res_t stress(mps_class_t class, size_t (*size)(unsigned long i),
                         mps_arena_t arena, ...)
 {
   mps_res_t res = MPS_RES_OK;
   mps_pool_t pool;
   mps_ap_t ap;
   va_list arg;
-  int i, k;
+  unsigned long i, k;
   int *ps[testSetSIZE];
   size_t ss[testSetSIZE];
 
@@ -75,7 +78,7 @@ static mps_res_t stress(mps_class_t class, size_t (*size)(int i),
   for (k=0; k<testLOOPS; ++k) {
     /* shuffle all the objects */
     for (i=0; i<testSetSIZE; ++i) {
-      int j = rand()%(testSetSIZE-i);
+      unsigned long j = rnd()%(testSetSIZE-i);
       void *tp;
       size_t ts;
      
@@ -116,7 +119,7 @@ allocFail:
 /* randomSizeAligned -- produce sizes both large and small,
  * aligned by platform alignment */
 
-static size_t randomSizeAligned(int i)
+static size_t randomSizeAligned(unsigned long i)
 {
   size_t maxSize = 2 * 160 * 0x2000;
   /* Reduce by a factor of 2 every 10 cycles.  Total allocation about 40 MB. */
@@ -153,21 +156,30 @@ static void testInArena(mps_arena_t arena, mps_pool_debug_option_s *options)
 
   /* IWBN to test MVFFDebug, but the MPS doesn't support debugging APs, */
   /* yet (MV Debug works here, because it fakes it through PoolAlloc). */
-  printf("MVFF\n\n");
+  printf("MVFF\n");
   res = stress(mps_class_mvff(), randomSizeAligned, arena,
-               (size_t)65536, (size_t)32, sizeof(void *), TRUE, TRUE, TRUE);
+               (size_t)65536, (size_t)32, (size_t)MPS_PF_ALIGN, TRUE, TRUE, TRUE);
   if (res == MPS_RES_COMMIT_LIMIT) return;
   die(res, "stress MVFF");
-  printf("MV debug\n\n");
+
+  printf("MV debug\n");
   res = stress(mps_class_mv_debug(), randomSizeAligned, arena,
                options, (size_t)65536, (size_t)32, (size_t)65536);
   if (res == MPS_RES_COMMIT_LIMIT) return;
   die(res, "stress MV debug");
-  printf("MV\n\n");
+
+  printf("MV\n");
   res = stress(mps_class_mv(), randomSizeAligned, arena,
                (size_t)65536, (size_t)32, (size_t)65536);
   if (res == MPS_RES_COMMIT_LIMIT) return;
   die(res, "stress MV");
+
+  printf("MVT\n");
+  res = stress(mps_class_mvt(), randomSizeAligned, arena,
+               (size_t)8, (size_t)32, (size_t)65536, (mps_word_t)4,
+               (mps_word_t)50);
+  if (res == MPS_RES_COMMIT_LIMIT) return;
+  die(res, "stress MVT");
 }
 
 
@@ -179,6 +191,7 @@ int main(int argc, char *argv[])
   bothOptions = MPS_PF_ALIGN == 8 ? &bothOptions8 : &bothOptions16;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   die(mps_arena_create(&arena, mps_arena_class_vm(), 2*testArenaSIZE),
       "mps_arena_create");
@@ -187,6 +200,12 @@ int main(int argc, char *argv[])
   mps_arena_destroy(arena);
 
   die(mps_arena_create(&arena, mps_arena_class_vmnz(), 2*testArenaSIZE),
+      "mps_arena_create");
+  testInArena(arena, bothOptions);
+  mps_arena_destroy(arena);
+
+  die(mps_arena_create(&arena, mps_arena_class_cl(),
+                       testArenaSIZE, malloc(testArenaSIZE)),
       "mps_arena_create");
   testInArena(arena, bothOptions);
   mps_arena_destroy(arena);

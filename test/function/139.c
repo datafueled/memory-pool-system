@@ -1,6 +1,6 @@
 /* 
 TEST_HEADER
- id = $HopeName$
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/139.c#2 $
  summary = MVFF alloc from emergency list test
  language = c
  link = testlib.o

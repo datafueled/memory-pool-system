@@ -48,8 +48,8 @@ LO properties
   via :c:func:`mps_free`.
 
 * Supports allocation via :term:`allocation points`. If an allocation
-  point is created in a LO pool, the call to :c:func:`mps_ap_create`
-  takes no additional parameters.
+  point is created in a LO pool, the call to
+  :c:func:`mps_ap_create_k` takes no keyword arguments.
 
 * Supports :term:`allocation frames` but does not use them to improve
   the efficiency of stack-like allocation.
@@ -76,18 +76,18 @@ LO properties
   method`.
 
 * Blocks may only be referenced by :term:`base pointers` (unless they
-  belong to an object format of variant auto-header).
+  have :term:`in-band headers`).
 
 * Blocks are not protected by :term:`barriers (1)`.
 
-* Blocks do not :term:`move <moving garbage collector>`. A consequence
-  of this is that the pool's :term:`object format` need not provide a
-  :term:`forward method` or an :term:`is-forwarded method`. (It also
-  does not need a :term:`padding method`.)
+* Blocks do not :term:`move <moving garbage collector>`.
 
 * Blocks may be registered for :term:`finalization`.
 
-* Blocks must belong to an :term:`object format`.
+* Blocks must belong to an :term:`object format` which provides
+  :term:`scan <scan method>` and :term:`skip <skip method>` methods.
+
+* Blocks may have :term:`in-band headers`.
 
 
 .. index::
@@ -105,13 +105,26 @@ LO interface
     Return the :term:`pool class` for an LO (Leaf Object)
     :term:`pool`.
 
-    When creating an LO pool, :c:func:`mps_pool_create` takes one
-    extra argument::
+    When creating an LO pool, :c:func:`mps_pool_create_k` require one
+    :term:`keyword argument`:
 
-        mps_res_t mps_pool_create(mps_pool_t *pool_o, mps_arena_t arena, 
-                                  mps_class_t mps_class_lo(),
-                                  mps_fmt_t fmt)
+    * :c:macro:`MPS_KEY_FORMAT` (type :c:type:`mps_fmt_t`) specifies
+      the :term:`object format` for the objects allocated in the pool.
+      The format must provide a :term:`skip method`.
 
-    ``fmt`` specifies the :term:`object format` for the objects
-    allocated in the pool. The format must provide a :term:`skip
-    method`.
+    For example::
+
+        MPS_ARGS_BEGIN(args) {
+            MPS_ARGS_ADD(args, MPS_KEY_FORMAT, fmt);
+            MPS_ARGS_DONE(args);
+            res = mps_pool_create_k(&pool, arena, mps_class_lo(), args);
+        } MPS_ARGS_END(args);
+
+    .. deprecated:: starting with version 1.112.
+
+        When using :c:func:`mps_pool_create`, pass the format like
+        this::
+
+            mps_res_t mps_pool_create(mps_pool_t *pool_o, mps_arena_t arena, 
+                                      mps_class_t mps_class_lo(),
+                                      mps_fmt_t fmt)

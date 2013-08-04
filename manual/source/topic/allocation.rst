@@ -96,7 +96,7 @@ many small objects. They must be used according to the
     :c:type:`mps_ap_s`.
 
 
-.. c:function:: mps_res_t mps_ap_create(mps_ap_t *ap_o, mps_pool_t pool, ...)
+.. c:function:: mps_res_t mps_ap_create_k(mps_ap_t *ap_o, mps_pool_t pool, mps_arg_s args[])
 
     Create an :term:`allocation point` in a :term:`pool`.
 
@@ -105,11 +105,13 @@ many small objects. They must be used according to the
 
     ``pool`` is the pool.
 
+    ``args`` are :term:`keyword arguments` specific to the pool class
+    to which ``pool`` belong. See the documentation for that pool
+    class. (Most pool classes don't take any keyword arguments; in
+    those cases you can pass :c:macro:`mps_args_none`.)
+
     Returns :c:macro:`MPS_RES_OK` if successful, or another
     :term:`result code` if not.
-
-    Some pool classes require additional arguments to be passed to
-    :c:func:`mps_ap_create`. See the documentation for the pool class.
 
     .. warning::
 
@@ -124,9 +126,28 @@ many small objects. They must be used according to the
         ``va_list`` mechanism.
 
 
+.. c:function:: mps_res_t mps_ap_create(mps_ap_t *ap_o, mps_pool_t pool, ...)
+
+    .. deprecated:: starting with version 1.112.
+
+        Use :c:func:`mps_ap_create_k` instead: the :term:`keyword
+        arguments` interface is more reliable and produces better
+        error messages.
+
+    An alternative to :c:func:`mps_ap_create_k` that takes its extra
+    arguments using the standard :term:`C` variable argument list
+    mechanism.
+
+
 .. c:function:: mps_res_t mps_ap_create_v(mps_ap_t *ap_o, mps_pool_t pool, va_list args)
 
-    An alternative to :c:func:`mps_ap_create` that takes its extra
+    .. deprecated:: starting with version 1.112.
+
+        Use :c:func:`mps_ap_create_k` instead: the :term:`keyword
+        arguments` interface is more reliable and produces better
+        error messages.
+
+    An alternative to :c:func:`mps_ap_create_k` that takes its extra
     arguments using the standard :term:`C` ``va_list`` mechanism.
 
 
@@ -222,18 +243,28 @@ is thus::
 
     mps_addr_t p;
     obj_t obj;
+    size_t aligned_size = ALIGN(size); /* see note 1 */
     do {
-        mps_res_t res = mps_reserve(&p, ap, size);
+        mps_res_t res = mps_reserve(&p, ap, aligned_size);
         if (res != MPS_RES_OK) /* handle the error */;
         /* p is now an ambiguous reference to the reserved block */
         obj = p;
         /* initialize obj */
-    } while (!mps_commit(ap, p, size));
+    } while (!mps_commit(ap, p, aligned_size)); /* see note 2 */
     /* obj is now valid and managed by the MPS */
 
-It is not necessary to worry about going around this loop many times:
-:c:func:`mps_commit` can fail at most once per thread per
-:term:`flip`.
+.. note::
+
+    1. Here :c:func:`ALIGN` represents a function or macro that
+       rounds ``size`` up to the necessary alignment, which should be
+       at least as big as the alignment of the pool. (The reason that
+       the MPS does not do this rounding up for you is to provide more
+       opportunities for optimization: in many cases the required
+       alignment will be a constant that's known at compilation time.)
+
+    2. :c:func:`mps_commit` returns false only if a garbage collection
+       :term:`flip` occurs after :c:func:`mps_reserve`.  This is a very
+       rare event, especially if the object initialization is short.
 
 
 .. c:function:: mps_res_t mps_reserve(mps_addr_t *p_o, mps_ap_t ap, size_t size)
@@ -555,7 +586,7 @@ as refilling the buffer.
 The *reserve* operation thus looks like this::
 
     if (ap->alloc + size <= ap->limit) {
-        ap->alloc += ap->size;
+        ap->alloc += size;
         p = ap->init;
     } else {
         res = mps_ap_fill(&p, ap, size);
@@ -642,7 +673,7 @@ branch prediction should work well since the test almost never fails).
     synchronization in a multi-threaded environment.
 
     Create an allocation point for a pool by calling
-    :c:func:`mps_ap_create`, and allocate memory via one by calling
+    :c:func:`mps_ap_create_k`, and allocate memory via one by calling
     :c:func:`mps_reserve` and :c:func:`mps_commit`.
 
 

@@ -1,7 +1,7 @@
 /* pool.c: POOL IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/pool.c#19 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/pool.c#23 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
  * DESIGN
@@ -33,7 +33,7 @@
 
 #include "mpm.h"
 
-SRCID(pool, "$Id: //info.ravenbrook.com/project/mps/master/code/pool.c#19 $");
+SRCID(pool, "$Id: //info.ravenbrook.com/project/mps/master/code/pool.c#23 $");
 
 
 /* PoolClassCheck -- check a pool class */
@@ -47,6 +47,7 @@ Bool PoolClassCheck(PoolClass class)
   /* greater than the size of the class-specific portion of the instance */
   CHECKL(class->offset <= (size_t)(class->size - sizeof(PoolStruct)));
   CHECKL(AttrCheck(class->attr));
+  CHECKL(FUNCHECK(class->varargs));
   CHECKL(FUNCHECK(class->init));
   CHECKL(FUNCHECK(class->finish));
   CHECKL(FUNCHECK(class->alloc));
@@ -105,22 +106,24 @@ Bool PoolCheck(Pool pool)
 }
 
 
-/* PoolInit, PoolInitV -- initialize a pool
+/* Common keywords to PoolInit */
+
+ARG_DEFINE_KEY(format, Format);
+ARG_DEFINE_KEY(chain, Chain);
+ARG_DEFINE_KEY(rank, Rank);
+ARG_DEFINE_KEY(extend_by, Size);
+ARG_DEFINE_KEY(min_size, Size);
+ARG_DEFINE_KEY(mean_size, Size);
+ARG_DEFINE_KEY(max_size, Size);
+ARG_DEFINE_KEY(align, Align);
+
+
+/* PoolInit -- initialize a pool
  *
  * Initialize the generic fields of the pool and calls class-specific
  * init.  See <design/pool/#align>.  */
 
-Res PoolInit(Pool pool, Arena arena, PoolClass class, ...)
-{
-  Res res;
-  va_list args;
-  va_start(args, class);
-  res = PoolInitV(pool, arena, class, args);
-  va_end(args);
-  return res;
-}
-
-Res PoolInitV(Pool pool, Arena arena, PoolClass class, va_list args)
+Res PoolInit(Pool pool, Arena arena, PoolClass class, ArgList args)
 {
   Res res;
   Word classId;
@@ -182,21 +185,10 @@ failInit:
 }
 
 
-/* PoolCreate, PoolCreateV: Allocate and initialise pool */
+/* PoolCreate: Allocate and initialise pool */
 
 Res PoolCreate(Pool *poolReturn, Arena arena,
-               PoolClass class, ...)
-{
-  Res res;
-  va_list args;
-  va_start(args, class);
-  res = PoolCreateV(poolReturn, arena, class, args);
-  va_end(args);
-  return res;
-}
-
-Res PoolCreateV(Pool *poolReturn, Arena arena, 
-                PoolClass class, va_list args)
+               PoolClass class, ArgList args)
 {
   Res res;
   Pool pool;
@@ -219,7 +211,7 @@ Res PoolCreateV(Pool *poolReturn, Arena arena,
   pool = (Pool)PointerAdd(base, class->offset);
 
   /* Initialize the pool. */ 
-  res = PoolInitV(pool, arena, class, args);
+  res = PoolInit(pool, arena, class, args);
   if (res != ResOK)
     goto failPoolInit;
  
@@ -328,6 +320,8 @@ void PoolFree(Pool pool, Addr old, Size size)
   AVER(old != NULL);
   /* The pool methods should check that old is in pool. */
   AVER(size > 0);
+  AVER(PoolHasRange(pool, old, AddrAdd(old, size)));
+
   (*pool->class->free)(pool, old, size);
  
   EVENT3(PoolFree, pool, old, size);
@@ -606,6 +600,40 @@ Bool PoolOfAddr(Pool *poolReturn, Arena arena, Addr addr)
 }
 
 
+/* PoolOfRange -- return the pool containing a given range
+ *
+ * If all addresses in the range [base, limit) are owned by a single
+ * pool, update *poolReturn to that pool and return TRUE. Otherwise,
+ * leave *poolReturn unchanged and return FALSE.
+ */
+Bool PoolOfRange(Pool *poolReturn, Arena arena, Addr base, Addr limit)
+{
+  Pool pool;
+  Tract tract;
+
+  AVER(poolReturn != NULL);
+  AVERT(Arena, arena);
+  AVER(base < limit);
+
+  if (!TractOfAddr(&tract, arena, base)) 
+    return FALSE;
+
+  pool = TractPool(tract);
+  if (!pool)
+    return FALSE;
+
+  while (TractLimit(tract) < limit) {
+    if (!TractNext(&tract, arena, TractBase(tract)))
+      return FALSE;
+    if (TractPool(tract) != pool)
+      return FALSE;
+  }
+
+  *poolReturn = pool;
+  return TRUE;
+}
+
+
 Bool PoolHasAddr(Pool pool, Addr addr)
 {
   Pool addrPool;
@@ -620,9 +648,24 @@ Bool PoolHasAddr(Pool pool, Addr addr)
 }
 
 
+Bool PoolHasRange(Pool pool, Addr base, Addr limit)
+{
+  Pool rangePool;
+  Arena arena;
+  Bool managed;
+
+  AVERT(Pool, pool);
+  AVER(base < limit);
+
+  arena = PoolArena(pool);
+  managed = PoolOfRange(&rangePool, arena, base, limit);
+  return (managed && rangePool == pool);
+}
+
+
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

@@ -1,4 +1,4 @@
-/* $HopeName: MMQA_harness!testlib:platform.c(trunk.3) $
+/* $Id: //info.ravenbrook.com/project/mps/master/test/test/testlib/platform.c#3 $
 */
 
 #include "testlib.h"

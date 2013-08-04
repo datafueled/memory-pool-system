@@ -1,6 +1,6 @@
 /* finaltest.c: LARGE-SCALE FINALIZATION TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/finaltest.c#8 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/finaltest.c#10 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -17,6 +17,7 @@
  */
 
 #include "testlib.h"
+#include "mpslib.h"
 #include "mps.h"
 #include "mpscamc.h"
 #include "mpsavm.h"

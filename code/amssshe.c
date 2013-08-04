@@ -1,6 +1,6 @@
 /* amssshe.c: POOL CLASS AMS STRESS TEST WITH HEADERS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/amssshe.c#8 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/amssshe.c#9 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * .design: Adapted from amsss.c.
@@ -9,6 +9,7 @@
 #include "fmthe.h"
 #include "fmtdytst.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include "mpscams.h"
 #include "mpsavm.h"
 #include "mpstd.h"
@@ -162,6 +163,7 @@ int main(int argc, char *argv[])
   void *r;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   die(mps_arena_create(&arena, mps_arena_class_vm(), testArenaSIZE),
       "arena_create");

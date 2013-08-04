@@ -1,6 +1,6 @@
 /* locv.c: LEAF OBJECT POOL CLASS COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/locv.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/locv.c#15 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * This is (not much of) a coverage test for the Leaf Object
@@ -8,6 +8,7 @@
  */
 
 #include "testlib.h"
+#include "mpslib.h"
 #include "mps.h"
 #include "mpsclo.h"
 #include "mpsavm.h"

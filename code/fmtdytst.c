@@ -1,6 +1,6 @@
 /* fmtdytst.c: DYLAN FORMAT TEST CODE
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/fmtdytst.c#15 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/fmtdytst.c#16 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .readership: MPS developers, Dylan developers.
@@ -10,6 +10,7 @@
 #include "fmtdytst.h"
 #include "mps.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>

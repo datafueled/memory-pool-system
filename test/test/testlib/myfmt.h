@@ -1,4 +1,4 @@
-/* $HopeName: MMQA_harness!testlib:myfmt.h(trunk.2) $
+/* $Id: //info.ravenbrook.com/project/mps/master/test/test/testlib/myfmt.h#2 $
 myfmt.h
    a format for scannable objects
 */

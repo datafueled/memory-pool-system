@@ -1,5 +1,5 @@
-#!/usr/local/bin/perl -w
-# $HopeName$
+#!/usr/bin/perl -w
+# $Id: //info.ravenbrook.com/project/mps/master/test/test/script/headconv#2 $
 #
 # convert to new-style test header format
 #

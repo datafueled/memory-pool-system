@@ -1,6 +1,6 @@
 /* amsss.c: POOL CLASS AMS STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/amsss.c#19 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/amsss.c#20 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -11,6 +11,7 @@
 #include "fmtdy.h"
 #include "fmtdytst.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include "mpscams.h"
 #include "mpsavm.h"
 #include "mpstd.h"
@@ -207,6 +208,7 @@ int main(int argc, char *argv[])
   void *r;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   die(mps_arena_create(&arena, mps_arena_class_vm(), testArenaSIZE),
       "arena_create");

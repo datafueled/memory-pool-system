@@ -1,7 +1,7 @@
 /* 
 TEST_HEADER
- id = $HopeName$
- summary = null space_t to thread_reg
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/argerr/70.c#2 $
+ summary = null arena_t to thread_reg
  language = c
  link = testlib.o
 END_HEADER
@@ -14,10 +14,10 @@ void *stackpointer;
 
 static void test(void)
 {
- mps_space_t space;
+ mps_arena_t arena;
  mps_thr_t thread;
 
- cdie(mps_space_create(&space), "create space");
+ cdie(mps_arena_create(&arena, mps_arena_class_vm(), mmqaArenaSIZE), "create arena");
 
  cdie(mps_thread_reg(&thread, NULL), "register thread");
 

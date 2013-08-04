@@ -1,6 +1,6 @@
 /* amcssth.c: POOL CLASS AMC STRESS TEST WITH TWO THREADS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/amcssth.c#16 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/amcssth.c#19 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
@@ -12,6 +12,7 @@
 #include "fmtdy.h"
 #include "fmtdytst.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include "mpscamc.h"
 #include "mpsavm.h"
 #include <stdlib.h>
@@ -297,14 +298,15 @@ static void *fooey(void* childIsFinishedReturn)
 {
   void *r;
   mps_thr_t thread;
-  mps_thr_t thread2;
+  void *marker = &marker;
+  mps_root_t reg_root;
 
-  /* register the thread twice, just to make sure it works */
   die(mps_thread_reg(&thread, (mps_arena_t)arena), "thread_reg");
-  die(mps_thread_reg(&thread2, (mps_arena_t)arena), "thread2_reg");
+  die(mps_root_create_reg(&reg_root, arena, mps_rank_ambig(), 0, thread,
+                          mps_stack_scan_ambig, marker, 0), "root_create");
   mps_tramp(&r, fooey2, NULL, 0);
+  mps_root_destroy(reg_root);
   mps_thread_dereg(thread);
-  mps_thread_dereg(thread2);
   *(int *)childIsFinishedReturn = 1;
   return r;
 }
@@ -315,11 +317,13 @@ int main(int argc, char *argv[])
   mps_thr_t thread;
   mps_root_t reg_root;
   void *marker = &marker;
-  pthread_t pthread1;
+  pthread_t kids[10];
+  unsigned i;
   void *r;
   int childIsFinished = 0;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   die(mps_arena_create(&arena, mps_arena_class_vm(), testArenaSIZE),
       "arena_create");
@@ -327,17 +331,22 @@ int main(int argc, char *argv[])
   init();
   die(mps_thread_reg(&thread, arena), "thread_reg");
   die(mps_root_create_reg(&reg_root, arena, mps_rank_ambig(), 0, thread,
-                          mps_stack_scan_ambig, marker, 0), "root_create");
-  pthread_create(&pthread1, NULL, fooey, (void *)&childIsFinished);
+                             mps_stack_scan_ambig, marker, 0), "root_create");
+  for (i = 0; i < sizeof(kids)/sizeof(kids[0]); ++i) {
+    int err = pthread_create(&kids[i], NULL, fooey, (void *)&childIsFinished);
+    if (err != 0)
+      error("pthread_create returned %d", err);
+  }
   mps_tramp(&r, test, arena, 0);
   mps_root_destroy(reg_root);
   mps_thread_dereg(thread);
 
-  while (!childIsFinished) {
-    struct timespec req = {1, 0};
-    (void)nanosleep(&req, NULL);
+  for (i = 0; i < sizeof(kids)/sizeof(kids[0]); ++i) {
+    int err = pthread_join(kids[i], NULL);
+    if (err != 0)
+      error("pthread_join returned %d", err);
   }
-
+  
   finish();
   report(arena);
   mps_arena_destroy(arena);

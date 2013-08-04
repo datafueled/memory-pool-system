@@ -1,5 +1,5 @@
 compile test libraries
-% $HopeName: MMQA_harness!script:help:clib(trunk.4) $
+% $Id: //info.ravenbrook.com/project/mps/master/test/test/script/help/clib#2 $
 
 Usage: qa clib [<options>]
 

@@ -1,6 +1,6 @@
 /* 
 TEST_HEADER
- id = $HopeName: MMQA_test_function!158.c(trunk.2) $
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/158.c#3 $
  summary = MVFF fenceposting check: subfree
  language = c
  link = testlib.o

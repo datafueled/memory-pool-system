@@ -1,7 +1,7 @@
 /* pthreadext.c: POSIX THREAD EXTENSIONS
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/pthrdext.c#12 $
- *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/pthrdext.c#14 $
+ *  Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Provides extension to Pthreads.
  *
@@ -17,7 +17,7 @@
 
 #include <pthread.h>
 #include <sched.h>
-#include <signal.h>
+#include <signal.h> /* see .feature.li in config.h */
 #include <semaphore.h>
 #include <errno.h>
 #include <stdio.h>
@@ -25,7 +25,7 @@
 
 #include "pthrdext.h"
 
-SRCID(pthreadext, "$Id: //info.ravenbrook.com/project/mps/master/code/pthrdext.c#12 $");
+SRCID(pthreadext, "$Id: //info.ravenbrook.com/project/mps/master/code/pthrdext.c#14 $");
 
 
 /* PTHREADEXT_SIGSUSPEND, PTHREADEXT_SIGRESUME -- signals used
@@ -85,6 +85,7 @@ static void suspendSignalHandler(int sig,
 
     AVER(sig == PTHREADEXT_SIGSUSPEND);
     UNUSED(sig);
+    UNUSED(info);
 
     AVER(suspendingVictim != NULL);
     /* copy the ucontext structure so we definitely have it on our stack,
@@ -127,7 +128,7 @@ static void PThreadextModuleInit(void)
 {
     int status;
     struct sigaction pthreadext_sigsuspend, pthreadext_sigresume;
-
+  
     AVER(pthreadextModuleInitialized == FALSE);
 
     /* Initialize the ring of suspended threads */
@@ -365,7 +366,7 @@ unlock:
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

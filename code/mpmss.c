@@ -1,6 +1,6 @@
 /* mpmss.c: MPM STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpmss.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpmss.c#17 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */
@@ -10,6 +10,7 @@
 #include "mpslib.h"
 #include "mpsavm.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include "mps.h"
 #include <stdlib.h>
 #include <stdarg.h>
@@ -158,7 +159,7 @@ static int testInArena(mps_arena_t arena, mps_pool_debug_option_s *options)
   /* cross-segment allocation (possibly MVFF ought not to). */
   printf("MVFF\n");
   die(stress(mps_class_mvff(), randomSize8, arena,
-             (size_t)65536, (size_t)32, sizeof(void *), TRUE, TRUE, TRUE),
+             (size_t)65536, (size_t)32, (size_t)MPS_PF_ALIGN, TRUE, TRUE, TRUE),
       "stress MVFF");
   printf("MV debug\n");
   die(stress(mps_class_mv_debug(), randomSize, arena,
@@ -188,6 +189,7 @@ int main(int argc, char *argv[])
   bothOptions = MPS_PF_ALIGN == 8 ? &bothOptions8 : &bothOptions16;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   die(mps_arena_create(&arena, mps_arena_class_vm(), testArenaSIZE),
       "mps_arena_create");

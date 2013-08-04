@@ -1,6 +1,6 @@
 /* expt825.c: Test for bug described in job000825
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/expt825.c#5 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/expt825.c#8 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,6 +27,7 @@
  */
 
 #include "testlib.h"
+#include "mpslib.h"
 #include "mps.h"
 #include "mpscamc.h"
 #include "mpsavm.h"
@@ -198,6 +199,7 @@ static void *test(void *arg, size_t s)
                   obj = (mps_word_t)objaddr;
                   mps_message_discard(arena, message);
                   ++ final_this_time;
+                  testlib_unused(obj);
           }
           finals += final_this_time;
           printf("%lu objects finalized: total %lu of %lu\n",
@@ -238,6 +240,7 @@ static void *test(void *arg, size_t s)
                   obj = (mps_word_t)objaddr;
                   mps_message_discard(arena, message);
                   ++ final_this_time;
+                  testlib_unused(obj);
           }
           finals += final_this_time;
           printf("%lu objects finalized: total %lu of %lu\n",
@@ -259,6 +262,7 @@ int main(int argc, char *argv[])
   mps_arena_t arena;
   mps_thr_t thread;
   void *r;
+  testlib_unused(argc);
 
   die(mps_arena_create(&arena, mps_arena_class_vm(), testArenaSIZE),
       "arena_create\n");

@@ -1,6 +1,6 @@
 /* libcbt: MPS LIBRARY CALLBACK TEST
  *
- * $Header: //info.ravenbrook.com/project/mps/master/code/libcbt.c#4 $
+ * $Header: //info.ravenbrook.com/project/mps/master/code/libcbt.c#5 $
  * Copyright (C) 2005 Ravenbrook Limited.  See end of file for license.
  *
  * This is a simple test of the MPS Library Callback interface
@@ -12,6 +12,7 @@
 #include "mpslibcb.h"
 
 #include "testlib.h"
+#include "mpslib.h"
 
 #include <stdio.h>
 #include <stdlib.h>

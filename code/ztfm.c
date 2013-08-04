@@ -1,6 +1,6 @@
 /* ztfm.c: Transform test
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/ztfm.c#3 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/ztfm.c#4 $
  * Copyright (c) 2010 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -25,6 +25,7 @@
  */
 
 #include "testlib.h"
+#include "mpslib.h"
 #include "mps.h"
 #include "mpstr.h"
 #include "mpscamc.h"
@@ -1441,6 +1442,7 @@ static void testscriptA(const char *script)
 int main(int argc, char *argv[])
 {
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
   
   /* 1<<19 == 524288 == 1/2 Mebibyte */
   /* 16<<20 == 16777216 == 16 Mebibyte */

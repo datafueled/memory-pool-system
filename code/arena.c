@@ -1,6 +1,6 @@
 /* arena.c: ARENA ALLOCATION FEATURES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/arena.c#24 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/arena.c#26 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .sources: <design/arena/> is the main design document.  */
@@ -9,7 +9,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/master/code/arena.c#24 $");
+SRCID(arena, "$Id: //info.ravenbrook.com/project/mps/master/code/arena.c#26 $");
 
 
 /* ArenaControlPool -- get the control pool */
@@ -59,6 +59,7 @@ DEFINE_CLASS(AbstractArenaClass, class)
   class->name = "ABSARENA";
   class->size = 0;
   class->offset = 0;
+  class->varargs = ArgTrivVarargs;
   class->init = NULL;
   class->finish = NULL;
   class->reserved = NULL;
@@ -85,6 +86,7 @@ Bool ArenaClassCheck(ArenaClass class)
   /* greater than the size of the class-specific portion of the */
   /* instance. */
   CHECKL(class->offset <= (size_t)(class->size - sizeof(ArenaStruct)));
+  CHECKL(FUNCHECK(class->varargs));
   CHECKL(FUNCHECK(class->init));
   CHECKL(FUNCHECK(class->finish));
   CHECKL(FUNCHECK(class->reserved));
@@ -205,15 +207,29 @@ failGlobalsInit:
 }
 
 
-/* ArenaCreateV -- create the arena and call initializers */
+/* VM keys are defined here even though the code they apply to might
+ * not be linked.  For example, MPS_KEY_VMW3_TOP_DOWN only applies to
+ * vmw3.c.  The reason is that we want these keywords to be optional
+ * even on the wrong platform, so that clients can write simple portable
+ * code.  They should be free to pass MPS_KEY_VMW3_TOP_DOWN on other
+ * platforms, knowing that it has no effect.  To do that, the key must
+ * exist on all platforms. */
 
-Res ArenaCreateV(Arena *arenaReturn, ArenaClass class, va_list args)
+ARG_DEFINE_KEY(vmw3_top_down, Bool);
+
+
+/* ArenaCreate -- create the arena and call initializers */
+
+ARG_DEFINE_KEY(arena_size, Size);
+
+Res ArenaCreate(Arena *arenaReturn, ArenaClass class, ArgList args)
 {
   Arena arena;
   Res res;
 
   AVER(arenaReturn != NULL);
   AVERT(ArenaClass, class);
+  AVER(ArgListCheck(args));
 
   /* We must initialise the event subsystem very early, because event logging
      will start as soon as anything interesting happens and expect to write
@@ -225,7 +241,7 @@ Res ArenaCreateV(Arena *arenaReturn, ArenaClass class, va_list args)
   if (res != ResOK)
     goto failInit;
 
-  arena->alignment = ChunkPageSize(arena->primary);
+  /* arena->alignment must have been set up by *class->init() */
   if (arena->alignment > ((Size)1 << arena->zoneShift)) {
     res = ResMEMORY; /* size was too small */
     goto failStripeSize;
@@ -297,10 +313,12 @@ Res ControlInit(Arena arena)
   Res res;
 
   AVERT(Arena, arena);
-  res = PoolInit(&arena->controlPoolStruct.poolStruct,
-                 arena, PoolClassMV(),
-                 ARENA_CONTROL_EXTENDBY, ARENA_CONTROL_AVGSIZE,
-                 ARENA_CONTROL_MAXSIZE);
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_EXTEND_BY, CONTROL_EXTEND_BY);
+    MPS_ARGS_DONE(args);
+    res = PoolInit(&arena->controlPoolStruct.poolStruct, arena,
+                   PoolClassMV(), args);
+  } MPS_ARGS_END(args);
   if (res != ResOK)
     return res;
   arena->poolReady = TRUE;      /* <design/arena/#pool.ready> */

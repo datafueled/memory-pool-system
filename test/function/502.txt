@@ -1,6 +1,6 @@
 
 TEST_HEADER
- id = $HopeName$
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/502.txt#2 $
  summary = MM works with Dylan debugger
  language = english
 END_HEADER

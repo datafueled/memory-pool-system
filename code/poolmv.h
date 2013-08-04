@@ -1,6 +1,6 @@
 /* poolmv.h: MANUAL VARIABLE POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv.h#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmv.h#10 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -43,6 +43,7 @@
 
 
 #include "mpmtypes.h"
+#include "mpscmv.h"
 
 typedef struct MVStruct *MV;
 

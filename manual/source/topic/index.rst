@@ -7,6 +7,7 @@ Reference
     :numbered:
 
     interface
+    keyword
     error
     arena
     pool
@@ -25,3 +26,5 @@ Reference
     debugging
     telemetry
     weak
+    plinth
+    platform

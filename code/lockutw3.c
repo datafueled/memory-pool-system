@@ -1,11 +1,12 @@
 /* lockutw3.c: LOCK UTILIZATION TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/lockutw3.c#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/lockutw3.c#12 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "mpm.h"
 #include "testlib.h"
+#include "mpslib.h"
 
 #include "mpswin.h"
 
@@ -74,6 +75,7 @@ int main(int argc, char *argv[])
   Insist(lock != NULL);
 
   LockInit(lock);
+  UNUSED(argc);
 
   shared = 0;
 

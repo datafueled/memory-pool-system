@@ -1,6 +1,6 @@
 /* mps.c: MEMORY POOL SYSTEM ALL-IN-ONE TRANSLATION UNIT
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mps.c#14 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mps.c#19 $
  * Copyright (C) 2012 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This file can be compiled to create the complete MPS library in
@@ -66,10 +66,13 @@
 #include "meter.c"
 #include "splay.c"
 #include "cbs.c"
-#include "diag.c"
 #include "ss.c"
 #include "version.c"
 #include "table.c"
+#include "arg.c"
+#include "abq.c"
+#include "range.c"
+#include "freelist.c"
 
 /* Additional pool classes */
 
@@ -80,6 +83,7 @@
 #include "poollo.c"
 #include "poolsnc.c"
 #include "pooln.c"
+#include "poolmv2.c"
 #include "poolmvff.c"
 
 /* ANSI Plinth */
@@ -94,11 +98,12 @@
 #if defined(MPS_PF_XCI3LL) || defined(MPS_PF_XCI3GC)
 
 #include "lockix.c"     /* Posix locks */
-#include "than.c"       /* generic single threading */
+#include "thxc.c"       /* OS X Mach threading */
 #include "vmix.c"       /* Posix virtual memory */
 #include "protix.c"     /* Posix protection */
-#include "protsgix.c"   /* Posix signal handling */
-#include "prmcan.c"     /* generic mutator context */
+#include "protxc.c"     /* OS X Mach exception handling */
+#include "proti3.c"     /* 32-bit Intel mutator context decoding */
+#include "prmci3xc.c"   /* 32-bit Intel for Mac OS X mutator context */
 #include "span.c"       /* generic stack probe */
 #include "ssixi3.c"     /* Posix on 32-bit Intel stack scan */
 
@@ -107,11 +112,12 @@
 #elif defined(MPS_PF_XCI6LL) || defined(MPS_PF_XCI6GC)
 
 #include "lockix.c"     /* Posix locks */
-#include "than.c"       /* generic single threading */
+#include "thxc.c"       /* OS X Mach threading */
 #include "vmix.c"       /* Posix virtual memory */
 #include "protix.c"     /* Posix protection */
-#include "protsgix.c"   /* Posix signal handling */
-#include "prmcan.c"     /* generic mutator context */
+#include "protxc.c"     /* OS X Mach exception handling */
+#include "proti6.c"     /* 64-bit Intel mutator context decoding */
+#include "prmci6xc.c"   /* 64-bit Intel for Mac OS X mutator context */
 #include "span.c"       /* generic stack probe */
 #include "ssixi6.c"     /* Posix on 64-bit Intel stack scan */
 

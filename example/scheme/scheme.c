@@ -195,8 +195,8 @@ typedef struct buckets_s {
 
 /* fwd2, fwd, pad1, pad -- MPS forwarding and padding objects        %%MPS
  *
- * These object types are here to satisfy the MPS Format Protocol
- * for format variant "A". See topic/format.
+ * These object types are here to satisfy the MPS Format Protocol.
+ * See topic/format.
  *
  * The MPS needs to be able to replace any object with a forwarding
  * object or broken heart and since the smallest normal object defined
@@ -1744,7 +1744,7 @@ static obj_t entry_quote(obj_t env, obj_t op_env, obj_t operator, obj_t operands
 
 static obj_t entry_define(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 {
-  obj_t symbol, value;
+  obj_t symbol = NULL, value = NULL;
   unless(TYPE(operands) == TYPE_PAIR &&
          TYPE(CDR(operands)) == TYPE_PAIR)
     error("%s: illegal syntax", operator->operator.name);
@@ -3508,7 +3508,7 @@ static obj_t entry_eqv_hash(obj_t env, obj_t op_env, obj_t operator, obj_t opera
 
 static obj_t make_hashtable(obj_t operator, obj_t rest, hash_t hashf, cmp_t cmpf)
 {
-  size_t length;
+  size_t length = 0;
   if (rest == obj_empty)
     length = 8;
   else unless(CDR(rest) == obj_empty)
@@ -3866,8 +3866,7 @@ static struct {char *name; entry_t entry;} funtab[] = {
 
 /* MPS Format                                                   %%MPS
  *
- * These functions satisfy the MPS Format Protocol for format
- * variant "A". See topic/format.
+ * These functions describe Scheme objects to the MPS. See topic/format.
  *
  * In general, MPS format methods are performance critical, as they're used
  * on the MPS critical path. See topic/critical.
@@ -4132,23 +4131,6 @@ static void obj_pad(mps_addr_t addr, size_t size)
 }
 
 
-/* obj_fmt_s -- object format parameter structure               %%MPS
- *
- * This is simply a gathering of the object format methods and the chosen
- * pool alignment for passing to `mps_fmt_create_A`. See topic/format.
- */
-
-struct mps_fmt_A_s obj_fmt_s = {
-  ALIGNMENT,
-  obj_scan,
-  obj_skip,
-  NULL,                         /* Obsolete copy method */
-  obj_fwd,
-  obj_isfwd,
-  obj_pad
-};
-
-
 /* globals_scan -- scan static global variables                 %%MPS
  *
  * The static global variables are all used to hold values that are set
@@ -4272,20 +4254,20 @@ static int start(int argc, char *argv[])
   if(res != MPS_RES_OK) error("Couldn't register symtab root");
 
   error_handler = &jb;
-
-  /* By contrast with the symbol table, we *must* register the globals as
-     roots before we start making things to put into them, because making
-     stuff might cause a garbage collection and throw away their contents
-     if they're not registered.  Since they're static variables they'll
-     contain NULL pointers, and are scannable from the start. See
-     topic/root. */
-  res = mps_root_create(&globals_root, arena, mps_rank_exact(), 0,
-                        globals_scan, NULL, 0);
-  if (res != MPS_RES_OK) error("Couldn't register globals root");
-
   if(!setjmp(*error_handler)) {
     for(i = 0; i < LENGTH(sptab); ++i)
       *sptab[i].varp = make_special(sptab[i].name);
+
+    /* By contrast with the symbol table, we *must* register the globals as
+       roots before we start making things to put into them, because making
+       stuff might cause a garbage collection and throw away their contents
+       if they're not registered.  Since they're static variables they'll
+       contain NULL pointers, and are scannable from the start. See
+       topic/root. */
+    res = mps_root_create(&globals_root, arena, mps_rank_exact(), 0,
+                          globals_scan, NULL, 0);
+    if (res != MPS_RES_OK) error("Couldn't register globals root");
+
     for(i = 0; i < LENGTH(isymtab); ++i)
       *isymtab[i].varp = intern(isymtab[i].name);
     env = make_pair(obj_empty, obj_empty);
@@ -4391,13 +4373,26 @@ int main(int argc, char *argv[])
   
   /* Create an MPS arena.  There is usually only one of these in a process.
      It holds all the MPS "global" state and is where everything happens. */
-  res = mps_arena_create(&arena,
-                         mps_arena_class_vm(), 
-                         (size_t)(32 * 1024 * 1024));
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_ARENA_SIZE, 32 * 1024 * 1024);
+    MPS_ARGS_DONE(args);
+    res = mps_arena_create_k(&arena, mps_arena_class_vm(), args);
+  } MPS_ARGS_END(args);
   if (res != MPS_RES_OK) error("Couldn't create arena");
 
-  /* Create the object format. */
-  res = mps_fmt_create_A(&obj_fmt, arena, &obj_fmt_s);
+  /* Create the object format. This gathers together the methods that
+     the MPS uses to interrogate your objects via the Format Protocol.
+     See topic/format. */
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, ALIGNMENT);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, obj_scan);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, obj_skip);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, obj_fwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, obj_isfwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, obj_pad);
+    MPS_ARGS_DONE(args);
+    res = mps_fmt_create_k(&obj_fmt, arena, args);
+  } MPS_ARGS_END(args);
   if (res != MPS_RES_OK) error("Couldn't create obj format");
 
   /* Create a chain controlling GC strategy. FIXME: explain! */
@@ -4409,18 +4404,19 @@ int main(int argc, char *argv[])
 
   /* Create an Automatic Mostly-Copying (AMC) pool to manage the Scheme
      objects.  This is a kind of copying garbage collector. */
-  res = mps_pool_create(&obj_pool,
-                        arena,
-                        mps_class_amc(),
-                        obj_fmt,
-                        obj_chain);
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, obj_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+    MPS_ARGS_DONE(args);
+    res = mps_pool_create_k(&obj_pool, arena, mps_class_amc(), args);
+  } MPS_ARGS_END(args);
   if (res != MPS_RES_OK) error("Couldn't create obj pool");
 
   /* Create an allocation point for fast in-line allocation of objects
      from the `obj_pool`.  You'd usually want one of these per thread
      for your primary pools.  This interpreter is single threaded, though,
      so we just have it in a global. See topic/allocation. */
-  res = mps_ap_create(&obj_ap, obj_pool);
+  res = mps_ap_create_k(&obj_ap, obj_pool, mps_args_none);
   if (res != MPS_RES_OK) error("Couldn't create obj allocation point");
 
   /* Register the current thread with the MPS.  The MPS must sometimes
@@ -4457,6 +4453,7 @@ int main(int argc, char *argv[])
      check final consistency and warn you about bugs.  It also allows the
      MPS to flush buffers for debugging data, etc.  It's good practise
      to destroy MPS objects on exit if possible rather than just quitting. */
+  mps_arena_park(arena);
   mps_root_destroy(reg_root);
   mps_thread_dereg(thread);
   mps_ap_destroy(obj_ap);

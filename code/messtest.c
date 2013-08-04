@@ -1,6 +1,6 @@
 /* messtest.c: MESSAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/messtest.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/messtest.c#14 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -8,11 +8,12 @@
 #include "mpsavm.h"
 #include "mps.h"
 #include "testlib.h"
+#include "mpslib.h"
 
 #include <stdlib.h>
 #include <stdarg.h>
 
-SRCID(messtest, "$Id: //info.ravenbrook.com/project/mps/master/code/messtest.c#12 $");
+SRCID(messtest, "$Id: //info.ravenbrook.com/project/mps/master/code/messtest.c#14 $");
 
 
 /* Basic infrastructure for creating dummy messages */
@@ -178,9 +179,11 @@ static void eatTopMessage(Arena arena)
 
 /* testInterleaving -- test interleaving messages of different types
  *
- * See request.dylan.160204
+ * See request.dylan.160204_
  * must be able to retrieve a message even if a message of
  * another type is at the head of the queue.
+ *
+ * .. _request.dylan.160204: https://info.ravenbrook.com/project/mps/import/2001-11-05/mmprevol/request/dylan/160204
  */
 
 static void testInterleaving(Arena arena)
@@ -206,7 +209,8 @@ static void testInterleaving(Arena arena)
 
 /* testDisabling -- test message types can be disabled
  *
- * See request.dylan.160204
+ * See request.dylan.160204_
+ * .. _request.dylan.160204: https://info.ravenbrook.com/project/mps/import/2001-11-05/mmprevol/request/dylan/160204
  */
 
 static void testDisabling(Arena arena)

@@ -1,13 +1,13 @@
 /* pooln.c: NULL POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#13 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "pooln.h"
 #include "mpm.h"
 
-SRCID(pooln, "$Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#12 $");
+SRCID(pooln, "$Id: //info.ravenbrook.com/project/mps/master/code/pooln.c#13 $");
 
 
 /* PoolNStruct -- the pool structure */
@@ -30,7 +30,7 @@ typedef struct PoolNStruct {
 
 /* NInit -- init method for class N */
 
-static Res NInit(Pool pool, va_list args)
+static Res NInit(Pool pool, ArgList args)
 {
   PoolN poolN = PoolPoolN(pool);
 

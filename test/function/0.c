@@ -1,6 +1,6 @@
 /* 
 TEST_HEADER
- id = $HopeName$
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/0.c#2 $
  summary = test that the mps header file is accepted by the compiler
  language = c
  link = testlib.o

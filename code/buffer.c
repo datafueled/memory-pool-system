@@ -1,6 +1,6 @@
 /* buffer.c: ALLOCATION BUFFER IMPLEMENTATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#17 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#19 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This is (part of) the implementation of allocation buffers.
@@ -26,7 +26,7 @@
 
 #include "mpm.h"
 
-SRCID(buffer, "$Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#17 $");
+SRCID(buffer, "$Id: //info.ravenbrook.com/project/mps/master/code/buffer.c#19 $");
 
 
 /* forward declarations */
@@ -115,7 +115,8 @@ Bool BufferCheck(Buffer buffer)
     /* flipped, initAtFlip should hold the init at flip, which is */
     /* between the base and current init.  Otherwise, initAtFlip */
     /* is kept at zero to avoid misuse (see */
-    /* request.dylan.170429.sol.zero). */
+    /* request.dylan.170429.sol.zero_). */
+    /* .. _request.dylan.170429.sol.zero: https://info.ravenbrook.com/project/mps/import/2001-11-05/mmprevol/request/dylan/170429 */
 
     if ((buffer->ap_s._enabled && aplimit == (Addr)0) /* see .lwcheck */
         || (!buffer->ap_s._enabled && BufferIsTrapped(buffer))) {
@@ -191,10 +192,10 @@ Res BufferDescribe(Buffer buffer, mps_lib_FILE *stream)
 }
 
 
-/* BufferInitV -- initialize an allocation buffer */
+/* BufferInit -- initialize an allocation buffer */
 
-static Res BufferInitV(Buffer buffer, BufferClass class,
-                       Pool pool, Bool isMutator, va_list args)
+static Res BufferInit(Buffer buffer, BufferClass class,
+                      Pool pool, Bool isMutator, ArgList args)
 {
   Arena arena;
   Res res;
@@ -266,24 +267,7 @@ failInit:
  * See <design/buffer/#method.create>.  */
 
 Res BufferCreate(Buffer *bufferReturn, BufferClass class,
-                 Pool pool, Bool isMutator, ...)
-{
-  Res res;
-  va_list args;
-
-  va_start(args, isMutator);
-  res = BufferCreateV(bufferReturn, class, pool, isMutator, args);
-  va_end(args);
-  return res;
-}
-
-
-/* BufferCreateV -- create an allocation buffer, with varargs
- *
- * See <design/buffer/#method.create>.  */
-
-Res BufferCreateV(Buffer *bufferReturn, BufferClass class,
-                  Pool pool, Bool isMutator, va_list args)
+                 Pool pool, Bool isMutator, ArgList args)
 {
   Res res;
   Buffer buffer;
@@ -304,7 +288,7 @@ Res BufferCreateV(Buffer *bufferReturn, BufferClass class,
   buffer = p;
 
   /* Initialize the buffer descriptor structure. */
-  res = BufferInitV(buffer, class, pool, isMutator, args);
+  res = BufferInit(buffer, class, pool, isMutator, args);
   if (res != ResOK)
     goto failInit;
 
@@ -1083,9 +1067,9 @@ void BufferRampReset(Buffer buffer)
 
 /* bufferTrivInit -- basic buffer init method */
 
-static Res bufferTrivInit (Buffer buffer, Pool pool, va_list args)
+static Res bufferTrivInit(Buffer buffer, Pool pool, ArgList args)
 {
-  /* initialization happens in BufferInitV so checks are safe */
+  /* initialization happens in BufferInit so checks are safe */
   AVERT(Buffer, buffer);
   AVERT(Pool, pool);
   UNUSED(args);
@@ -1096,7 +1080,7 @@ static Res bufferTrivInit (Buffer buffer, Pool pool, va_list args)
 
 /* bufferTrivFinish -- basic buffer finish method */
 
-static void bufferTrivFinish (Buffer buffer)
+static void bufferTrivFinish(Buffer buffer)
 {
   /* No special finish for simple buffers */
   AVERT(Buffer, buffer);
@@ -1136,7 +1120,7 @@ static void bufferTrivDetach(Buffer buffer)
  * .noseg: basic buffers don't support segments, so this method should
  * not be called.  */
 
-static Seg bufferNoSeg (Buffer buffer)
+static Seg bufferNoSeg(Buffer buffer)
 {
   AVERT(Buffer, buffer);
   NOTREACHED;  /* .noseg */
@@ -1147,7 +1131,7 @@ static Seg bufferNoSeg (Buffer buffer)
 
 /* bufferTrivRankSet -- basic BufferRankSet accessor method */
 
-static RankSet bufferTrivRankSet (Buffer buffer)
+static RankSet bufferTrivRankSet(Buffer buffer)
 {
   AVERT(Buffer, buffer);
   /* vanilla buffers can only have empty rank set */
@@ -1160,7 +1144,7 @@ static RankSet bufferTrivRankSet (Buffer buffer)
  * .norank: basic buffers don't support ranksets, so this method should
  * not be called.  */
 
-static void bufferNoSetRankSet (Buffer buffer, RankSet rankset)
+static void bufferNoSetRankSet(Buffer buffer, RankSet rankset)
 {
   AVERT(Buffer, buffer);
   AVERT(RankSet, rankset);
@@ -1173,7 +1157,7 @@ static void bufferNoSetRankSet (Buffer buffer, RankSet rankset)
  * .noseg: basic buffers don't support attachment to segments, so this
  * method should not be called.  */
 
-static void bufferNoReassignSeg (Buffer buffer, Seg seg)
+static void bufferNoReassignSeg(Buffer buffer, Seg seg)
 {
   AVERT(Buffer, buffer);
   AVERT(Seg, seg);
@@ -1199,6 +1183,7 @@ Bool BufferClassCheck(BufferClass class)
   CHECKL(ProtocolClassCheck(&class->protocol));
   CHECKL(class->name != NULL); /* Should be <=6 char C identifier */
   CHECKL(class->size >= sizeof(BufferStruct));
+  CHECKL(FUNCHECK(class->varargs));
   CHECKL(FUNCHECK(class->init));
   CHECKL(FUNCHECK(class->finish));
   CHECKL(FUNCHECK(class->attach));
@@ -1222,6 +1207,7 @@ DEFINE_CLASS(BufferClass, class)
   INHERIT_CLASS(&class->protocol, ProtocolClass);
   class->name = "BUFFER";
   class->size = sizeof(BufferStruct);
+  class->varargs = ArgTrivVarargs;
   class->init = bufferTrivInit;
   class->finish = bufferTrivFinish;
   class->attach = bufferTrivAttach;
@@ -1278,7 +1264,7 @@ Bool SegBufCheck(SegBuf segbuf)
 
 /* segBufInit -- SegBuf init method */
 
-static Res segBufInit (Buffer buffer, Pool pool, va_list args)
+static Res segBufInit(Buffer buffer, Pool pool, ArgList args)
 {
   BufferClass super;
   SegBuf segbuf;
@@ -1490,16 +1476,31 @@ DEFINE_CLASS(SegBufClass, class)
 /* RankBufClass -- support for the RankBufClass subclass */
 
 
+/* rankBufVarargs -- parse obsolete varargs into keywords */
+
+static void rankBufVarargs(ArgStruct args[MPS_ARGS_MAX], va_list varargs)
+{
+  args[0].key = MPS_KEY_RANK;
+  args[0].val.rank = va_arg(varargs, Rank);
+  args[1].key = MPS_KEY_ARGS_END;
+  AVER(ArgListCheck(args));
+}
+
+
 /* rankBufInit -- RankBufClass init method */
 
-static Res rankBufInit (Buffer buffer, Pool pool, va_list args)
+static Res rankBufInit(Buffer buffer, Pool pool, ArgList args)
 {
-  Rank rank = va_arg(args, Rank);
+  Rank rank;
   BufferClass super;
   Res res;
+  ArgStruct arg;
 
   AVERT(Buffer, buffer);
   AVERT(Pool, pool);
+  AVER(ArgListCheck(args));
+  ArgRequire(&arg, args, MPS_KEY_RANK);
+  rank = arg.val.rank;
   AVER(RankCheck(rank));
 
   /* Initialize the superclass fields first via next-method call */
@@ -1528,6 +1529,7 @@ DEFINE_CLASS(RankBufClass, class)
 {
   INHERIT_CLASS(class, SegBufClass);
   class->name = "RANKBUF";
+  class->varargs = rankBufVarargs;
   class->init = rankBufInit;
 }
 

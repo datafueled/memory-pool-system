@@ -1,4 +1,4 @@
-/* $HopeName: MMQA_harness!testlib:lofmt.c(trunk.3) $
+/* $Id: //info.ravenbrook.com/project/mps/master/test/test/testlib/lofmt.c#2 $
 lofmt.c
    A format for pool class LO
 */

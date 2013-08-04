@@ -1,6 +1,6 @@
 /* 
 TEST_HEADER
- id = $HopeName: MMQA_test_function!224.c(trunk.1) $
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/224.c#3 $
  summary = MV allocate large promise, make it small, repeat
  language = c
  link = testlib.o

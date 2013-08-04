@@ -1,6 +1,6 @@
 /* steptest.c: TEST FOR ARENA STEPPING
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/steptest.c#13 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/steptest.c#14 $
  * Copyright (c) 1998-2013 Ravenbrook Limited.  See end of file for license.
  *
  * Loosely based on <code/amcss.c>.
@@ -9,6 +9,7 @@
 #include "fmtdy.h"
 #include "fmtdytst.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include "mpm.h"
 #include "mpscamc.h"
 #include "mpsavm.h"
@@ -492,6 +493,7 @@ int main(int argc, char *argv[])
     prepare_clock();
 
     randomize(argc, argv);
+    mps_lib_assert_fail_install(assert_die);
 
     while (test_number < TESTS) {
         mps_arena_t arena;

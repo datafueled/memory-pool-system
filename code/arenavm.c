@@ -1,7 +1,7 @@
 /* arenavm.c: VIRTUAL MEMORY ARENA CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#23 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#29 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  *
  * DESIGN
@@ -27,7 +27,7 @@
 #include "mpm.h"
 #include "mpsavm.h"
 
-SRCID(arenavm, "$Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#23 $");
+SRCID(arenavm, "$Id: //info.ravenbrook.com/project/mps/master/code/arenavm.c#29 $");
 
 
 /* @@@@ Arbitrary calculation for the maximum number of distinct */
@@ -73,12 +73,15 @@ typedef struct VMArenaStruct *VMArena;
 typedef struct VMArenaStruct {  /* VM arena structure */
   ArenaStruct arenaStruct;
   VM vm;                        /* VM where the arena itself is stored */
+  char vmParams[VMParamSize];   /* VM parameter block */
   Size spareSize;              /* total size of spare pages */
   ZoneSet blacklist;             /* zones to use last */
   ZoneSet genZoneSet[VMArenaGenCount]; /* .gencount.const */
   ZoneSet freeSet;               /* unassigned zones */
   Size extendBy;                /* desired arena increment */
   Size extendMin;               /* minimum arena increment */
+  ArenaVMExtendedCallback extended;
+  ArenaVMContractedCallback contracted;
   Sig sig;                      /* <design/sig/> */
 } VMArenaStruct;
 
@@ -89,8 +92,8 @@ typedef struct VMArenaStruct {  /* VM arena structure */
 /* Forward declarations */
 
 static void sparePagesPurge(VMArena vmArena);
-static ArenaClass VMArenaClassGet(void);
-static ArenaClass VMNZArenaClassGet(void);
+extern ArenaClass VMArenaClassGet(void);
+extern ArenaClass VMNZArenaClassGet(void);
 static void VMCompact(Arena arena, Trace trace);
 
 
@@ -190,6 +193,9 @@ static Bool VMArenaCheck(VMArena vmArena)
     /* count of committed, but we don't have all day. */
     CHECKL(VMMapped(primary->vm) <= arena->committed);
   }
+  
+  /* FIXME: Can't check VMParams */
+
   return TRUE;
 }
 
@@ -311,7 +317,7 @@ static Res VMChunkCreate(Chunk *chunkReturn, VMArena vmArena, Size size)
   AVERT(VMArena, vmArena);
   AVER(size > 0);
 
-  res = VMCreate(&vm, size);
+  res = VMCreate(&vm, size, vmArena->vmParams);
   if (res != ResOK)
     goto failVMCreate;
 
@@ -440,12 +446,54 @@ static void VMChunkFinish(Chunk chunk)
 }
 
 
+/* VMArenaVarargs -- parse obsolete varargs */
+
+static void VMArenaVarargs(ArgStruct args[MPS_ARGS_MAX], va_list varargs)
+{
+  args[0].key = MPS_KEY_ARENA_SIZE;
+  args[0].val.size = va_arg(varargs, Size);
+  args[1].key = MPS_KEY_ARGS_END;
+  AVER(ArgListCheck(args));
+}
+
+
+/* VMArenaTrivExtended -- trivial callback for VM arena extension */
+
+static void vmArenaTrivExtended(Arena arena, Addr base, Size size)
+{
+  AVERT(Arena, arena);
+  AVER(base != 0);
+  AVER(size > 0);
+  UNUSED(arena);
+  UNUSED(base);
+  UNUSED(size);
+}
+
+/* VMArenaTrivContracted -- trivial callback for VM arena contraction */
+
+static void vmArenaTrivContracted(Arena arena, Addr base, Size size)
+{
+  AVERT(Arena, arena);
+  AVER(base != 0);
+  AVER(size > 0);
+  UNUSED(arena);
+  UNUSED(base);
+  UNUSED(size);
+}
+
+
 /* VMArenaInit -- create and initialize the VM arena
  *
  * .arena.init: Once the arena has been allocated, we call ArenaInit
  * to do the generic part of init.
  */
-static Res VMArenaInit(Arena *arenaReturn, ArenaClass class, va_list args)
+
+ARG_DEFINE_KEY(arena_extended, Fun);
+#define vmKeyArenaExtended (&_mps_key_arena_extended)
+ARG_DEFINE_KEY(arena_contracted, Fun);
+#define vmKeyArenaContracted (&_mps_key_arena_contracted)
+
+static Res VMArenaInit(Arena *arenaReturn, ArenaClass class, ArgList args)
 {
   Size userSize;        /* size requested by user */
   Size chunkSize;       /* size actually created */
@@ -456,15 +504,28 @@ static Res VMArenaInit(Arena *arenaReturn, ArenaClass class, va_list args)
   Index gen;
   VM arenaVM;
   Chunk chunk;
-
-  userSize = va_arg(args, Size);
+  mps_arg_s arg;
+  char vmParams[VMParamSize];
+  
   AVER(arenaReturn != NULL);
   AVER(class == VMArenaClassGet() || class == VMNZArenaClassGet());
+  AVER(ArgListCheck(args));
+
+  ArgRequire(&arg, args, MPS_KEY_ARENA_SIZE);
+  userSize = arg.val.size;
+
   AVER(userSize > 0);
+  
+  /* Parse the arguments into VM parameters, if any.  We must do this into
+     some stack-allocated memory for the moment, since we don't have anywhere
+     else to put it.  It gets copied later. */
+  res = VMParamFromArgs(vmParams, sizeof(vmParams), args);
+  if (res != ResOK)
+    goto failVMCreate;
 
   /* Create a VM to hold the arena and map it. */
   vmArenaSize = SizeAlignUp(sizeof(VMArenaStruct), MPS_PF_ALIGN);
-  res = VMCreate(&arenaVM, vmArenaSize);
+  res = VMCreate(&arenaVM, vmArenaSize, vmParams);
   if (res != ResOK)
     goto failVMCreate;
   res = VMMap(arenaVM, VMBase(arenaVM), VMLimit(arenaVM));
@@ -481,6 +542,10 @@ static Res VMArenaInit(Arena *arenaReturn, ArenaClass class, va_list args)
 
   vmArena->vm = arenaVM;
   vmArena->spareSize = 0;
+
+  /* Copy the stack-allocated VM parameters into their home in the VMArena. */
+  AVER(sizeof(vmArena->vmParams) == sizeof(vmParams));
+  mps_lib_memcpy(vmArena->vmParams, vmParams, sizeof(vmArena->vmParams));
 
   /* .blacklist: We blacklist the zones that could be referenced by small
      integers misinterpreted as references.  This isn't a perfect simulation,
@@ -512,6 +577,14 @@ static Res VMArenaInit(Arena *arenaReturn, ArenaClass class, va_list args)
   vmArena->extendBy = userSize;
   vmArena->extendMin = 0;
 
+  vmArena->extended = vmArenaTrivExtended;
+  if (ArgPick(&arg, args, vmKeyArenaExtended))
+    vmArena->extended = (ArenaVMExtendedCallback)arg.val.fun;
+
+  vmArena->contracted = vmArenaTrivContracted;
+  if (ArgPick(&arg, args, vmKeyArenaContracted))
+    vmArena->contracted = (ArenaVMContractedCallback)arg.val.fun;
+
   /* have to have a valid arena before calling ChunkCreate */
   vmArena->sig = VMArenaSig;
   res = VMChunkCreate(&chunk, vmArena, userSize);
@@ -526,12 +599,16 @@ static Res VMArenaInit(Arena *arenaReturn, ArenaClass class, va_list args)
   /* the size is not a power of 2.  See <design/arena/#class.fields>. */
   chunkSize = AddrOffset(chunk->base, chunk->limit);
   arena->zoneShift = SizeFloorLog2(chunkSize >> MPS_WORD_SHIFT);
+  arena->alignment = chunk->pageSize;
 
   AVERT(VMArena, vmArena);
   if ((ArenaClass)mps_arena_class_vm() == class)
     EVENT3(ArenaCreateVM, arena, userSize, chunkSize);
   else
     EVENT3(ArenaCreateVMNZ, arena, userSize, chunkSize);
+
+  vmArena->extended(arena, chunk->base, chunkSize);
+  
   *arenaReturn = arena;
   return ResOK;
 
@@ -1103,12 +1180,7 @@ static Res vmArenaExtend(VMArena vmArena, Size size)
   } while(0);
 
   EVENT3(vmArenaExtendStart, size, chunkSize,
-                             VMArenaReserved(VMArena2Arena(vmArena)));
-  DIAG_SINGLEF(( "vmArenaExtend_Start", 
-    "to accommodate size $W, try chunkSize $W", (WriteFW)size, (WriteFW)chunkSize,
-    " (VMArenaReserved currently $W bytes)\n",
-    (WriteFW)VMArenaReserved(VMArena2Arena(vmArena)),
-    NULL ));
+         VMArenaReserved(VMArena2Arena(vmArena)));
 
   /* .chunk-create.fail: If we fail, try again with a smaller size */
   {
@@ -1131,12 +1203,7 @@ static Res vmArenaExtend(VMArena vmArena, Size size)
       for(; chunkSize > chunkHalf; chunkSize -= sliceSize) {
         if(chunkSize < chunkMin) {
           EVENT2(vmArenaExtendFail, chunkMin,
-                                    VMArenaReserved(VMArena2Arena(vmArena)));
-          DIAG_SINGLEF(( "vmArenaExtend_FailMin", 
-            "no remaining address-space chunk >= min($W)", (WriteFW)chunkMin,
-            " (so VMArenaReserved remains $W bytes)\n",
-            (WriteFW)VMArenaReserved(VMArena2Arena(vmArena)),
-            NULL ));
+                 VMArenaReserved(VMArena2Arena(vmArena)));
           return ResRESOURCE;
         }
         res = VMChunkCreate(&newChunk, vmArena, chunkSize);
@@ -1147,13 +1214,10 @@ static Res vmArenaExtend(VMArena vmArena, Size size)
   }
 
 vmArenaExtend_Done:
-
   EVENT2(vmArenaExtendDone, chunkSize, VMArenaReserved(VMArena2Arena(vmArena)));
-  DIAG_SINGLEF(( "vmArenaExtend_Done",
-    "Request for new chunk of VM $W bytes succeeded", (WriteFW)chunkSize,
-    " (VMArenaReserved now $W bytes)\n", 
-    (WriteFW)VMArenaReserved(VMArena2Arena(vmArena)),
-    NULL ));
+  vmArena->extended(VMArena2Arena(vmArena),
+		    newChunk->base,
+		    AddrOffset(newChunk->base, newChunk->limit));
 
   return res;
 }
@@ -1645,46 +1709,17 @@ static void VMFree(Addr base, Size size, Pool pool)
 }
 
 
-/* M_whole, M_frac -- print count of bytes as Megabytes
- *
- * Split into a whole number of MB, "m" for the decimal point, and 
- * then the decimal fraction (thousandths of a MB, ie. kB).
- *
- * Input:                208896
- * Output:  (Megabytes)  0m209
- */
-#define bPerM ((Size)1000000)  /* Megabytes */
-#define bThou ((Size)1000)
-DIAG_DECL(
-static Count M_whole(Size bytes)
-{
-  Count M;  /* MBs */
-  M = (bytes + (bThou / 2)) / bPerM;
-  return M;
-}
-static Count M_frac(Size bytes)
-{
-  Count Mthou;  /* thousandths of a MB */
-  Mthou = (bytes + (bThou / 2)) / bThou;
-  Mthou = Mthou % 1000;
-  return Mthou;
-}
-)
-
-
 static void VMCompact(Arena arena, Trace trace)
 {
   VMArena vmArena;
   Ring node, next;
-  DIAG_DECL( Size vmem1; )
+  Size vmem1;
 
   vmArena = Arena2VMArena(arena);
   AVERT(VMArena, vmArena);
   AVERT(Trace, trace);
 
-  DIAG(
-    vmem1 = VMArenaReserved(arena);
-  );
+  vmem1 = VMArenaReserved(arena);
 
   /* Destroy any empty chunks (except the primary). */
   sparePagesPurge(vmArena);
@@ -1692,48 +1727,28 @@ static void VMCompact(Arena arena, Trace trace)
     Chunk chunk = RING_ELT(Chunk, chunkRing, node);
     if(chunk != arena->primary
        && BTIsResRange(chunk->allocTable, 0, chunk->pages)) {
+      Addr base = chunk->base;
+      Size size = AddrOffset(chunk->base, chunk->limit);
+
       vmChunkDestroy(chunk);
+
+      vmArena->contracted(arena, base, size);
     }
   }
 
-  DIAG(
+  {
     Size vmem0 = trace->preTraceArenaReserved;
     Size vmem2 = VMArenaReserved(arena);
-    Size vmemD = vmem1 - vmem2;
-    Size live = trace->forwardedSize + trace->preservedInPlaceSize;
-    Size livePerc = 0;
 
-    if(trace->condemned / 100 != 0)
-      livePerc = live / (trace->condemned / 100);
-
-    /* VMCompact diag: emit for all client-requested collections, */
+    /* VMCompact event: emit for all client-requested collections, */
     /* plus any others where chunks were gained or lost during the */
     /* collection.  */
     if(trace->why == TraceStartWhyCLIENTFULL_INCREMENTAL
        || trace->why == TraceStartWhyCLIENTFULL_BLOCK
        || vmem0 != vmem1
-       || vmem1 != vmem2) {
-      DIAG_SINGLEF(( "VMCompact",
-        "pre-collection vmem was $Um$3, ",
-        (WriteFU)M_whole(vmem0), (WriteFU)M_frac(vmem0),
-        "peaked at $Um$3, ", (WriteFU)M_whole(vmem1), (WriteFU)M_frac(vmem1),
-        "released $Um$3, ",  (WriteFU)M_whole(vmemD), (WriteFU)M_frac(vmemD),
-        "now $Um$3",         (WriteFU)M_whole(vmem2), (WriteFU)M_frac(vmem2),
-        " (why $U",          (WriteFU)trace->why,
-        ": $Um$3", 
-        (WriteFU)M_whole(trace->condemned), (WriteFU)M_frac(trace->condemned),
-        "[->$Um$3",          (WriteFU)M_whole(live), (WriteFU)M_frac(live),
-        " $U%-live",         (WriteFU)livePerc,
-        " $Um$3-stuck]", 
-        (WriteFU)M_whole(trace->preservedInPlaceSize), 
-        (WriteFU)M_frac(trace->preservedInPlaceSize),
-        " ($Um$3-not)", 
-        (WriteFU)M_whole(trace->notCondemned),
-        (WriteFU)M_frac(trace->notCondemned),
-        " )",
-        NULL));
-    }
-  );
+       || vmem1 != vmem2)
+      EVENT3(VMCompact, vmem0, vmem1, vmem2);
+  }
 }
 
 mps_res_t mps_arena_vm_growth(mps_arena_t mps_arena,
@@ -1773,6 +1788,7 @@ DEFINE_ARENA_CLASS(VMArenaClass, this)
   this->name = "VM";
   this->size = sizeof(VMArenaStruct);
   this->offset = offsetof(VMArenaStruct, arenaStruct);
+  this->varargs = VMArenaVarargs;
   this->init = VMArenaInit;
   this->finish = VMArenaFinish;
   this->reserved = VMArenaReserved;
@@ -1816,7 +1832,7 @@ mps_arena_class_t mps_arena_class_vmnz(void)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

@@ -1,6 +1,6 @@
 /* 
 TEST_HEADER
- id = $HopeName$
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/misc/1.c#2 $
  summary = access location in last 4 bytes of address space.
  language = c
  link = testlib.o
@@ -9,6 +9,7 @@ OUTPUT_SPEC
 END_HEADER
 */
 
+#include <stdio.h>
 #include "testlib.h"
 #include "mpsavm.h"
 

@@ -1,4 +1,4 @@
-/* $HopeName: $
+/* $Id: //info.ravenbrook.com/project/mps/master/test/test/testlib/preHU.h#2 $
 Before humanist interface;
  -- there was no spare committed fund
 */

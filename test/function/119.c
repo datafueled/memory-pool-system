@@ -1,6 +1,6 @@
 /* 
 TEST_HEADER
- id = $HopeName$
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/119.c#2 $
  summary = create a VM arena with non-aligned size
  language = c
  link = testlib.o

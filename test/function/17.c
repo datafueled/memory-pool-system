@@ -1,6 +1,6 @@
 /* 
 TEST_HEADER
- id = $HopeName: MMQA_test_function!17.c(trunk.6) $
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/17.c#3 $
  summary = create and destroy lots of pools (interleaved)
  language = c
  link = testlib.o newfmt.o

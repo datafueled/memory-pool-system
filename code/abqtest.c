@@ -1,26 +1,19 @@
 /* abqtest.c: AVAILABLE BLOCK QUEUE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#12 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#14 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "abq.h"
-#include "cbs.h"
-#include "mpm.h"
 #include "mps.h"
 #include "mpsavm.h"
-#include "testlib.h"
-#include <stdlib.h>
-#include <stdarg.h>
 #include "mpstd.h"
-#ifdef MPS_OS_IA
-struct itimerspec; /* stop complaints from time.h */
-#endif
-#include <time.h>
-#include <math.h>
+#include "testlib.h"
+
+#include <stdlib.h>
 
 
-SRCID(abqtest, "$Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#12 $");
+SRCID(abqtest, "$Id: //info.ravenbrook.com/project/mps/master/code/abqtest.c#14 $");
 
 
 static ABQStruct abq; /* the ABQ which we will use */
@@ -41,54 +34,42 @@ static unsigned popee = 1;
 static unsigned deleted = 0;
 
 
-typedef struct TestStruct *Test;
+typedef struct TestBlockStruct *TestBlock;
 
-typedef struct TestStruct
+typedef struct TestBlockStruct
 {
-  Test next;
+  TestBlock next;
   unsigned id;
-  CBSBlockStruct cbsBlockStruct;
-} TestStruct;
+  Addr base;
+  Addr limit;
+} TestBlockStruct;
 
 
-static CBSBlock TestCBSBlock(Test t)
+static TestBlock testBlocks = NULL;
+
+
+static TestBlock CreateTestBlock(unsigned no)
 {
-  return &t->cbsBlockStruct;
-}
-
-static Test CBSBlockTest(CBSBlock c)
-{
-  return PARENT(TestStruct, cbsBlockStruct, c);
-}
-
-
-static Test testBlocks = NULL;
-
-
-static CBSBlock CreateCBSBlock(unsigned no)
-{
-  Test b = malloc(sizeof(TestStruct));
+  TestBlock b = malloc(sizeof(TestBlockStruct));
   cdie(b != NULL, "malloc");
 
   b->next = testBlocks;
   b->id = no;
-  b->cbsBlockStruct.base = 0;
-  b->cbsBlockStruct.limit = 0;
+  b->base = 0;
+  b->limit = 0;
 
   testBlocks = b;
 
-  return TestCBSBlock(b);
+  return b;
 }
 
 
-static void DestroyCBSBlock(CBSBlock c)
+static void DestroyTestBlock(TestBlock b)
 {
-  Test b = CBSBlockTest(c);
-
   if (b == testBlocks)
     testBlocks = b->next;
   else {
-    Test prev;
+    TestBlock prev;
  
     for (prev = testBlocks; prev != 0; prev = prev->next)
       if (prev->next == b) {
@@ -100,16 +81,38 @@ static void DestroyCBSBlock(CBSBlock c)
   free(b);
 }
 
+typedef struct TestClosureStruct *TestClosure;
+typedef struct TestClosureStruct {
+  TestBlock b;
+  Res res;
+} TestClosureStruct;
+
+static Bool TestDeleteCallback(Bool *deleteReturn, void *element,
+                               void *closureP, Size closureS)
+{
+  TestBlock *a = (TestBlock *)element;
+  TestClosure cl = (TestClosure)closureP;
+  UNUSED(closureS);
+  if (*a == cl->b) {
+    *deleteReturn = TRUE;
+    cl->res = ResOK;
+  } else {
+    *deleteReturn = FALSE;
+  }
+  return TRUE;
+}
+
 
 static void step(void)
 {
   Res res;
-  CBSBlock a;
+  TestBlock a;
 
   switch (abqRnd(9)) {
     case 0: case 1: case 2: case 3:
   push:
-      res = ABQPush(&abq, CreateCBSBlock(pushee));
+      a = CreateTestBlock(pushee);
+      res = ABQPush(&abq, &a);
       if (res != ResOK) {
         goto pop;
       }
@@ -125,21 +128,23 @@ static void step(void)
         popee++;
         deleted = 0;
       }
-      cdie(CBSBlockTest(a)->id == popee, "pop");
+      cdie(a->id == popee, "pop");
       popee++;
-      DestroyCBSBlock(a);
+      DestroyTestBlock(a);
       break;
     default:
       if (!deleted & (pushee > popee)) {
-        Test b;
-     
+        TestBlock b;
+        TestClosureStruct cl;
         deleted = (unsigned)abqRnd (pushee - popee) + popee;
         for (b = testBlocks; b != NULL; b = b->next)
           if (b->id == deleted)
             break;
         cdie(b != NULL, "found to delete");
-        res = ABQDelete(&abq, TestCBSBlock(b));
-        cdie(res == ResOK, "ABQDelete");
+        cl.b = b;
+        cl.res = ResFAIL;
+        ABQIterate(&abq, TestDeleteCallback, &cl, 0);
+        cdie(cl.res == ResOK, "ABQIterate");
       }
   }
 }
@@ -153,13 +158,14 @@ extern int main(int argc, char *argv[])
   int i;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   abqSize = 0;
 
   die(mps_arena_create(&arena, mps_arena_class_vm(), testArenaSIZE),
       "mps_arena_create");
 
-  die(ABQInit((Arena)arena, &abq, NULL, ABQ_SIZE),
+  die(ABQInit((Arena)arena, &abq, NULL, ABQ_SIZE, sizeof(TestBlock)),
       "ABQInit");
 
   abqSize = ABQ_SIZE;

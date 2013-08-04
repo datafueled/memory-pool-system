@@ -1,6 +1,6 @@
 /* poolabs.c: ABSTRACT POOL CLASSES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#17 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#18 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -27,7 +27,7 @@
 
 #include "mpm.h"
 
-SRCID(poolabs, "$Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#17 $");
+SRCID(poolabs, "$Id: //info.ravenbrook.com/project/mps/master/code/poolabs.c#18 $");
 
 
 typedef PoolClassStruct AbstractPoolClassStruct;
@@ -122,6 +122,7 @@ DEFINE_CLASS(AbstractPoolClass, class)
   class->size = 0;
   class->offset = 0;
   class->attr = 0;
+  class->varargs = ArgTrivVarargs;
   class->init = PoolTrivInit;
   class->finish = PoolTrivFinish;
   class->alloc = PoolNoAlloc;
@@ -194,9 +195,10 @@ void PoolTrivFinish(Pool pool)
   NOOP;
 }
 
-Res PoolTrivInit(Pool pool, va_list args)
+Res PoolTrivInit(Pool pool, ArgList args)
 {
   AVERT(Pool, pool);
+  AVER(ArgListCheck(args));
   UNUSED(args);
   return ResOK;
 }

@@ -1,7 +1,7 @@
 /* prmci6li.c: PROTECTION MUTATOR CONTEXT x64 (LINUX)
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/prmci6li.c#3 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/prmci6li.c#4 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This module implements the part of the protection module
  * that decodes the MutatorFaultContext. 
@@ -26,7 +26,7 @@
 #include "prmcix.h"
 #include "prmci6.h"
 
-SRCID(prmci6li, "$Id: //info.ravenbrook.com/project/mps/master/code/prmci6li.c#3 $");
+SRCID(prmci6li, "$Id: //info.ravenbrook.com/project/mps/master/code/prmci6li.c#4 $");
 
 
 /* Prmci6AddressHoldingReg -- return an address of a register in a context */
@@ -41,8 +41,9 @@ MRef Prmci6AddressHoldingReg(MutatorFaultContext mfc, unsigned int regnum)
   gregs = (Word *)&mfc->ucontext->uc_mcontext.gregs;
 
   /* .assume.regref */
-  /* The REG_EAX etc. symbols are only present if _GNU_SOURCE is defined.
-   * Currently this is in lii6gc.gmk in PFMDEFS. */
+  /* The register numbers (REG_RAX etc.) are defined in <ucontext.h>
+     but only if _GNU_SOURCE is defined: see .feature.li in
+     config.h. */
   switch (regnum) {
     case  0: return &gregs[REG_RAX];
     case  1: return &gregs[REG_RCX];
@@ -110,7 +111,7 @@ Res MutatorFaultContextScan(ScanState ss, MutatorFaultContext mfc)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

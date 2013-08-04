@@ -1,5 +1,5 @@
-#!/usr/local/bin/perl
-# $HopeName: MMQA_harness!script:commands:index(trunk.8) $
+#!/usr/bin/perl -w
+# $Id: //info.ravenbrook.com/project/mps/master/test/test/script/commands/index#2 $
 #
 # make an index of all the tests (all .c files) in the
 # current directory, and write it on stdout.

@@ -1,4 +1,4 @@
-/* $HopeName: $
+/* $Id: //info.ravenbrook.com/project/mps/master/test/test/testlib/preMO.h#2 $
 Before modern interface;
  - no closure arguments for mps_root_create_reg
  - no rank argument for mps_ap_create (ever)

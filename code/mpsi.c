@@ -1,7 +1,7 @@
 /* mpsi.c: MEMORY POOL SYSTEM C INTERFACE LAYER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#34 $
- * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#40 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
  * .purpose: This code bridges between the MPS interface to C,
@@ -26,10 +26,6 @@
  * check that protocols are obeyed by the client.  It probably doesn't
  * meet checking requirements.
  *
- * .varargs: (rule.universal.complete) The varargs passed to
- * mps_alloc(_v) are ignored at the moment.  None of the pool
- * implementations use them.
- *
  * .poll: (rule.universal.complete) Various allocation methods call
  * ArenaPoll to allow the MPM to "steal" CPU time and get on with
  * background tasks such as incremental GC.
@@ -52,7 +48,14 @@
 #include "sac.h"
 #include "chain.h"
 
-SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#34 $");
+/* TODO: Remove these includes when varargs support is removed. */
+#include "mpsacl.h"
+#include "mpsavm.h"
+
+#include <stdarg.h>
+
+
+SRCID(mpsi, "$Id: //info.ravenbrook.com/project/mps/master/code/mpsi.c#40 $");
 
 
 /* mpsi_check -- check consistency of interface mappings
@@ -311,11 +314,10 @@ mps_res_t mps_arena_create(mps_arena_t *mps_arena_o,
                            mps_arena_class_t mps_arena_class, ...)
 {
   mps_res_t res;
-  va_list args;
-
-  va_start(args, mps_arena_class);
-  res = mps_arena_create_v(mps_arena_o, mps_arena_class, args);
-  va_end(args);
+  va_list varargs;
+  va_start(varargs, mps_arena_class);
+  res = mps_arena_create_v(mps_arena_o, mps_arena_class, varargs);
+  va_end(varargs);
   return res;
 }
 
@@ -323,7 +325,21 @@ mps_res_t mps_arena_create(mps_arena_t *mps_arena_o,
 /* mps_arena_create_v -- create an arena object */
 
 mps_res_t mps_arena_create_v(mps_arena_t *mps_arena_o,
-                             mps_arena_class_t arena_class, va_list args)
+                             mps_arena_class_t arena_class,
+                             va_list varargs)
+{
+  mps_arg_s args[MPS_ARGS_MAX];
+  AVERT(ArenaClass, arena_class);
+  arena_class->varargs(args, varargs);
+  return mps_arena_create_k(mps_arena_o, arena_class, args);
+}
+
+
+/* mps_arena_create_k -- create an arena object */
+
+mps_res_t mps_arena_create_k(mps_arena_t *mps_arena_o,
+                             mps_arena_class_t arena_class,
+                             mps_arg_s mps_args[])
 {
   Arena arena;
   Res res;
@@ -334,7 +350,7 @@ mps_res_t mps_arena_create_v(mps_arena_t *mps_arena_o,
 
   AVER(mps_arena_o != NULL);
 
-  res = ArenaCreateV(&arena, arena_class, args);
+  res = ArenaCreate(&arena, arena_class, mps_args);
   if (res != ResOK)
     return res;
 
@@ -342,6 +358,7 @@ mps_res_t mps_arena_create_v(mps_arena_t *mps_arena_o,
   *mps_arena_o = (mps_arena_t)arena;
   return MPS_RES_OK;
 }
+
 
 /* mps_arena_destroy -- destroy an arena object */
 
@@ -440,6 +457,31 @@ mps_bool_t mps_addr_fmt(mps_fmt_t *mps_fmt_o,
 }
 
 
+/* mps_fmt_create_k -- create an object format using keyword arguments */
+
+mps_res_t mps_fmt_create_k(mps_fmt_t *mps_fmt_o,
+                           mps_arena_t arena,
+                           mps_arg_s args[])
+{
+  Format format;
+  Res res;
+
+  ArenaEnter(arena);
+
+  AVER(mps_fmt_o != NULL);
+  AVERT(Arena, arena);
+  AVER(ArgListCheck(args));
+
+  res = FormatCreate(&format, arena, args);
+
+  ArenaLeave(arena);
+
+  if (res != ResOK) return res;
+  *mps_fmt_o = (mps_fmt_t)format;
+  return MPS_RES_OK;
+}
+
+
 /* mps_fmt_create_A -- create an object format of variant A
  *
  * .fmt.create.A.purpose: This function converts an object format spec
@@ -456,20 +498,20 @@ mps_res_t mps_fmt_create_A(mps_fmt_t *mps_fmt_o,
 
   ArenaEnter(arena);
 
+  AVER(mps_fmt_o != NULL);
+  AVERT(Arena, arena);
   AVER(mps_fmt_A != NULL);
 
-  res = FormatCreate(&format,
-                     arena,
-                     (Align)mps_fmt_A->align,
-                     FormatVarietyA,
-                     mps_fmt_A->scan,
-                     mps_fmt_A->skip,
-                     mps_fmt_A->fwd,
-                     mps_fmt_A->isfwd,
-                     mps_fmt_A->copy,
-                     mps_fmt_A->pad,
-                     NULL,
-                     (Size)0);
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, mps_fmt_A->align);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, mps_fmt_A->scan);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, mps_fmt_A->skip);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, mps_fmt_A->fwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, mps_fmt_A->isfwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, mps_fmt_A->pad);
+    MPS_ARGS_DONE(args);
+    res = FormatCreate(&format, arena, args);
+  } MPS_ARGS_END(args);
 
   ArenaLeave(arena);
 
@@ -490,20 +532,21 @@ mps_res_t mps_fmt_create_B(mps_fmt_t *mps_fmt_o,
 
   ArenaEnter(arena);
 
+  AVER(mps_fmt_o != NULL);
+  AVERT(Arena, arena);
   AVER(mps_fmt_B != NULL);
 
-  res = FormatCreate(&format,
-                     arena,
-                     (Align)mps_fmt_B->align,
-                     FormatVarietyB,
-                     mps_fmt_B->scan,
-                     mps_fmt_B->skip,
-                     mps_fmt_B->fwd,
-                     mps_fmt_B->isfwd,
-                     mps_fmt_B->copy,
-                     mps_fmt_B->pad,
-                     mps_fmt_B->mps_class,
-                     (Size)0);
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, mps_fmt_B->align);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, mps_fmt_B->scan);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, mps_fmt_B->skip);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, mps_fmt_B->fwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, mps_fmt_B->isfwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, mps_fmt_B->pad);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_CLASS, mps_fmt_B->mps_class);
+    MPS_ARGS_DONE(args);
+    res = FormatCreate(&format, arena, args);
+  } MPS_ARGS_END(args);
 
   ArenaLeave(arena);
 
@@ -524,20 +567,21 @@ mps_res_t mps_fmt_create_auto_header(mps_fmt_t *mps_fmt_o,
 
   ArenaEnter(arena);
 
+  AVER(mps_fmt_o != NULL);
+  AVERT(Arena, arena);
   AVER(mps_fmt != NULL);
 
-  res = FormatCreate(&format,
-                     arena,
-                     (Align)mps_fmt->align,
-                     FormatVarietyAutoHeader,
-                     mps_fmt->scan,
-                     mps_fmt->skip,
-                     mps_fmt->fwd,
-                     mps_fmt->isfwd,
-                     NULL,
-                     mps_fmt->pad,
-                     NULL,
-                     (Size)mps_fmt->mps_headerSize);
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, mps_fmt->align);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_HEADER_SIZE, mps_fmt->mps_headerSize);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, mps_fmt->scan);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, mps_fmt->skip);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, mps_fmt->fwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, mps_fmt->isfwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, mps_fmt->pad);
+    MPS_ARGS_DONE(args);
+    res = FormatCreate(&format, arena, args);
+  } MPS_ARGS_END(args);
 
   ArenaLeave(arena);
 
@@ -558,20 +602,19 @@ mps_res_t mps_fmt_create_fixed(mps_fmt_t *mps_fmt_o,
 
   ArenaEnter(arena);
 
+  AVER(mps_fmt_o != NULL);
+  AVERT(Arena, arena);
   AVER(mps_fmt_fixed != NULL);
 
-  res = FormatCreate(&format,
-                     arena,
-                     (Align)mps_fmt_fixed->align,
-                     FormatVarietyFixed,
-                     mps_fmt_fixed->scan,
-                     NULL,
-                     mps_fmt_fixed->fwd,
-                     mps_fmt_fixed->isfwd,
-                     NULL,
-                     mps_fmt_fixed->pad,
-                     NULL,
-                     (Size)0);
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, mps_fmt_fixed->align);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, mps_fmt_fixed->scan);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, mps_fmt_fixed->fwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, mps_fmt_fixed->isfwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, mps_fmt_fixed->pad);
+    MPS_ARGS_DONE(args);
+    res = FormatCreate(&format, arena, args);
+  } MPS_ARGS_END(args);
 
   ArenaLeave(arena);
 
@@ -602,15 +645,24 @@ mps_res_t mps_pool_create(mps_pool_t *mps_pool_o, mps_arena_t arena,
                           mps_class_t mps_class, ...)
 {
   mps_res_t res;
-  va_list args;
-  va_start(args, mps_class);
-  res = mps_pool_create_v(mps_pool_o, arena, mps_class, args);
-  va_end(args);
+  va_list varargs;
+  va_start(varargs, mps_class);
+  res = mps_pool_create_v(mps_pool_o, arena, mps_class, varargs);
+  va_end(varargs);
   return res;
 }
 
 mps_res_t mps_pool_create_v(mps_pool_t *mps_pool_o, mps_arena_t arena,
-                            mps_class_t class, va_list args)
+                            mps_class_t class, va_list varargs)
+{
+  mps_arg_s args[MPS_ARGS_MAX];
+  AVERT(PoolClass, class);
+  class->varargs(args, varargs);
+  return mps_pool_create_k(mps_pool_o, arena, class, args);
+}
+
+mps_res_t mps_pool_create_k(mps_pool_t *mps_pool_o, mps_arena_t arena,
+                            mps_class_t class, mps_arg_s args[])
 {
   Pool pool;
   Res res;
@@ -620,8 +672,9 @@ mps_res_t mps_pool_create_v(mps_pool_t *mps_pool_o, mps_arena_t arena,
   AVER(mps_pool_o != NULL);
   AVERT(Arena, arena);
   AVERT(PoolClass, class);
+  AVER(ArgListCheck(args));
 
-  res = PoolCreateV(&pool, arena, class, args);
+  res = PoolCreate(&pool, arena, class, args);
 
   ArenaLeave(arena);
 
@@ -645,7 +698,7 @@ void mps_pool_destroy(mps_pool_t pool)
 }
 
 
-mps_res_t mps_alloc(mps_addr_t *p_o, mps_pool_t pool, size_t size, ...)
+mps_res_t mps_alloc(mps_addr_t *p_o, mps_pool_t pool, size_t size)
 {
   Arena arena;
   Addr p;
@@ -677,6 +730,8 @@ mps_res_t mps_alloc(mps_addr_t *p_o, mps_pool_t pool, size_t size, ...)
 }
 
 
+/* mps_alloc_v -- allocate in pool with varargs.  Deprecated in 1.112. */
+
 mps_res_t mps_alloc_v(mps_addr_t *p_o, mps_pool_t mps_pool, size_t size,
                       va_list args)
 {
@@ -698,7 +753,6 @@ void mps_free(mps_pool_t pool, mps_addr_t p, size_t size)
   ArenaEnter(arena);
 
   AVERT(Pool, pool);
-  AVER(PoolHasAddr(pool, p));
   AVER(size > 0);
   /* Note: class may allow unaligned size, see */
   /* <design/class-interface/#alloc.size.align>. */
@@ -712,39 +766,42 @@ void mps_free(mps_pool_t pool, mps_addr_t p, size_t size)
 
 mps_res_t mps_ap_create(mps_ap_t *mps_ap_o, mps_pool_t pool, ...)
 {
-  Arena arena;
-  Buffer buf;
-  BufferClass bufclass;
-  Res res;
-  va_list args;
-
-  AVER(mps_ap_o != NULL);
-  AVER(TESTT(Pool, pool));
-  arena = PoolArena(pool);
-
-  ArenaEnter(arena);
-
-  AVERT(Pool, pool);
-
-  va_start(args, pool);
-  bufclass = PoolDefaultBufferClass(pool);
-  res = BufferCreateV(&buf, bufclass, pool, TRUE, args);
-  va_end(args);
-
-  ArenaLeave(arena);
-
-  if (res != ResOK)
-    return res;
-  *mps_ap_o = BufferAP(buf);
-  return MPS_RES_OK;
+  mps_res_t res;
+  va_list varargs;
+  va_start(varargs, pool);
+  res = mps_ap_create_v(mps_ap_o, pool, varargs);
+  va_end(varargs);
+  return res;
 }
 
 
 /* mps_ap_create_v -- create an allocation point, with varargs */
 
 mps_res_t mps_ap_create_v(mps_ap_t *mps_ap_o, mps_pool_t pool,
-                          va_list args)
+                          va_list varargs)
 {
+  Arena arena;
+  BufferClass bufclass;
+  mps_arg_s args[MPS_ARGS_MAX];
+
+  AVER(mps_ap_o != NULL);
+  AVER(TESTT(Pool, pool));
+  arena = PoolArena(pool);
+  
+  ArenaEnter(arena);
+  AVERT(Pool, pool);
+  bufclass = PoolDefaultBufferClass(pool);
+  bufclass->varargs(args, varargs);
+  ArenaLeave(arena);
+
+  return mps_ap_create_k(mps_ap_o, pool, args);
+}
+
+/* mps_ap_create_k -- create an allocation point, with keyword args */
+
+mps_res_t mps_ap_create_k(mps_ap_t *mps_ap_o,
+                          mps_pool_t pool,
+                          mps_arg_s args[]) {
   Arena arena;
   Buffer buf;
   BufferClass bufclass;
@@ -759,12 +816,13 @@ mps_res_t mps_ap_create_v(mps_ap_t *mps_ap_o, mps_pool_t pool,
   AVERT(Pool, pool);
 
   bufclass = PoolDefaultBufferClass(pool);
-  res = BufferCreateV(&buf, bufclass, pool, TRUE, args);
+  res = BufferCreate(&buf, bufclass, pool, TRUE, args);
 
   ArenaLeave(arena);
 
   if (res != ResOK)
     return res;
+
   *mps_ap_o = BufferAP(buf);
   return MPS_RES_OK;
 }
@@ -1422,6 +1480,15 @@ mps_bool_t mps_ld_isstale(mps_ld_t ld, mps_arena_t arena,
   return (mps_bool_t)b;
 }
 
+mps_bool_t mps_ld_isstale_any(mps_ld_t ld, mps_arena_t arena)
+{
+  Bool b;
+
+  b = LDIsStaleAny(ld, arena);
+
+  return (mps_bool_t)b;
+}
+
 mps_res_t mps_fix(mps_ss_t mps_ss, mps_addr_t *ref_io)
 {
   mps_res_t res;
@@ -1883,7 +1950,7 @@ void mps_chain_destroy(mps_chain_t chain)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2003, 2006, 2008 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

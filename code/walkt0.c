@@ -1,6 +1,6 @@
 /* walkt0.c: WALK TEST 0
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/walkt0.c#9 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/walkt0.c#10 $
  * Copyright (c) 1998-2013 Ravenbrook Limited.  See end of file for license.
  *
  * Loosely based on <code/steptest.c>.
@@ -9,6 +9,7 @@
 #include "fmtdy.h"
 #include "fmtdytst.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include "mpscamc.h"
 #include "mpsavm.h"
 #include "mpstd.h"
@@ -201,6 +202,7 @@ int main(int argc, char *argv[])
     void *r;
 
     randomize(argc, argv);
+    mps_lib_assert_fail_install(assert_die);
 
     die(mps_arena_create(&arena, mps_arena_class_vm(),
                          testArenaSIZE),

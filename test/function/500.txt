@@ -1,6 +1,6 @@
 
 TEST_HEADER
- id = $HopeName$
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/500.txt#2 $
  summary = compare MM and boehm performance in Dylan
  language = english
 END_HEADER

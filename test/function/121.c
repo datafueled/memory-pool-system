@@ -1,6 +1,6 @@
 /* 
 TEST_HEADER
- id = $HopeName: MMQA_test_function!121.c(trunk.2) $
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/121.c#3 $
  summary = very small arenas
  language = c
  link = testlib.o

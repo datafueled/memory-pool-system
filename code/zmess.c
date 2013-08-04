@@ -1,6 +1,6 @@
 /* zmess.c: Message test
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/zmess.c#7 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/zmess.c#9 $
  * Copyright (c) 2008 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
@@ -100,6 +100,7 @@
  */
 
 #include "testlib.h"
+#include "mpslib.h"
 #include "mps.h"
 #include "mpscamc.h"
 #include "mpsavm.h"
@@ -144,11 +145,8 @@ static int state[myrootCOUNT];
  * .discard: The client should always call mps_message_discard when 
  * it has finished with the message.  But calling with the "discard" 
  * parameter set to false lets us check how the MPS handles naughty 
- * clients.  The undiscarded messages should be cleared up by 
- * ArenaDestroy.  In a diagnostic variety (eg .variety.di) the 
- * ArenaDestroy diag shows the contents of the control pool, and you 
- * can clearly see the undiscarded messages (just before the control 
- * pool is destroyed).
+ * clients.  The undiscarded messages must be cleared up by 
+ * ArenaDestroy.
  */
 static void report(mps_arena_t arena, const char *pm, Bool discard)
 {
@@ -490,6 +488,7 @@ int main(int argc, char *argv[])
 {
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   /* Scripts that should fail (uncomment to show failure is detected) */
   /*testscriptA("C.");*/

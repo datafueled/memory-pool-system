@@ -1,7 +1,7 @@
 /* config.h: MPS CONFIGURATION
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/config.h#41 $
- * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/config.h#52 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  *
  * PURPOSE
@@ -39,28 +39,6 @@
 /* no telemetry log events */
 
 
-/* CONFIG_VAR_DIAG -- diagnostic variety
- *
- * Deprecated.  The diagnostic variety prints messages about the internals
- * of the MPS to an output stream.  This is being replaced by an extended
- * telemetry system.  RB 2012-08-31
- */
-
-#elif defined(CONFIG_VAR_DIAG) /* Diagnostic variety */
-#define CONFIG_ASSERT
-#ifndef CHECKLEVEL
-#define CHECKLEVEL      CheckLevelMINIMAL
-#endif
-#define CONFIG_STATS
-/* For diagnostics, choose a DIAG_WITH_... output method.
- * (We need to choose because the DIAG output system is under 
- * development.  RHSK 2007-05-21).
- */
-#define DIAG_WITH_STREAM_AND_WRITEF
-/* #define DIAG_WITH_PRINTF */
-#define CONFIG_LOG
-
-
 /* CONFIG_VAR_COOL -- cool variety
  *
  * The cool variety is intended for use when developing an integration with
@@ -72,6 +50,7 @@
 #elif defined(CONFIG_VAR_COOL)
 #define CONFIG_ASSERT
 #define CONFIG_ASSERT_ALL
+#define CONFIG_ASSERT_ABORT
 #define CONFIG_STATS
 #ifndef CHECKLEVEL
 #define CHECKLEVEL      CheckLevelSHALLOW
@@ -91,6 +70,7 @@
 
 /* #elif defined(CONFIG_VAR_HOT) */
 #define CONFIG_ASSERT
+/* Note, not CONFIG_ASSERT_ABORT */
 #ifndef CHECKLEVEL
 #define CHECKLEVEL      CheckLevelMINIMAL
 #endif
@@ -117,14 +97,15 @@
 #define AVER_AND_CHECK_NONE
 #define MPS_ASSERT_STRING "nonasserted"
 #endif
+#if defined(CONFIG_ASSERT_ABORT)
+#define ASSERT_ABORT() abort()
+#else
+#define ASSERT_ABORT() NOOP
+#endif
 
 
 #if defined(CONFIG_STATS)
 /* CONFIG_STATS = STATISTICS = METERs */
-/* Note: the STATISTICS define used to be called "DIAGNOSTICS" (even */
-/* though it controls the STATISTIC system), but the term */
-/* "diagnostic" means something else now: see design/diag/. */
-/* RHSK 2007-06-28 */
 /* WARNING: this may change the size and fields of MPS structs */
 /* (...but see STATISTIC_DECL, which is invariant) */
 #define STATISTICS
@@ -238,16 +219,62 @@
 #define EPVMDefaultSubsequentSegSIZE ((Size)64 * 1024)
 
 
+/* CBS Configuration -- see <code/cbs.c> */
+
+#define CBS_EXTEND_BY_DEFAULT ((Size)4096)
+
+
+/* Format defaults: see <code/format.c> */
+
+#define FMT_ALIGN_DEFAULT ((Align)MPS_PF_ALIGN)
+#define FMT_HEADER_SIZE_DEFAULT ((Size)0)
+#define FMT_SCAN_DEFAULT (&FormatNoScan)
+#define FMT_SKIP_DEFAULT (&FormatNoSkip)
+#define FMT_FWD_DEFAULT (&FormatNoMove)
+#define FMT_ISFWD_DEFAULT (&FormatNoIsMoved)
+#define FMT_PAD_DEFAULT (&FormatNoPad)
+#define FMT_CLASS_DEFAULT (&FormatDefaultClass)
+
+
+/* Pool MV Configuration -- see <code/poolmv.c> */
+
+#define MV_EXTEND_BY_DEFAULT  ((Size)65536)
+#define MV_AVG_SIZE_DEFAULT   ((Size)32)
+#define MV_MAX_SIZE_DEFAULT   ((Size)65536)
+
+
+/* Pool MFS Configuration -- see <code/poolmfs.c> */
+
+#define MFS_EXTEND_BY_DEFAULT ((Size)65536)
+
+
+/* Pool MVFF Configuration -- see <code/poolmvff.c> */
+
+#define MVFF_EXTEND_BY_DEFAULT   ((Size)65536)
+#define MVFF_AVG_SIZE_DEFAULT    ((Size)32)
+#define MVFF_ALIGN_DEFAULT       MPS_PF_ALIGN
+#define MVFF_SLOT_HIGH_DEFAULT   FALSE
+#define MVFF_ARENA_HIGH_DEFAULT  FALSE
+#define MVFF_FIRST_FIT_DEFAULT   TRUE
+
+
+/* Pool MVT Configuration -- see <code/poolmv2.c> */
+/* FIXME: These numbers were lifted from mv2test and need thought. */
+
+#define MVT_ALIGN_DEFAULT         MPS_PF_ALIGN
+#define MVT_MIN_SIZE_DEFAULT      MPS_PF_ALIGN
+#define MVT_MEAN_SIZE_DEFAULT     32
+#define MVT_MAX_SIZE_DEFAULT      8192
+#define MVT_RESERVE_DEPTH_DEFAULT 1024
+#define MVT_FRAG_LIMIT_DEFAULT    30
+
+
 /* Arena Configuration -- see <code/arena.c>
  *
  * .client.seg-size: ARENA_CLIENT_PAGE_SIZE is the size in bytes of a
  * "page" (i.e., segment granule) in the client arena.  It's set at 8192
  * with no particular justification.
  */
-
-#define ARENA_CONTROL_EXTENDBY  ((Size)4096)
-#define ARENA_CONTROL_AVGSIZE   ((Size)32)
-#define ARENA_CONTROL_MAXSIZE   ((Size)65536)
 
 #define ArenaPollALLOCTIME (65536.0)
 
@@ -259,7 +286,8 @@
 /* @@@@ knows the implementation of ZoneSets */
 
 /* .segpref.default: For EPcore, non-DL segments should be placed high */
-/* to reduce fragmentation of DL pools (see request.epcore.170193). */
+/* to reduce fragmentation of DL pools (see request.epcore.170193_). */
+/* .. _request.epcore.170193: https://info.ravenbrook.com/project/mps/import/2001-11-05/mmprevol/request/epcore/170193 */
 #define SegPrefDEFAULT { \
   SegPrefSig,          /* sig */ \
   TRUE,                /* high */ \
@@ -270,6 +298,11 @@
 }
 
 #define LDHistoryLENGTH ((Size)4)
+
+/* Value of MPS_KEY_EXTEND_BY for the arena control pool.
+   Deliberately smaller than the default, because we don't expect the control
+   pool to be very heavily used. */
+#define CONTROL_EXTEND_BY 4096
 
 
 /* Stack configuration */
@@ -294,6 +327,66 @@
 
 #define VMANPageALIGNMENT ((Align)4096)
 #define VMJunkBYTE ((unsigned char)0xA9)
+#define VMParamSize (sizeof(Word))
+
+
+/* .feature.li: Linux feature specification
+ *
+ * The MPS needs the following symbols which are not defined if the
+ * -ansi option is given to GCC:
+ *
+ * Source      Symbols                   Header        Feature
+ * =========== ========================= ============= ====================
+ * lockli.c    pthread_mutexattr_settype <pthread.h>   _XOPEN_SOURCE >= 500
+ * prmci3li.c  REG_EAX etc.              <ucontext.h>  _GNU_SOURCE
+ * prmci6li.c  REG_RAX etc.              <ucontext.h>  _GNU_SOURCE
+ * prmcix.h    stack_t, siginfo_t        <signal.h>    _XOPEN_SOURCE
+ * pthrdext.c  sigaction etc.            <signal.h>    _XOPEN_SOURCE
+ * vmix.c      MAP_ANON                  <sys/mman.h>  _GNU_SOURCE
+ *
+ * It is not possible to localize these feature specifications around
+ * the individual headers: all headers share a common set of features
+ * (via <feature.h>) and so all sources in the same compilation unit
+ * must turn on the same set of features.
+ *
+ * See "Feature Test Macros" in the Glibc Manual:
+ * <http://www.gnu.org/software/libc/manual/html_node/Feature-Test-Macros.html>
+ */
+
+#if defined(MPS_OS_LI)
+
+#define _XOPEN_SOURCE 500
+
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
+#endif
+
+
+/* .feature.xc: OS X feature specification
+ *
+ * The MPS needs the following symbols which are not defined by default
+ *
+ * Source      Symbols                   Header        Feature
+ * =========== ========================= ============= ====================
+ * prmci3li.c  __eax etc.                <ucontext.h>  _XOPEN_SOURCE
+ * prmci6li.c  __rax etc.                <ucontext.h>  _XOPEN_SOURCE
+ *
+ * It is not possible to localize these feature specifications around
+ * the individual headers: all headers share a common set of features
+ * (via <sys/cdefs.h>) and so all sources in the same compilation unit
+ * must turn on the same set of features.
+ */
+
+#if defined(MPS_OS_XC)
+
+#if !defined(_XOPEN_SOURCE)
+#define _XOPEN_SOURCE
+#endif
+
+#endif
+
 
 /* Protection Configuration see <code/prot*.c>
 
@@ -303,15 +396,38 @@
 
 #if defined(MPS_OS_FR)
 #define PROT_SIGNAL (SIGSEGV)
-#elif defined(MPS_OS_XC)
-#define PROT_SIGNAL (SIGBUS)
 #endif
 
-#if defined(MPS_OS_XC)
-#define PROT_SIGINFO_GOOD(info) (1)
-#elif defined(MPS_OS_FR)
+#if defined(MPS_OS_FR)
 #define PROT_SIGINFO_GOOD(info) ((info)->si_code == SEGV_ACCERR)
 #endif
+
+
+/* Almost all of protxc.c etc. are architecture-independent, but unfortunately
+   the Mach headers don't provide architecture neutral symbols for simple
+   things like thread states.  These definitions fix that. */
+
+#if defined(MPS_OS_XC)
+#if defined(MPS_ARCH_I6)
+
+#define THREAD_STATE_COUNT x86_THREAD_STATE64_COUNT
+#define THREAD_STATE_FLAVOR x86_THREAD_STATE64
+#define THREAD_STATE_S x86_thread_state64_t
+
+#elif defined(MPS_ARCH_I3)
+
+#define THREAD_STATE_COUNT x86_THREAD_STATE32_COUNT
+#define THREAD_STATE_FLAVOR x86_THREAD_STATE32
+#define THREAD_STATE_S x86_thread_state32_t
+
+#else
+
+#error "Unknown OS X architecture"
+
+#endif
+#endif
+
+
 
 
 /* Tracer Configuration -- see <code/trace.c> */
@@ -337,20 +453,6 @@
 /* Assert Buffer */
 
 #define ASSERT_BUFFER_SIZE      ((Size)512)
-
-
-/* Diagnostics Buffer */
-
-#ifdef DIAG_WITH_STREAM_AND_WRITEF
-/* DIAG_BUFFER_SIZE: 100 screenfuls: 100x80x25 = 200000 */
-#define DIAG_BUFFER_SIZE      ((Size)200000)
-#else
-#define DIAG_BUFFER_SIZE      ((Size)1)
-#endif
-
-#define DIAG_PREFIX_TAGSTART "MPS."
-#define DIAG_PREFIX_LINE     " "
-#define DIAG_PREFIX_TAGEND   ""
 
 
 /* memory operator configuration
@@ -406,7 +508,7 @@
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2003, 2006 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  *

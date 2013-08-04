@@ -1,7 +1,7 @@
 /* prmci3li.c: PROTECTION MUTATOR CONTEXT INTEL 386 (LINUX)
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/prmci3li.c#16 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/prmci3li.c#17 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: This module implements the part of the protection module
  * that decodes the MutatorFaultContext. 
@@ -29,7 +29,7 @@
 #include "prmcix.h"
 #include "prmci3.h"
 
-SRCID(prmci3li, "$Id: //info.ravenbrook.com/project/mps/master/code/prmci3li.c#16 $");
+SRCID(prmci3li, "$Id: //info.ravenbrook.com/project/mps/master/code/prmci3li.c#17 $");
 
 
 /* Prmci3AddressHoldingReg -- return an address of a register in a context */
@@ -41,8 +41,9 @@ MRef Prmci3AddressHoldingReg(MutatorFaultContext mfc, unsigned int regnum)
 
   /* .source.i486 */
   /* .assume.regref */
-  /* The REG_EAX etc. symbols are only present if _GNU_SOURCE is defined.
-     Currently this is in lii3gc.gmk in PFMDEFS. */
+  /* The register numbers (REG_EAX etc.) are defined in <ucontext.h>
+     but only if _GNU_SOURCE is defined: see .feature.li in
+     config.h. */
   /* TODO: The current arrangement of the fix operation (taking a Ref *)
      forces us to pun these registers (actually `int` on LII3GC).  We can
      suppress the warning my casting through `char *` and this might make
@@ -106,7 +107,7 @@ Res MutatorFaultContextScan(ScanState ss, MutatorFaultContext mfc)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

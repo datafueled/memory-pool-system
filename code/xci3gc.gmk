@@ -2,15 +2,15 @@
 #
 # xci3gc.gmk: BUILD FOR MACOS X (CARBON)/INTEL IA32/GCC PLATFORM
 #
-# $Id: //info.ravenbrook.com/project/mps/master/code/xci3gc.gmk#11 $
+# $Id: //info.ravenbrook.com/project/mps/master/code/xci3gc.gmk#12 $
 # Copyright (c) 2001,2006 Ravenbrook Limited.  See end of file for license.
 #
 # Naively copied from xcppgc.gmk, could do with going over properly.
 
 PFM = xci3gc
 
-MPMPF = lockix.c than.c vmix.c \
-        protix.c protsgix.c prmcan.c span.c ssixi3.c
+MPMPF = lockix.c thxc.c vmix.c protix.c proti3.c prmci3xc.c span.c ssixi3.c \
+        protxc.c
 
 LIBS =
 

@@ -1,4 +1,4 @@
-/* $HopeName: $
+/* $Id: //info.ravenbrook.com/project/mps/master/test/test/testlib/postGR.h#2 $
 In grotesq interface
  - "space" becomes "arena"
 */

@@ -155,24 +155,34 @@ rather than having to pass it around everywhere::
 
     static mps_arena_t arena;
 
-Create an arena by calling :c:func:`mps_arena_create`. This function
-takes a third argument when creating a virtual memory arena: the size of
-the amount of virtual virtual :term:`address space` (*not* :term:`RAM`),
-in bytes, that the arena will reserve initially. The MPS will ask for
+Create an arena by calling :c:func:`mps_arena_create_k`. This function
+takes a :term:`keyword argument` when creating a virtual memory arena:
+the size of virtual :term:`address space` (*not* :term:`RAM`), in
+bytes, that the arena will reserve initially. The MPS will ask for
 more address space if it runs out, but the more times it has to extend
 its address space, the less efficient garbage collection will become.
-The MPS works best if you reserve an address space that is several times
-larger than your peak memory usage.
+The MPS works best if you reserve an address space that is several
+times larger than your peak memory usage.
+
+.. note::
+
+    Functions in the MPS interface take :term:`keyword arguments` for
+    arguments that are optional, or are only required in some
+    circumstances. These argument are passed in the form of an array
+    of structures of type :c:type:`mps_arg_s`. See
+    :ref:`topic-keyword` for the full details.
 
 Let's reserve 32 megabytes::
 
     mps_res_t res;
-    res = mps_arena_create(&arena,
-                           mps_arena_class_vm(), 
-                           (size_t)(32 * 1024 * 1024));
+    MPS_ARGS_BEGIN(args) {
+        MPS_ARGS_ADD(args, MPS_KEY_ARENA_SIZE, 32 * 1024 * 1024);
+        MPS_ARGS_DONE(args);
+        res = mps_arena_create_k(&arena, mps_arena_class_vm(), args);
+    } MPS_ARGS_END(args);
     if (res != MPS_RES_OK) error("Couldn't create arena");
 
-:c:func:`mps_arena_create` is typical of functions in the MPS
+:c:func:`mps_arena_create_k` is typical of functions in the MPS
 interface in that it stores its result in a location pointed to by an
 :term:`out parameter` (here, ``&arena``) and returns a :term:`result
 code`, which is :c:macro:`MPS_RES_OK` if the function succeeded, or
@@ -246,32 +256,27 @@ you need to tell it how to perform various operations on an object
 so on). You do this by creating an :term:`object format`. Here's the
 code for creating the object format for the toy Scheme interpreter::
 
-    struct mps_fmt_A_s obj_fmt_s = {
-        ALIGNMENT,
-        obj_scan,
-        obj_skip,
-        NULL,
-        obj_fwd,
-        obj_isfwd,
-        obj_pad,
-    };
-
-    mps_fmt_t obj_fmt;
-    res = mps_fmt_create_A(&obj_fmt, arena, &obj_fmt_s);
+    MPS_ARGS_BEGIN(args) {
+        MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, ALIGNMENT);
+        MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, obj_scan);
+        MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, obj_skip);
+        MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, obj_fwd);
+        MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, obj_isfwd);
+        MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, obj_pad);
+        MPS_ARGS_DONE(args);
+        res = mps_fmt_create_k(&obj_fmt, arena, args);
+    } MPS_ARGS_END(args);
     if (res != MPS_RES_OK) error("Couldn't create obj format");
 
-The structure :c:type:`mps_fmt_A_s` is the simplest of several object
-format variants that are appropriate for moving pools like AMC.
-
-The first element of the structure is the :term:`alignment` of objects
-belonging to this format. Determining the alignment is hard to do
-portably, because it depends on the target architecture and on the way
-the compiler lays out its structures in memory. Here are some things
-you might try:
+The argument for the keyword :c:macro:`MPS_KEY_FMT_ALIGN` is the
+:term:`alignment` of objects belonging to this format. Determining the
+alignment is hard to do portably, because it depends on the target
+architecture and on the way the compiler lays out its structures in
+memory. Here are some things you might try:
 
 1. Some modern compilers support the ``alignof`` operator::
 
-         #define ALIGNMENT alignof(obj_s)
+        #define ALIGNMENT alignof(obj_s)
 
 2. On older compilers you may be able to use this trick::
 
@@ -291,10 +296,9 @@ you might try:
 
         #define ALIGNMENT sizeof(mps_word_t)
 
-The other elements of the structure are the :term:`format methods`,
-which are described in the following sections. (The ``NULL`` in the
-structure is a placeholder for the :term:`copy method`, which is now
-obsolete.)
+The other keyword arguments specify the :term:`format methods`
+required by the AMC pool class, which are described in the following
+sections.
 
 .. topics::
 
@@ -762,11 +766,12 @@ Third, the :term:`generation chain`::
 And finally the :term:`pool`::
 
     mps_pool_t obj_pool;
-    res = mps_pool_create(&obj_pool,
-                          arena,
-                          mps_class_amc(),
-                          obj_fmt,
-                          obj_chain);
+    MPS_ARGS_BEGIN(args) {
+        MPS_ARGS_ADD(args, MPS_KEY_CHAIN, obj_chain);
+        MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+        MPS_ARGS_DONE(args);
+        res = mps_pool_create_k(&obj_pool, arena, mps_class_amc(), args);
+    } MPS_ARGS_END(args);
     if (res != MPS_RES_OK) error("Couldn't create obj pool");
 
 
@@ -1080,13 +1085,13 @@ may abort.
 The MPS solves this problem via the fast, nearly lock-free
 :ref:`topic-allocation-point-protocol`. This needs an additional
 structure, an :term:`allocation point`, to be attached to the pool by
-calling :c:func:`mps_ap_create`::
+calling :c:func:`mps_ap_create_k`::
 
     static mps_ap_t obj_ap;
 
     /* ... */
 
-    res = mps_ap_create(&obj_ap, obj_pool, mps_rank_exact());
+    res = mps_ap_create_k(&obj_ap, obj_pool, mps_args_none);
     if (res != MPS_RES_OK) error("Couldn't create obj allocation point");
 
 And then the constructor can be implemented like this::
@@ -1216,6 +1221,7 @@ on.
 
 Here's the tear-down code from the toy Scheme interpreter::
 
+    mps_arena_park(arena);
     mps_ap_destroy(obj_ap);
     mps_pool_destroy(obj_pool);
     mps_chain_destroy(obj_chain);

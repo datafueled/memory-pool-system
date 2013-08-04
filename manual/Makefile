@@ -37,9 +37,11 @@ help:
 	@echo "  changes    to make an overview of all changed/added/deprecated items"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+	@echo "  tools      to install a local copy of the Python tools using virtualenv"
 
 clean:
 	-rm -rf $(BUILDDIR)/{changes,devhelp,dirhtml,doctest,doctrees,epub,html,htmlhelp,json,latex,linkcheck,locale,man,pickle,qthelp,singlehtml,texinfo,text}
+	-find $(BUILDDIR)/source/design -name '*.rst' ! -name 'index.rst' ! -name 'old.rst' -exec rm -f '{}' ';'
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
@@ -152,7 +154,12 @@ doctest:
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
-checkin: html
-	@p4 reconcile $(BUILDDIR)/html/...
-	@p4 reopen -t +w $(BUILDDIR)/html/...
-	@if p4 -s opened -m 1 $(BUILDDIR)/html/... | grep -q ^info; then p4 submit -d "Updated manual HTML" $(BUILDDIR)/html/...; fi
+tools: tool/bin/sphinx-build
+
+tool/bin/sphinx-build: tool/bin/pip
+	tool/bin/pip install sphinx
+	@echo "You can now use \`make SPHINXBUILD=tool/bin/sphinx-build html' etc."
+	@echo "Or add tool/bin to your path."
+
+tool/bin/pip:
+	virtualenv tool

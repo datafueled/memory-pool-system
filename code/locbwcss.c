@@ -1,6 +1,6 @@
 /* locbwcss.c: LOCUS BACKWARDS COMPATIBILITY STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/locbwcss.c#5 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/locbwcss.c#7 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -8,6 +8,7 @@
 #include "mpslib.h"
 #include "mpsavm.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include "mps.h"
 
 #include <stdlib.h>
@@ -177,8 +178,6 @@ static void testInArena(mps_arena_t arena)
 
   if (lostat->max > histat->min) {
     error("\nFOUND PROBLEM - low range overlaps high\n");
-  } else if (lostat->ncCount != 0 || histat->ncCount != 0) {
-    error("\nFOUND POSSIBLE PROBLEM - some non-contiguous allocations\n");
   } else {
     printf("\nNo problems detected.\n");
   }
@@ -193,6 +192,7 @@ int main(int argc, char *argv[])
   mps_arena_t arena;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   die(mps_arena_create(&arena, mps_arena_class_vmnz(), testArenaSIZE),
       "mps_arena_create");

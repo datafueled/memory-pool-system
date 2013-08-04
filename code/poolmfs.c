@@ -1,7 +1,7 @@
 /* poolmfs.c: MANUAL FIXED SMALL UNIT POOL
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolmfs.c#11 $
- * Copyright (c) 2001-2012 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolmfs.c#13 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * This is the implementation of the MFS pool class.
  *
@@ -31,12 +31,12 @@
  * is a shame.
  */
 
-
 #include "mpscmfs.h"
+#include "dbgpool.h"
 #include "poolmfs.h"
 #include "mpm.h"
 
-SRCID(poolmfs, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmfs.c#11 $");
+SRCID(poolmfs, "$Id: //info.ravenbrook.com/project/mps/master/code/poolmfs.c#13 $");
 
 
 /* ROUND -- Round up
@@ -77,18 +77,40 @@ Pool (MFSPool)(MFS mfs)
 }
 
 
-static Res MFSInit(Pool pool, va_list arg)
+/* MFSVarargs -- decode obsolete varargs */
+
+static void MFSVarargs(ArgStruct args[MPS_ARGS_MAX], va_list varargs)
 {
-  Size extendBy, unitSize;
+  args[0].key = MPS_KEY_EXTEND_BY;
+  args[0].val.size = va_arg(varargs, Size);
+  args[1].key = MPS_KEY_MFS_UNIT_SIZE;
+  args[1].val.size = va_arg(varargs, Size);
+  args[2].key = MPS_KEY_ARGS_END;
+  AVER(ArgListCheck(args));
+}
+
+ARG_DEFINE_KEY(mfs_unit_size, Size);
+
+static Res MFSInit(Pool pool, ArgList args)
+{
+  Size extendBy = MFS_EXTEND_BY_DEFAULT;
+  Size unitSize;
   MFS mfs;
   Arena arena;
+  ArgStruct arg;
 
   AVER(pool != NULL);
+  AVER(ArgListCheck(args));
+  
+  ArgRequire(&arg, args, MPS_KEY_MFS_UNIT_SIZE);
+  unitSize = arg.val.size;
+  if (ArgPick(&arg, args, MPS_KEY_EXTEND_BY))
+    extendBy = arg.val.size;
+  else {
+    if (extendBy < unitSize)
+      extendBy = unitSize;
+  }
 
-  extendBy = va_arg(arg, Size);
-  unitSize = va_arg(arg, Size);
-
-  AVER(unitSize >= UNIT_MIN);
   AVER(extendBy >= unitSize);
  
   mfs = PoolPoolMFS(pool);
@@ -96,6 +118,8 @@ static Res MFSInit(Pool pool, va_list arg)
 
   mfs->unroundedUnitSize = unitSize;
 
+  if (unitSize < UNIT_MIN)
+    unitSize = UNIT_MIN;
   unitSize = SizeAlignUp(unitSize, MPS_PF_ALIGN);
   extendBy = SizeAlignUp(extendBy, ArenaAlign(arena));
 
@@ -269,6 +293,7 @@ DEFINE_POOL_CLASS(MFSPoolClass, this)
   this->name = "MFS";
   this->size = sizeof(MFSStruct);
   this->offset = offsetof(MFSStruct, poolStruct);
+  this->varargs = MFSVarargs;
   this->init = MFSInit;
   this->finish = MFSFinish;
   this->alloc = MFSAlloc;
@@ -312,7 +337,7 @@ Bool MFSCheck(MFS mfs)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2012 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

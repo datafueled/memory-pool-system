@@ -1,6 +1,6 @@
 /* qs.c: QUICKSORT
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/qs.c#15 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/qs.c#16 $
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  *  The purpose of this program is to act as a "real" client of the MM.
@@ -23,6 +23,7 @@
  */
 
 #include "testlib.h"
+#include "mpslib.h"
 #include "mps.h"
 #include "mpsavm.h"
 #include "mpscamc.h"
@@ -528,6 +529,7 @@ int main(int argc, char *argv[])
   void *r;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   die(mps_arena_create(&arena, mps_arena_class_vm(), testArenaSIZE),
       "mps_arena_create");

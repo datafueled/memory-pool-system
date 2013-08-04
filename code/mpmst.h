@@ -1,6 +1,6 @@
 /* mpmst.h: MEMORY POOL MANAGER DATA STRUCTURES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpmst.h#27 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpmst.h#29 $
  * Copyright (c) 2001-2003, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2001 Global Graphics Software.
  *
@@ -52,6 +52,7 @@ typedef struct mps_class_s {
   size_t size;                  /* size of outer structure */
   size_t offset;                /* offset of generic struct in outer struct */
   Attr attr;                    /* attributes */
+  PoolVarargsMethod varargs;    /* convert deprecated varargs into keywords */
   PoolInitMethod init;          /* initialize the pool descriptor */
   PoolFinishMethod finish;      /* finish the pool descriptor */
   PoolAllocMethod alloc;        /* allocate memory from pool */
@@ -330,6 +331,7 @@ typedef struct BufferClassStruct {
   ProtocolClassStruct protocol;
   const char *name;             /* class name string */
   size_t size;                  /* size of outer structure */
+  BufferVarargsMethod varargs;  /* parse obsolete varargs */
   BufferInitMethod init;        /* initialize the buffer */
   BufferFinishMethod finish;    /* finish the buffer */
   BufferAttachMethod attach;    /* attach the buffer */
@@ -402,7 +404,6 @@ typedef struct SegBufStruct {
 typedef struct mps_fmt_s {
   Sig sig;
   Serial serial;                /* from arena->formatSerial */
-  FormatVariety variety;        /* format variety (e.g. A) */
   Arena arena;                  /* owning arena */
   RingStruct arenaRing;         /* formats are attached to the arena */
   Align alignment;              /* alignment of formatted objects */
@@ -410,7 +411,6 @@ typedef struct mps_fmt_s {
   mps_fmt_skip_t skip;
   mps_fmt_fwd_t move;
   mps_fmt_isfwd_t isMoved;
-  mps_fmt_copy_t copy;
   mps_fmt_pad_t pad;
   mps_fmt_class_t class;        /* pointer indicating class */
   Size headerSize;              /* size of header */
@@ -535,6 +535,7 @@ typedef struct mps_arena_class_s {
   char *name;                   /* class name string */
   size_t size;                  /* size of outer structure */
   size_t offset;                /* offset of generic struct in outer struct */
+  ArenaVarargsMethod varargs;
   ArenaInitMethod init;
   ArenaFinishMethod finish;
   ArenaReservedMethod reserved;

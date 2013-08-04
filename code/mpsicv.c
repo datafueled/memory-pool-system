@@ -1,11 +1,12 @@
 /* mpsicv.c: MPSI COVERAGE TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpsicv.c#25 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpsicv.c#27 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2002 Global Graphics Software.
  */
 
 #include "testlib.h"
+#include "mpslib.h"
 #include "mpscamc.h"
 #include "mpsavm.h"
 #include "mpscmv.h"
@@ -467,6 +468,7 @@ static void *test(void *arg, size_t s)
   mps_ld_add(&ld, arena, obj);
 
   if (mps_ld_isstale(&ld, arena, obj)) {
+    cdie(mps_ld_isstale_any(&ld, arena), "mps_ld_isstale_any");
     mps_ld_reset(&ld, arena);
     mps_ld_add(&ld, arena, obj);
   }
@@ -582,6 +584,7 @@ int main(int argc, char *argv[])
   void *marker = &marker;
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   die(mps_arena_create(&arena, mps_arena_class_vm(), TEST_ARENA_SIZE),
       "arena_create");

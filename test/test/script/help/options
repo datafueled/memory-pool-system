@@ -1,5 +1,5 @@
 display options and their current values
-% $HopeName: MMQA_harness!script:help:options(trunk.6) $
+% $Id: //info.ravenbrook.com/project/mps/master/test/test/script/help/options#2 $
 
 Usage: qa options [<options>]
 

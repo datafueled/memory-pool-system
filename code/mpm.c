@@ -1,6 +1,6 @@
 /* mpm.c: GENERAL MPM SUPPORT
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#19 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#21 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
  * .purpose: Miscellaneous support for the implementation of the MPM
@@ -15,7 +15,7 @@
 #include <float.h>
 #include <limits.h>
 
-SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#19 $");
+SRCID(mpm, "$Id: //info.ravenbrook.com/project/mps/master/code/mpm.c#21 $");
 
 
 #if defined(AVER_AND_CHECK)
@@ -267,7 +267,7 @@ static Res WriteULongest(mps_lib_FILE *stream, ULongest w, unsigned base,
     buf[i] = pad;
   }
 
-  r = Stream_fputs(&buf[i], stream);
+  r = mps_lib_fputs(&buf[i], stream);
   if (r == mps_lib_EOF)
     return ResIO;
 
@@ -308,7 +308,7 @@ static Res WriteDouble(mps_lib_FILE *stream, double d)
   int j = 0;
  
   if (F == 0.0) {
-    if (Stream_fputs("0", stream) == mps_lib_EOF)
+    if (mps_lib_fputs("0", stream) == mps_lib_EOF)
       return ResIO;
     return ResOK;
   }
@@ -323,7 +323,7 @@ static Res WriteDouble(mps_lib_FILE *stream, double d)
   for ( ; F >= 1.0 ; F /= 10.0) {
     E++;
     if (E > DBL_MAX_10_EXP) {
-      if (Stream_fputs("Infinity", stream) == mps_lib_EOF)
+      if (mps_lib_fputs("Infinity", stream) == mps_lib_EOF)
         return ResIO;
       return ResOK;
     }
@@ -410,7 +410,7 @@ static Res WriteDouble(mps_lib_FILE *stream, double d)
   }
   buf[j] = '\0';                /* arnold */
  
-  if (Stream_fputs(buf, stream) == mps_lib_EOF)
+  if (mps_lib_fputs(buf, stream) == mps_lib_EOF)
     return ResIO;
   return ResOK;
 }
@@ -469,7 +469,7 @@ Res WriteF_firstformat_v(mps_lib_FILE *stream,
 
     while(*format != '\0') {
       if (*format != '$') {
-        r = Stream_fputc(*format, stream); /* Could be more efficient */
+        r = mps_lib_fputc(*format, stream); /* Could be more efficient */
         if (r == mps_lib_EOF) return ResIO;
       } else {
         ++format;
@@ -493,7 +493,9 @@ Res WriteF_firstformat_v(mps_lib_FILE *stream,
           case 'F': {                   /* function */
             WriteFF f = va_arg(args, WriteFF);
             Byte *b = (Byte *)&f;
-            /* TODO: Why do we always write these little-endian? */
+            /* ISO C forbits casting function pointers to integer, so
+               decode bytes (see design.writef.f). 
+               TODO: Be smarter about endianness. */
             for(i=0; i < sizeof(WriteFF); i++) {
               res = WriteULongest(stream, (ULongest)(b[i]), 16,
                                   (CHAR_BIT + 3) / 4);
@@ -503,13 +505,13 @@ Res WriteF_firstformat_v(mps_lib_FILE *stream,
            
           case 'S': {                   /* string */
             WriteFS s = va_arg(args, WriteFS);
-            r = Stream_fputs((const char *)s, stream);
+            r = mps_lib_fputs((const char *)s, stream);
             if (r == mps_lib_EOF) return ResIO;
           } break;
        
           case 'C': {                   /* character */
             WriteFC c = va_arg(args, WriteFC); /* promoted */
-            r = Stream_fputc((int)c, stream);
+            r = mps_lib_fputc((int)c, stream);
             if (r == mps_lib_EOF) return ResIO;
           } break;
        
@@ -539,7 +541,7 @@ Res WriteF_firstformat_v(mps_lib_FILE *stream,
           } break;
        
           case '$': {                   /* dollar char */
-            r = Stream_fputc('$', stream);
+            r = mps_lib_fputc('$', stream);
             if (r == mps_lib_EOF) return ResIO;
           } break;
 

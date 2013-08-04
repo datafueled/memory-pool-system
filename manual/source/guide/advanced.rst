@@ -335,7 +335,7 @@ any of its keys.
 If you look up a key in an address-based hash table and fail to find it
 there, that might be because the table's dependency on the location of
 the key is stale: that is, if the garbage collector moved the key. The
-function :c:func:`mps_ld_isstale` tells you if any of the blocks whose
+function :c:func:`mps_ld_isstale` tells you if a block whose
 locations you depended upon since the last call to
 :c:func:`mps_ld_reset` might have moved.
 
@@ -354,24 +354,16 @@ locations you depended upon since the last call to
         return NULL;
     }
 
-It's important to test :c:func:`mps_ld_isstale` only in case of failure.
-The function tells you whether *any* of the dependencies is stale, not
-whether a particular dependency is stale. So if ``key`` has not moved,
-but some other keys have moved, then if you tested
-:c:func:`mps_ld_isstale` first, it would return true and so you'd end up
-unnecessarily rehashing the whole table. (It's crucial, however, to
-actually test that ``key`` appears in the table, not just that some key
-with the same hash does.)
+It's important to test :c:func:`mps_ld_isstale` only in case of
+failure. The function may report a false positive (returning true
+despite the block not having moved). So if ``key`` has not moved, then
+if you tested :c:func:`mps_ld_isstale` first, it might return true and
+so you'd end up unnecessarily rehashing the whole table. (It's
+crucial, however, to actually test that ``key`` appears in the table,
+not just that some key with the same hash does.)
 
 When a table is rehashed, call :c:func:`mps_ld_reset` to clear the
-location dependency, and the :c:func:`mps_ld_add` for each key before it is added back to the table.
-
-.. note::
-
-    Somewhat misleadingly, :c:func:`mps_ld_isstale` takes an address as
-    its third argument. This address is not tested for staleness: it
-    appears in the :term:`telemetry stream`, however, where it might be
-    useful for debugging.
+location dependency, and then :c:func:`mps_ld_add` for each key before it is added back to the table.
 
 .. note::
 
@@ -605,8 +597,8 @@ See the :ref:`pool-awl-caution` section in :ref:`pool-awl`.
 
 A one-bit tag suffices here::
 
-    #define TAG_SIZE(i) (((i) << 1) | 1)
-    #define UNTAG_SIZE(i) ((i) >> 1)
+    #define TAG_COUNT(i) (((i) << 1) + 1)
+    #define UNTAG_COUNT(i) ((i) >> 1)
 
     typedef struct buckets_s {
         struct buckets_s *dependent;  /* the dependent object */
@@ -626,8 +618,8 @@ code highlighted:
     {
         MPS_SCAN_BEGIN(ss) {
             while (base < limit) {
-                buckets_t buckets = base;
-                size_t i, length = UNTAG_SIZE(buckets->length);
+                buckets_t buckets = base; /* see note 1 */
+                size_t i, length = UNTAG_COUNT(buckets->length);
                 FIX(buckets->dependent);
                 if(buckets->dependent != NULL)
                     assert(buckets->dependent->length == buckets->length);
@@ -638,19 +630,19 @@ code highlighted:
                         if (res != MPS_RES_OK) return res;
                         if (p == NULL) {
                             /* key/value was splatted: splat value/key too */
-                            p = obj_deleted;
-                            buckets->deleted += 2; /* tagged */
-                            if (buckets->dependent != NULL) {
+                            p = obj_deleted; /* see note 3 */
+                            buckets->deleted = TAG_COUNT(UNTAG_COUNT(buckets->deleted) + 1);
+                            if (buckets->dependent != NULL) { /* see note 2 */
                                 buckets->dependent->bucket[i] = p;
-                                buckets->dependent->deleted += 2; /* tagged */
+                                buckets->dependent->deleted
+                                    = TAG_COUNT(UNTAG_COUNT(buckets->dependent->deleted) + 1);
                             }
                         }
                         buckets->bucket[i] = p;
                     }
                 }
-                base = (char *)base +
-                    ALIGN(offsetof(buckets_s, bucket) +
-                          length * sizeof(buckets->bucket[0]));
+                base = (char *)base + ALIGN(offsetof(buckets_s, bucket) +
+                                            length * sizeof(buckets->bucket[0]));
             }
         } MPS_SCAN_END(ss);
         return MPS_RES_OK;
@@ -667,18 +659,10 @@ code highlighted:
        that even if you are confident that you will always initialize
        this field, you still have to guard access to it, as here.
 
-    3. This hash table implementation uses ``NULL`` to mean "never used"
-       and ``obj_deleted`` to mean "formerly used but then deleted". So
-       when a key is splatted it is necessary to replace it with
-       ``obj_deleted``. (It would simplify the code slightly to turn the
-       implementation around and use ``obj_unused``, say, for "never
-       used", and ``NULL`` for "deleted".)
-
-    4. The updating of the tagged sizes has been abbreviated from::
-
-           buckets->deleted = TAG_SIZE(UNTAG_SIZE(buckets->deleted) + 1)
-
-       to ``buckets->deleted += 2``.
+    3. This hash table implementation uses ``NULL`` to mean "never
+       used" and ``obj_deleted`` to mean "formerly used but then
+       deleted". So when a key is splatted it is necessary to replace
+       it with ``obj_deleted``.
 
 The :term:`skip method` is straightforward::
 
@@ -686,43 +670,44 @@ The :term:`skip method` is straightforward::
     {
         buckets_t buckets = base;
         size_t length = UNTAG_SIZE(buckets->length);
-        return (char *)base +
-            ALIGN(offsetof(buckets_s, bucket) +
-                  length * sizeof(buckets->bucket[0]));
+        return (char *)base + ALIGN(offsetof(buckets_s, bucket) +
+                                    length * sizeof(buckets->bucket[0]));
     }
 
-as is the object format, since AWL only calls the scan and skip
-methods::
-
-    struct mps_fmt_A_s buckets_fmt_s = {
-        ALIGNMENT,
-        buckets_scan,
-        buckets_skip,
-        NULL,                       /* Obsolete copy method */
-        NULL,                       /* fwd method not used by AWL */
-        NULL,                       /* isfwd method not used by AWL */
-        NULL                        /* pad method not used by AWL */
-    };
-
-Finally, we can create the buckets pool and its allocation points::
+Now we can create the object format, the pool and the allocation
+points::
 
     /* Create the buckets format. */
-    res = mps_fmt_create_A(&buckets_fmt, arena, &buckets_fmt_s);
+    MPS_ARGS_BEGIN(args) {
+        MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, ALIGNMENT);
+        MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, buckets_scan);
+        MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, buckets_skip);
+        res = mps_fmt_create_k(&buckets_fmt, arena, args);
+    } MPS_ARGS_END(args);
     if (res != MPS_RES_OK) error("Couldn't create buckets format");
 
     /* Create an Automatic Weak Linked (AWL) pool to manage the hash table
        buckets. */
-    res = mps_pool_create(&buckets_pool,
-                          arena,
-                          mps_class_awl(),
-                          buckets_fmt,
-                          buckets_find_dependent);
+    MPS_ARGS_BEGIN(args) {
+        MPS_ARGS_ADD(args, MPS_KEY_FORMAT, buckets_fmt);
+        MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, buckets_find_dependent);
+        MPS_ARGS_DONE(args);
+        res = mps_pool_create_k(&buckets_pool, arena, mps_class_awl(), args);
+    } MPS_ARGS_END(args);
     if (res != MPS_RES_OK) error("Couldn't create buckets pool");
 
     /* Create allocation points for weak and strong buckets. */
-    res = mps_ap_create(&strong_buckets_ap, buckets_pool, mps_rank_exact());
+    MPS_ARGS_BEGIN(args) {
+        MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+        MPS_ARGS_DONE(args);
+        res = mps_ap_create_k(&strong_buckets_ap, buckets_pool, args);
+    } MPS_ARGS_END(args);
     if (res != MPS_RES_OK) error("Couldn't create strong buckets allocation point");
-    res = mps_ap_create(&weak_buckets_ap, buckets_pool, mps_rank_weak());
+    MPS_ARGS_BEGIN(args) {
+        MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_weak());
+        MPS_ARGS_DONE(args);
+        res = mps_ap_create_k(&weak_buckets_ap, buckets_pool, args);
+    } MPS_ARGS_END(args);
     if (res != MPS_RES_OK) error("Couldn't create weak buckets allocation point");
 
 By adding the line::
@@ -867,7 +852,11 @@ Segregation of objects
 
 When objects of different types have different properties (different
 sizes, lifetimes, references, layouts) it makes sense to segregate
-them into pools of appropriate classes.
+them into pools of appropriate classes. The garbage collector in the
+MPS is designed to work efficiently with many pools: it traces
+references between objects in different pools, and it coordinates the
+scanning of the :term:`registers` and :term:`control stacks` (see
+:ref:`topic-root-thread`).
 
 For example, the toy Scheme interpreter has a mixture of object types,
 some of which contain references to other objects (for example, pairs)
@@ -888,15 +877,16 @@ Second, the leaf objects must be allocated on ``leaf_ap`` instead of
 
     /* Create an Automatic Mostly-Copying Zero-rank (AMCZ) pool to
        manage the leaf objects. */
-    res = mps_pool_create(&leaf_pool,
-                          arena,
-                          mps_class_amcz(),
-                          obj_fmt,
-                          obj_chain);
+    MPS_ARGS_BEGIN(args) {
+        MPS_ARGS_ADD(args, MPS_KEY_CHAIN, obj_chain);
+        MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+        MPS_ARGS_DONE(args);
+        res = mps_pool_create_k(&leaf_pool, arena, mps_class_amcz(), args);
+    } MPS_ARGS_END(args);
     if (res != MPS_RES_OK) error("Couldn't create leaf pool");
 
     /* Create allocation point for leaf objects. */
-    res = mps_ap_create(&leaf_ap, leaf_pool);
+    res = mps_ap_create_k(&leaf_ap, leaf_pool, mps_args_none);
     if (res != MPS_RES_OK) error("Couldn't create leaf objects allocation point");
 
 Note that the new pool shared a :term:`generation chain` with the old

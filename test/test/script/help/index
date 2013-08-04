@@ -1,5 +1,5 @@
 list tests in a directory
-% $HopeName$
+% $Id: //info.ravenbrook.com/project/mps/master/test/test/script/help/index#2 $
 
 Usage: qa index [<directory>]
 

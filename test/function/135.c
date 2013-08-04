@@ -1,6 +1,6 @@
 /* 
 TEST_HEADER
- id = $HopeName$
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/135.c#2 $
  summary = mps_arena_commit_limit and small arena chunks
  language = c
  link = testlib.o

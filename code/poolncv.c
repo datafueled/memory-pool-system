@@ -1,28 +1,26 @@
 /* poolncv.c: NULL POOL COVERAGE TEST
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/poolncv.c#10 $
- *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/poolncv.c#12 $
+ *  Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  */
 
 #include "mpm.h"
 #include "pooln.h"
 #include "mpsavm.h"
 #include "testlib.h"
+#include "mpslib.h"
 
 
-static void testit(ArenaClass class, ...)
+static void testit(ArenaClass class, ArgList args)
 {
   Arena arena;
   Pool pool;
   Res res;
   Addr p;
-  va_list args;
 
-  va_start(args, class);
-  die(ArenaCreateV(&arena, class, args), "ArenaCreate");
-  va_end(args);
+  die(ArenaCreate(&arena, class, args), "ArenaCreate");
 
-  die(PoolCreate(&pool, arena, PoolClassN()), "PoolNCreate");
+  die(PoolCreate(&pool, arena, PoolClassN(), argsNone), "PoolNCreate");
   res = PoolAlloc(&p, pool, 1, /* withReservoirPermit */ FALSE);
   if (res == ResOK) {
     error("Error: Unexpectedly succeeded in"
@@ -36,7 +34,11 @@ static void testit(ArenaClass class, ...)
 int main(int argc, char *argv[])
 {
   testlib_unused(argc);
-  testit((ArenaClass)mps_arena_class_vm(), (Size)600000);
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_ARENA_SIZE, 600000);
+    MPS_ARGS_DONE(args);
+    testit((ArenaClass)mps_arena_class_vm(), args);
+  } MPS_ARGS_END(args);
   printf("%s: Conclusion: Failed to find any defects.\n", argv[0]);
   return 0;
 }

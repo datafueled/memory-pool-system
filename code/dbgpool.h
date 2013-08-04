@@ -2,7 +2,7 @@
  *
  * See <design/object-debug>.
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/dbgpool.h#10 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/dbgpool.h#11 $
  * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */
@@ -54,6 +54,8 @@ typedef struct PoolDebugMixinStruct {
   SplayTreeStruct index;
 } PoolDebugMixinStruct;
 
+
+extern Bool PoolDebugOptionsCheck(PoolDebugOptions opt);
 
 extern Bool PoolDebugMixinCheck(PoolDebugMixin dbg);
 

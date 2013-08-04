@@ -1,4 +1,4 @@
-/* $HopeName: MMQA_harness!testlib:lofmt.h(trunk.2) $
+/* $Id: //info.ravenbrook.com/project/mps/master/test/test/testlib/lofmt.h#2 $
 lofmt.h
    A format for the LO pool class. We have to allow for copying
    and forwarding, but scan should never be called.

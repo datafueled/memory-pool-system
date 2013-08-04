@@ -1,6 +1,6 @@
 /* amcss.c: POOL CLASS AMC STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/amcss.c#30 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/amcss.c#31 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  */
@@ -8,6 +8,7 @@
 #include "fmtdy.h"
 #include "fmtdytst.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include "mpscamc.h"
 #include "mpsavm.h"
 #include "mpstd.h"
@@ -15,6 +16,7 @@
 #include "mpsw3.h"
 #endif
 #include "mps.h"
+#include "mpslib.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -305,7 +307,8 @@ int main(int argc, char *argv[])
   mps_thr_t thread;
 
   randomize(argc, argv);
-
+  mps_lib_assert_fail_install(assert_die);
+  
   die(mps_arena_create(&arena, mps_arena_class_vm(), 2*testArenaSIZE),
       "arena_create");
   mps_message_type_enable(arena, mps_message_type_gc());

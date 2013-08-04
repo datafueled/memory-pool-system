@@ -1,5 +1,5 @@
 run tests, reporting results and verdict
-% $HopeName: MMQA_harness!script:help:run(trunk.3) $
+% $Id: //info.ravenbrook.com/project/mps/master/test/test/script/help/run#2 $
 
 Usage: qa run [<options>] <testfile> [<testfile> ...]
 

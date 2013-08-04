@@ -1,6 +1,6 @@
 
 TEST_HEADER
- id = $HopeName$
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/503.txt#2 $
  summary = Compare variety.hi/he and variety.wi performance
  language = english
 END_HEADER

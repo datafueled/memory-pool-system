@@ -1,4 +1,4 @@
-/* $HopeName: MMQA_harness!testlib:platform.h(trunk.6) $
+/* $Id: //info.ravenbrook.com/project/mps/master/test/test/testlib/platform.h#3 $
    load appropriate header files to do platform-specific
    stuff.
 */

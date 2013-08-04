@@ -1,7 +1,7 @@
 /* locus.c: LOCUS MANAGER
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/locus.c#17 $
- * Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/locus.c#18 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  *
  * DESIGN
  *
@@ -15,7 +15,7 @@
 #include "mpstd.h"
 #include <float.h> /* for DBL_MAX */
 
-SRCID(locus, "$Id: //info.ravenbrook.com/project/mps/master/code/locus.c#17 $");
+SRCID(locus, "$Id: //info.ravenbrook.com/project/mps/master/code/locus.c#18 $");
 
 
 /* SegPrefCheck -- check the consistency of a segment preference */
@@ -296,12 +296,7 @@ Res ChainCondemnAuto(double *mortalityReturn, Chain chain, Trace trace)
   } while (genNewSize >= gen->capacity * (Size)1024);
   
   EVENT3(ChainCondemnAuto, chain, topCondemnedGenSerial, chain->genCount);
-  DIAG_SINGLEF(( "ChainCondemnAuto",
-    "condemn gens [0..$U]", (WriteFU)topCondemnedGenSerial,
-    " (of $U)", (WriteFU)chain->genCount,
-    " of this chain $P.", (WriteFP)chain,
-    NULL ));
-  UNUSED(topCondemnedGenSerial); /* only used for DIAG */
+  UNUSED(topCondemnedGenSerial); /* only used for EVENT */
   
   /* Condemn everything in these zones. */
   if (condemnedSet != ZoneSetEMPTY) {
@@ -488,7 +483,7 @@ Bool LocusCheck(Arena arena)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2002 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

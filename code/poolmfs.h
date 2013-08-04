@@ -1,6 +1,6 @@
 /*  poolmfs.h: MANUAL FIXED SMALL UNIT POOL
  *
- *  $Id: //info.ravenbrook.com/project/mps/master/code/poolmfs.h#8 $
+ *  $Id: //info.ravenbrook.com/project/mps/master/code/poolmfs.h#9 $
  *
  *  Copyright (c) 2001 Ravenbrook Limited.  See end of file for license.
  *
@@ -29,6 +29,7 @@
 #define poolmfs_h
 
 #include "mpm.h"
+#include "mpscmfs.h"
 
 typedef struct MFSStruct *MFS;
 

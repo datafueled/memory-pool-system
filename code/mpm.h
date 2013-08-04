@@ -1,7 +1,7 @@
 /* mpm.h: MEMORY POOL MANAGER DEFINITIONS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.h#42 $
- * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpm.h#47 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
  * .trans.bufferinit: The Buffer data structure has an Init field and
@@ -22,6 +22,7 @@
 #include "mpslib.h"
 #include "ring.h"
 #include "tract.h" /* only for certain Seg macros */
+#include "arg.h"
 #include "mpmtypes.h"
 #include "mpmst.h"
 
@@ -154,14 +155,6 @@ extern Res WriteF_v(mps_lib_FILE *stream, va_list args);
 extern Res WriteF_firstformat_v(mps_lib_FILE *stream,
                                 const char *firstformat, va_list args);
 
-#if defined(DIAG_WITH_STREAM_AND_WRITEF)
-extern int Stream_fputc(int c, mps_lib_FILE *stream);
-extern int Stream_fputs(const char *s, mps_lib_FILE *stream);
-#else
-#define Stream_fputc mps_lib_fputc
-#define Stream_fputs mps_lib_fputs
-#endif
-
 
 /* Miscellaneous support -- see <code/mpm.c> */
 
@@ -178,8 +171,7 @@ extern char *MPSVersion(void);
 
 /* Pool Interface -- see impl.c.pool */
 
-extern Res PoolInit(Pool pool, Arena arena, PoolClass class, ...);
-extern Res PoolInitV(Pool pool, Arena arena, PoolClass class, va_list args);
+extern Res PoolInit(Pool pool, Arena arena, PoolClass class, ArgList args);
 extern void PoolFinish(Pool pool);
 extern Bool PoolClassCheck(PoolClass class);
 extern Bool PoolCheck(Pool pool);
@@ -194,11 +186,12 @@ extern Bool PoolFormat(Format *formatReturn, Pool pool);
 extern double PoolMutatorAllocSize(Pool pool);
 
 extern Bool PoolOfAddr(Pool *poolReturn, Arena arena, Addr addr);
+extern Bool PoolOfRange(Pool *poolReturn, Arena arena, Addr base, Addr limit);
 extern Bool PoolHasAddr(Pool pool, Addr addr);
+extern Bool PoolHasRange(Pool pool, Addr base, Addr limit);
 
-extern Res PoolCreate(Pool *poolReturn, Arena arena, PoolClass class, ...);
-extern Res PoolCreateV(Pool *poolReturn, Arena arena, PoolClass class,
-                       va_list arg);
+extern Res PoolCreate(Pool *poolReturn, Arena arena, PoolClass class,
+                      ArgList args);
 extern void PoolDestroy(Pool pool);
 extern BufferClass PoolDefaultBufferClass(Pool pool);
 extern Res PoolAlloc(Addr *pReturn, Pool pool, Size size,
@@ -220,7 +213,7 @@ extern void PoolTraceEnd(Pool pool, Trace trace);
 extern void PoolWalk(Pool pool, Seg seg, FormattedObjectsStepMethod f,
                      void *v, size_t s);
 extern void PoolFreeWalk(Pool pool, FreeBlockStepMethod f, void *p);
-extern Res PoolTrivInit(Pool pool, va_list arg);
+extern Res PoolTrivInit(Pool pool, ArgList arg);
 extern void PoolTrivFinish(Pool pool);
 extern Res PoolNoAlloc(Addr *pReturn, Pool pool, Size size,
                        Bool withReservoirPermit);
@@ -485,7 +478,7 @@ extern AbstractArenaClass AbstractArenaClassGet(void);
 extern Bool ArenaClassCheck(ArenaClass class);
 
 extern Bool ArenaCheck(Arena arena);
-extern Res ArenaCreateV(Arena *arenaReturn, ArenaClass class, va_list args);
+extern Res ArenaCreate(Arena *arenaReturn, ArenaClass class, mps_arg_s args[]);
 extern void ArenaDestroy(Arena arena);
 extern Res ArenaInit(Arena arena, ArenaClass class);
 extern void ArenaFinish(Arena arena);
@@ -640,7 +633,8 @@ extern Bool LocusCheck(Arena arena);
 /* Segment interface */
 
 extern Res SegAlloc(Seg *segReturn, SegClass class, SegPref pref,
-                    Size size, Pool pool, Bool withReservoirPermit, ...);
+                    Size size, Pool pool, Bool withReservoirPermit,
+                    ArgList args);
 extern void SegFree(Seg seg);
 extern Bool SegOfAddr(Seg *segReturn, Arena arena, Addr addr);
 extern Bool SegFirst(Seg *segReturn, Arena arena);
@@ -650,9 +644,9 @@ extern void SegSetGrey(Seg seg, TraceSet grey);
 extern void SegSetRankSet(Seg seg, RankSet rankSet);
 extern void SegSetRankAndSummary(Seg seg, RankSet rankSet, RefSet summary);
 extern Res SegMerge(Seg *mergedSegReturn, Seg segLo, Seg segHi,
-                    Bool withReservoirPermit, ...);
+                    Bool withReservoirPermit);
 extern Res SegSplit(Seg *segLoReturn, Seg *segHiReturn, Seg seg, Addr at,
-                    Bool withReservoirPermit, ...);
+                    Bool withReservoirPermit);
 extern Res SegDescribe(Seg seg, mps_lib_FILE *stream);
 extern void SegSetSummary(Seg seg, RefSet summary);
 extern Buffer SegBuffer(Seg seg);
@@ -707,9 +701,7 @@ extern Addr (SegLimit)(Seg seg);
 /* Buffer Interface -- see <code/buffer.c> */
 
 extern Res BufferCreate(Buffer *bufferReturn, BufferClass class,
-                        Pool pool, Bool isMutator, ...);
-extern Res BufferCreateV(Buffer *bufferReturn, BufferClass class,
-                         Pool pool, Bool isMutator, va_list args);
+                        Pool pool, Bool isMutator, ArgList args);
 extern void BufferDestroy(Buffer buffer);
 extern Bool BufferCheck(Buffer buffer);
 extern Bool SegBufCheck(SegBuf segbuf);
@@ -801,20 +793,15 @@ extern AllocPattern AllocPatternRamp(void);
 extern AllocPattern AllocPatternRampCollectAll(void);
 
 
+/* FindDelete -- see <code/cbs.c> and <code/freelist.c> */
+
+extern Bool FindDeleteCheck(FindDelete findDelete);
+
+
 /* Format Interface -- see <code/format.c> */
 
 extern Bool FormatCheck(Format format);
-extern Res FormatCreate(Format *formatReturn, Arena arena,
-                        Align alignment,
-                        FormatVariety variety,
-                        mps_fmt_scan_t scan,
-                        mps_fmt_skip_t skip,
-                        mps_fmt_fwd_t move,
-                        mps_fmt_isfwd_t isMoved,
-                        mps_fmt_copy_t copy,
-                        mps_fmt_pad_t pad,
-                        mps_fmt_class_t class,
-                        Size headerSize);
+extern Res FormatCreate(Format *formatReturn, Arena arena, ArgList args);
 extern void FormatDestroy(Format format);
 extern Arena FormatArena(Format format);
 extern Res FormatDescribe(Format format, mps_lib_FILE *stream);
@@ -920,6 +907,7 @@ extern Res MutatorFaultContextScan(ScanState ss, MutatorFaultContext mfc);
 
 extern void LDReset(mps_ld_t ld, Arena arena);
 extern void LDAdd(mps_ld_t ld, Arena arena, Addr addr);
+extern Bool LDIsStaleAny(mps_ld_t ld, Arena arena);
 extern Bool LDIsStale(mps_ld_t ld, Arena arena, Addr addr);
 extern void LDAge(Arena arena, RefSet moved);
 extern void LDMerge(mps_ld_t ld, Arena arena, mps_ld_t from);
@@ -966,7 +954,8 @@ extern Res RootsIterate(Globals arena, RootIterateFn f, void *p);
 
 extern Align VMAlign(VM vm);
 extern Bool VMCheck(VM vm);
-extern Res VMCreate(VM *VMReturn, Size size);
+extern Res VMParamFromArgs(void *params, size_t paramSize, ArgList args);
+extern Res VMCreate(VM *VMReturn, Size size, void *params);
 extern void VMDestroy(VM vm);
 extern Addr VMBase(VM vm);
 extern Addr VMLimit(VM vm);
@@ -992,6 +981,9 @@ extern void StackProbe(Size depth);
  * STATISTIC_WRITE is inserted in WriteF arguments to output the values
  * of statistic fields.
  *
+ * STATISTIC_BEGIN and STATISTIC_END can be used around a block of
+ * statements.
+ *
  * .statistic.whitehot: The implementation of STATISTIC for
  * non-statistical varieties passes the parameter to DISCARD to ensure
  * the parameter is syntactically an expression.  The parameter is
@@ -1003,115 +995,29 @@ extern void StackProbe(Size depth);
 #define STATISTIC(gather) BEGIN (gather); END
 #define STATISTIC_STAT(gather) BEGIN gather; END
 #define STATISTIC_WRITE(format, arg) (format), (arg),
+#define STATISTIC_BEGIN BEGIN
+#define STATISTIC_END END
 
 #elif defined(STATISTICS_NONE)
 
 #define STATISTIC(gather) DISCARD(((gather), 0))
 #define STATISTIC_STAT DISCARD_STAT
 #define STATISTIC_WRITE(format, arg)
+#define STATISTIC_BEGIN BEGIN if (0) {
+#define STATISTIC_END } END
 
-#else
+#else /* !defined(STATISTICS) && !defined(STATISTICS_NONE) */
 
 #error "No statistics configured."
 
 #endif
-
-
-/* ------------ DIAG_WITH_STREAM_AND_WRITEF --------------- */
-
-Bool DiagIsOn(void);
-mps_lib_FILE *DiagStream(void);
-
-
-/* Diag*F functions -- formatted diagnostic output
- *
- * Note: do not call these directly; use the DIAG_*F macros below.
- */
-
-extern void DiagSingleF(const char *tag, ...);
-extern void DiagFirstF(const char *tag, ...);
-extern void DiagMoreF(const char *format, ...);
-extern void DiagEnd(const char *tag);
-
-
-#if defined(DIAG_WITH_STREAM_AND_WRITEF)
-
-/* Diagnostic Calculation and Output */
-#define DIAG_DECL(decl) decl
-#define DIAG_STREAM (DiagStream())
-#define DIAG(s) BEGIN \
-    s \
-  END
-
-
-/* DIAG_*F macros -- formatted diagnostic output
- *
- * Note: when invoking these macros, the value passed as macro 
- * argument "args" might contain commas; it must therefore be 
- * enclosed in parentheses.  That makes these macros unclean in 
- * all sorts of ways.
- */
-
-#define DIAG_WRITEF(args) DIAG( \
-  if(DiagIsOn()) { \
-    WriteF args; \
-  } \
-)
-#define DIAG_SINGLEF(args) DIAG( \
-  DiagSingleF args; \
-)
-#define DIAG_FIRSTF(args) DIAG( \
-  DiagFirstF args; \
-)
-#define DIAG_MOREF(args) DIAG( \
-  DiagMoreF args; \
-)
-
-/* Note: extra parens *not* required when invoking DIAG_END */
-#define DIAG_END(tag) DIAG( \
-  DiagEnd(tag); \
-)
-
-
-#else
-
-/* Diagnostic Calculation and Output */
-#define DIAG_DECL(decl)
-#define DIAG(s) BEGIN END
-#define DIAG_WRITEF(args) BEGIN END
-
-/* DIAG_*F macros */
-#define DIAG_SINGLEF(args) BEGIN END
-#define DIAG_FIRSTF(args) BEGIN END
-#define DIAG_MOREF(args) BEGIN END
-#define DIAG_END(tag) BEGIN END
-
-#endif
-
-/* ------------ DIAG_WITH_PRINTF --------------- */
-
-#if defined(DIAG_WITH_PRINTF)
-
-#include <stdio.h>
-
-#define DIAG_PRINTF(args) BEGIN\
-  printf args ; \
-  END
-
-#else
-
-#define DIAG_PRINTF(args) BEGIN\
-  END
-
-#endif
-
 
 #endif /* mpm_h */
 
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2003, 2008 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

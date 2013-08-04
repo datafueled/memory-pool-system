@@ -1,6 +1,6 @@
 /* 
 TEST_HEADER
- id = $HopeName$
+ id = $Id: //info.ravenbrook.com/project/mps/master/test/function/162.c#2 $
  summary = MV fenceposting check: free
  language = c
  link = testlib.o

@@ -1,7 +1,7 @@
 /* poolamc.c: AUTOMATIC MOSTLY-COPYING MEMORY POOL CLASS
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#45 $
- * Copyright (c) 2001-2012 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#49 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
  * .sources: <design/poolamc/>.
@@ -12,7 +12,7 @@
 #include "bt.h"
 #include "mpm.h"
 
-SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#45 $");
+SRCID(poolamc, "$Id: //info.ravenbrook.com/project/mps/master/code/poolamc.c#49 $");
 
 /* PType enumeration -- distinguishes AMCGen and AMCNailboard */
 enum {AMCPTypeGen = 1, AMCPTypeNailboard};
@@ -29,9 +29,9 @@ static Bool amcSegHasNailboard(Seg seg);
 static Bool AMCCheck(AMC amc);
 static Res AMCFix(Pool pool, ScanState ss, Seg seg, Ref *refIO);
 static Res AMCHeaderFix(Pool pool, ScanState ss, Seg seg, Ref *refIO);
-static PoolClass AMCPoolClassGet(void);
-static BufferClass amcBufClassGet(void);
-static SegClass amcSegClassGet(void);
+extern PoolClass AMCPoolClassGet(void);
+extern BufferClass amcBufClassGet(void);
+extern SegClass amcSegClassGet(void);
 
 
 /* amcGenStruct -- pool AMC generation descriptor */
@@ -142,13 +142,20 @@ static Bool amcSegCheck(amcSeg amcseg)
 
 /* AMCSegInit -- initialise an AMC segment */
 
+ARG_DEFINE_KEY(amc_seg_type, Pointer);
+#define amcKeySegType (&_mps_key_amc_seg_type)
+
 static Res AMCSegInit(Seg seg, Pool pool, Addr base, Size size,
-                      Bool reservoirPermit, va_list args)
+                      Bool reservoirPermit, ArgList args)
 {
-  int *segtype = va_arg(args, int*);  /* .segtype */
+  int *segtype;
   SegClass super;
   amcSeg amcseg;
   Res res;
+  ArgStruct arg;
+  
+  ArgRequire(&arg, args, amcKeySegType); /* .segtype */
+  segtype = arg.val.p;
 
   AVERT(Seg, seg);
   amcseg = Seg2amcSeg(seg);
@@ -604,7 +611,7 @@ static void amcBufSetGen(Buffer buffer, amcGen gen)
 
 /* AMCBufInit -- Initialize an amcBuf */
 
-static Res AMCBufInit(Buffer buffer, Pool pool, va_list args)
+static Res AMCBufInit(Buffer buffer, Pool pool, ArgList args)
 {
   AMC amc;
   amcBuf amcbuf;
@@ -689,7 +696,7 @@ static Res amcGenCreate(amcGen *genReturn, AMC amc, Serial genNr)
     goto failControlAlloc;
   gen = (amcGen)p;
 
-  res = BufferCreate(&buffer, EnsureamcBufClass(), pool, FALSE);
+  res = BufferCreate(&buffer, EnsureamcBufClass(), pool, FALSE, argsNone);
   if(res != ResOK)
     goto failBufferCreate;
 
@@ -928,12 +935,25 @@ static Bool amcNailRangeIsMarked(Seg seg, Addr base, Addr limit)
 }
 
 
+/* amcVarargs -- decode obsolete varargs */
+
+static void AMCVarargs(ArgStruct args[MPS_ARGS_MAX], va_list varargs)
+{
+  args[0].key = MPS_KEY_FORMAT;
+  args[0].val.format = va_arg(varargs, Format);
+  args[1].key = MPS_KEY_CHAIN;
+  args[1].val.chain = va_arg(varargs, Chain);
+  args[2].key = MPS_KEY_ARGS_END;
+  AVER(ArgListCheck(args));
+}
+
+
 /* amcInitComm -- initialize AMC/Z pool
  *
  * See <design/poolamc/#init>.
  * Shared by AMCInit and AMCZinit.
  */
-static Res amcInitComm(Pool pool, RankSet rankSet, va_list arg)
+static Res amcInitComm(Pool pool, RankSet rankSet, ArgList args)
 {
   AMC amc;
   Res res;
@@ -943,6 +963,7 @@ static Res amcInitComm(Pool pool, RankSet rankSet, va_list arg)
   Index i;
   size_t genArraySize;
   size_t genCount;
+  ArgStruct arg;
   
   /* Suppress a warning about this structure not being used when there
      are no statistics.  Note that simply making the declaration conditional
@@ -959,11 +980,14 @@ static Res amcInitComm(Pool pool, RankSet rankSet, va_list arg)
   amc = Pool2AMC(pool);
   arena = PoolArena(pool);
 
-  pool->format = va_arg(arg, Format);
+  ArgRequire(&arg, args, MPS_KEY_FORMAT);
+  pool->format = arg.val.format;
+  ArgRequire(&arg, args, MPS_KEY_CHAIN);
+  amc->chain = arg.val.chain;
+  
   AVERT(Format, pool->format);
-  pool->alignment = pool->format->alignment;
-  amc->chain = va_arg(arg, Chain);
   AVERT(Chain, amc->chain);
+  pool->alignment = pool->format->alignment;
   amc->rankSet = rankSet;
 
   RingInit(&amc->genRing);
@@ -1038,14 +1062,14 @@ failGensAlloc:
   return res;
 }
 
-static Res AMCInit(Pool pool, va_list arg)
+static Res AMCInit(Pool pool, ArgList args)
 {
-  return amcInitComm(pool, RankSetSingle(RankEXACT), arg);
+  return amcInitComm(pool, RankSetSingle(RankEXACT), args);
 }
 
-static Res AMCZInit(Pool pool, va_list arg)
+static Res AMCZInit(Pool pool, ArgList args)
 {
-  return amcInitComm(pool, RankSetEMPTY, arg);
+  return amcInitComm(pool, RankSetEMPTY, args);
 }
 
 
@@ -1122,6 +1146,7 @@ static Res AMCBufferFill(Addr *baseReturn, Addr *limitReturn,
   amcGen gen;
   Serial genNr;
   SegPrefStruct segPrefStruct;
+  PoolGen pgen;
 
   AVERT(Pool, pool);
   amc = Pool2AMC(pool);
@@ -1137,6 +1162,8 @@ static Res AMCBufferFill(Addr *baseReturn, Addr *limitReturn,
   gen = amcBufGen(buffer);
   AVERT(amcGen, gen);
 
+  pgen = &gen->pgen;
+
   /* Create and attach segment.  The location of this segment is */
   /* expressed as a generation number.  We rely on the arena to */
   /* organize locations appropriately.  */
@@ -1144,11 +1171,14 @@ static Res AMCBufferFill(Addr *baseReturn, Addr *limitReturn,
   alignedSize = SizeAlignUp(size, ArenaAlign(arena));
   segPrefStruct = *SegPrefDefault();
   SegPrefExpress(&segPrefStruct, SegPrefCollected, NULL);
-  genNr = PoolGenNr(&gen->pgen);
+  genNr = PoolGenNr(pgen);
   SegPrefExpress(&segPrefStruct, SegPrefGen, &genNr);
-  res = SegAlloc(&seg, amcSegClassGet(), &segPrefStruct,
-                 alignedSize, pool, withReservoirPermit,
-                 &gen->type); /* .segtype */
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD_FIELD(args, amcKeySegType, p, &gen->type); /* .segtype */
+    MPS_ARGS_DONE(args);
+    res = SegAlloc(&seg, amcSegClassGet(), &segPrefStruct,
+                   alignedSize, pool, withReservoirPermit, args);
+  } MPS_ARGS_END(args);
   if(res != ResOK)
     return res;
   AVER(alignedSize == SegSize(seg));
@@ -1161,17 +1191,25 @@ static Res AMCBufferFill(Addr *baseReturn, Addr *limitReturn,
 
   /* Put the segment in the generation indicated by the buffer. */
   ++gen->segs;
-  gen->pgen.totalSize += alignedSize;
-  /* If ramping, don't count survivors in newSize. */
-  if(amc->rampMode != RampRAMPING
-     || buffer != amc->rampGen->forward
-     || gen != amc->rampGen)
+  pgen->totalSize += alignedSize;
+
+  /* If ramping, or if the buffer is a large proportion of the
+   * generation size, don't count it towards newSize. */
+
+  /* TODO: Find a better hack for this, which is really a work-around
+   * for a nasty problem in the collection scheduling strategy.
+   * See job003435. NB 2013-03-07. */
+
+  if((size < (pgen->chain->gens[genNr].capacity * 1024.0 / 4.0)) &&
+     (amc->rampMode != RampRAMPING
+      || buffer != amc->rampGen->forward
+      || gen != amc->rampGen))
   {
-    gen->pgen.newSize += alignedSize;
+    pgen->newSize += alignedSize;
   } else {
     Seg2amcSeg(seg)->new = FALSE;
   }
-  PoolGenUpdateZones(&gen->pgen, seg);
+  PoolGenUpdateZones(pgen, seg);
 
   base = SegBase(seg);
   *baseReturn = base;
@@ -1557,24 +1595,9 @@ static Res amcScanNailed(Bool *totalReturn, ScanState ss, Pool pool,
   
     refset = ScanStateSummary(ss);
 
-#if 1
     /* A rare event, which might prompt a rare defect to appear. */
-    DIAG_SINGLEF(( "amcScanNailed_loop",
-      "scan completed, but had to loop $U times:\n", (WriteFU)loops,
-      " SegSummary:        $B\n", (WriteFB)SegSummary(seg),
-      " ss.white:          $B\n", (WriteFB)ScanStateWhite(ss),
-      " ss.unfixedSummary: $B", (WriteFB)ScanStateUnfixedSummary(ss),
-        "$S\n", (WriteFS)( 
-          (RefSetSub(ScanStateUnfixedSummary(ss), SegSummary(seg)))
-          ? ""
-          : " <=== This would have failed .verify.segsummary!"
-          ),
-      " ss.fixedSummary:   $B\n", (WriteFB)ss->fixedSummary,
-      "ScanStateSummary:   $B\n", (WriteFB)refset,
-      "MOVING ScanStateSummary TO fixedSummary, "
-      "RESETTING unfixedSummary.\n", NULL
-    ));
-#endif
+    EVENT6(amcScanNailed, loops, SegSummary(seg), ScanStateWhite(ss), 
+           ScanStateUnfixedSummary(ss), ss->fixedSummary, refset);
   
     ScanStateSetSummary(ss, refset);
   }
@@ -1741,7 +1764,7 @@ fixInPlace: /* see <design/poolamc/>.Nailboard.emergency */
  *
  * See <design/poolamc/#fix>.
  */
-Res AMCFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
+static Res AMCFix(Pool pool, ScanState ss, Seg seg, Ref *refIO)
 {
   Arena arena;
   AMC amc;
@@ -2193,14 +2216,12 @@ static void AMCReclaim(Pool pool, Trace trace, Seg seg)
 }
 
 
-/* AMCTraceEnd -- emit end-of-trace diagnostics
- *
- */
+/* AMCTraceEnd -- emit end-of-trace event */
+
 static void AMCTraceEnd(Pool pool, Trace trace)
 {
   AMC amc;
   TraceId ti;
-  Count pRetMin = 100;
   
   AVERT(Pool, pool);
   AVERT(Trace, trace);
@@ -2210,33 +2231,18 @@ static void AMCTraceEnd(Pool pool, Trace trace)
   ti = trace->ti;
   AVER(TraceIdCheck(ti));
 
-  if(amc->pageretstruct[ti].pRet >= pRetMin) {
-    DIAG_SINGLEF(( "AMCTraceEnd_pageret",
-      " $U", (WriteFU)ArenaEpoch(pool->arena),
-      " $U", (WriteFU)trace->why,
-      " $U", (WriteFU)amc->pageretstruct[ti].pCond,
-      " $U", (WriteFU)amc->pageretstruct[ti].pRet, ",",
-      " $U", (WriteFU)amc->pageretstruct[ti].pCS,
-      " $U", (WriteFU)amc->pageretstruct[ti].pRS, ",",
-      " $U", (WriteFU)amc->pageretstruct[ti].sCM,
-      " $U", (WriteFU)amc->pageretstruct[ti].pCM,
-      " $U", (WriteFU)amc->pageretstruct[ti].sRM,
-      " $U", (WriteFU)amc->pageretstruct[ti].pRM,
-      " $U", (WriteFU)amc->pageretstruct[ti].pRM1,
-      " $U", (WriteFU)amc->pageretstruct[ti].pRMrr,
-      " $U", (WriteFU)amc->pageretstruct[ti].pRMr1, ",",
-      " $U", (WriteFU)amc->pageretstruct[ti].sCL,
-      " $U", (WriteFU)amc->pageretstruct[ti].pCL,
-      " $U", (WriteFU)amc->pageretstruct[ti].sRL,
-      " $U", (WriteFU)amc->pageretstruct[ti].pRL,
-      " $U", (WriteFU)amc->pageretstruct[ti].pRLr,
-      " (page = $Ub,", (WriteFU)ArenaAlign(pool->arena), 
-      " Large >= $Up,", (WriteFU)AMCLargeSegPAGES, 
-      " pRetMin $U)", (WriteFU)pRetMin,
-      NULL ));
-  }
-
-  STATISTIC(amc->pageretstruct[ti] = pageretstruct_Zero);
+  STATISTIC_BEGIN {
+      Count pRetMin = 100;
+      PageRetStruct *pr = &amc->pageretstruct[ti];
+      if(pr->pRet >= pRetMin) {
+        EVENT21(AMCTraceEnd, ArenaEpoch(pool->arena), (EventFU)trace->why,
+                ArenaAlign(pool->arena), AMCLargeSegPAGES, pRetMin, pr->pCond,
+                pr->pRet, pr->pCS, pr->pRS, pr->sCM, pr->pCM, pr->sRM, pr->pRM,
+                pr->pRM1, pr->pRMrr, pr->pRMr1, pr->sCL, pr->pCL, pr->sRL,
+                pr->pRL, pr->pRLr);
+      }
+      *pr = pageretstruct_Zero;
+  } STATISTIC_END;
 }
 
 
@@ -2396,6 +2402,7 @@ DEFINE_POOL_CLASS(AMCPoolClass, this)
   this->size = sizeof(AMCStruct);
   this->offset = offsetof(AMCStruct, poolStruct);
   this->attr |= AttrMOVINGGC;
+  this->varargs = AMCVarargs;
   this->init = AMCInit;
   this->finish = AMCFinish;
   this->bufferFill = AMCBufferFill;
@@ -2528,7 +2535,7 @@ static Bool AMCCheck(AMC amc)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2012 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 

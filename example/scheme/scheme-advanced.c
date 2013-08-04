@@ -198,8 +198,8 @@ typedef struct table_s {
 
 /* fwd2, fwd, pad1, pad -- MPS forwarding and padding objects        %%MPS
  *
- * These object types are here to satisfy the MPS Format Protocol
- * for format variant "A". See topic/format.
+ * These object types are here to satisfy the MPS Format Protocol.
+ * See topic/format.
  *
  * The MPS needs to be able to replace any object with a forwarding
  * object or broken heart and since the smallest normal object defined
@@ -311,6 +311,7 @@ static obj_t obj_false;		/* #f, boolean false */
 static obj_t obj_undefined;	/* undefined result indicator */
 static obj_t obj_tail;          /* tail recursion indicator */
 static obj_t obj_deleted;       /* deleted key in hashtable */
+static obj_t obj_unused;        /* unused entry in hashtable */
 
 
 /* predefined symbols
@@ -639,7 +640,7 @@ static buckets_t make_buckets(size_t length, mps_ap_t ap)
     buckets->used = TAG_COUNT(0);
     buckets->deleted = TAG_COUNT(0);
     for(i = 0; i < length; ++i) {
-      buckets->bucket[i] = NULL;
+      buckets->bucket[i] = obj_unused;
     }
   } while(!mps_commit(ap, addr, size));
   total += size;
@@ -806,7 +807,7 @@ static int buckets_find(obj_t tbl, buckets_t buckets, obj_t key, mps_ld_t ld, si
   i = h;
   do {
     obj_t k = buckets->bucket[i];
-    if(k == NULL || tbl->table.cmp(k, key)) {
+    if(k == obj_unused || tbl->table.cmp(k, key)) {
       *b = i;
       return 1;
     }
@@ -854,19 +855,19 @@ static int table_rehash(obj_t tbl, size_t new_length, obj_t key, size_t *key_buc
 
   for (i = 0; i < length; ++i) {
     obj_t old_key = tbl->table.keys->bucket[i];
-    if (old_key != NULL && old_key != obj_deleted) {
+    if (old_key != obj_unused && old_key != obj_deleted) {
       int found;
       size_t b;
       found = buckets_find(tbl, new_keys, old_key, &tbl->table.ld, &b);
       assert(found);            /* new table shouldn't be full */
-      assert(new_keys->bucket[b] == NULL); /* shouldn't be in new table */
+      assert(new_keys->bucket[b] == obj_unused); /* shouldn't be in new table */
       new_keys->bucket[b] = old_key;
       new_values->bucket[b] = tbl->table.values->bucket[i];
       if (key != NULL && tbl->table.cmp(old_key, key)) {
         *key_bucket = b;
         result = 1;
       }
-      new_keys->used += 2;      /* tagged */
+      new_keys->used = TAG_COUNT(UNTAG_COUNT(new_keys->used) + 1);
     }
   }
 
@@ -887,7 +888,7 @@ static obj_t table_ref(obj_t tbl, obj_t key)
   assert(TYPE(tbl) == TYPE_TABLE);
   if (buckets_find(tbl, tbl->table.keys, key, NULL, &b)) {
     obj_t k = tbl->table.keys->bucket[b];
-    if (k != NULL && k != obj_deleted)
+    if (k != obj_unused && k != obj_deleted)
       return tbl->table.values->bucket[b];
   }
   if (mps_ld_isstale(&tbl->table.ld, arena, key))
@@ -902,13 +903,14 @@ static int table_try_set(obj_t tbl, obj_t key, obj_t value)
   assert(TYPE(tbl) == TYPE_TABLE);
   if (!buckets_find(tbl, tbl->table.keys, key, &tbl->table.ld, &b))
     return 0;
-  if (tbl->table.keys->bucket[b] == NULL) {
+  if (tbl->table.keys->bucket[b] == obj_unused) {
     tbl->table.keys->bucket[b] = key;
-    tbl->table.keys->used += 2; /* tagged */
+    tbl->table.keys->used = TAG_COUNT(UNTAG_COUNT(tbl->table.keys->used) + 1);
   } else if (tbl->table.keys->bucket[b] == obj_deleted) {
     tbl->table.keys->bucket[b] = key;
     assert(tbl->table.keys->deleted > TAG_COUNT(0));
-    tbl->table.keys->deleted -= 2; /* tagged */
+    tbl->table.keys->deleted
+      = TAG_COUNT(UNTAG_COUNT(tbl->table.keys->deleted) - 1);
   }
   tbl->table.values->bucket[b] = value;
   return 1;
@@ -936,7 +938,7 @@ static void table_delete(obj_t tbl, obj_t key)
   size_t b;
   assert(TYPE(tbl) == TYPE_TABLE);
   if(!buckets_find(tbl, tbl->table.keys, key, NULL, &b) ||
-     tbl->table.keys->bucket[b] == NULL ||
+     tbl->table.keys->bucket[b] == obj_unused ||
      tbl->table.keys->bucket[b] == obj_deleted)
   {
     if(!mps_ld_isstale(&tbl->table.ld, arena, key))
@@ -944,11 +946,12 @@ static void table_delete(obj_t tbl, obj_t key)
     if(!table_rehash(tbl, UNTAG_COUNT(tbl->table.keys->length), key, &b))
       return;
   }
-  if(tbl->table.keys->bucket[b] != NULL &&
+  if(tbl->table.keys->bucket[b] != obj_unused &&
      tbl->table.keys->bucket[b] != obj_deleted) 
   {
     tbl->table.keys->bucket[b] = obj_deleted;
-    tbl->table.keys->deleted += 2; /* tagged */
+    tbl->table.keys->deleted
+      = TAG_COUNT(UNTAG_COUNT(tbl->table.keys->deleted) + 1);
     tbl->table.values->bucket[b] = NULL;
   }
 }
@@ -1118,7 +1121,7 @@ static void print(obj_t obj, unsigned depth, FILE *stream)
       fputs("#[hashtable", stream);
       for(i = 0; i < length; ++i) {
         obj_t k = obj->table.keys->bucket[i];
-        if(k != NULL && k != obj_deleted) {
+        if(k != obj_unused && k != obj_deleted) {
           fputs(" (", stream);
           print(k, depth - 1, stream);
           putc(' ', stream);
@@ -1715,7 +1718,7 @@ static obj_t entry_quote(obj_t env, obj_t op_env, obj_t operator, obj_t operands
 
 static obj_t entry_define(obj_t env, obj_t op_env, obj_t operator, obj_t operands)
 {
-  obj_t symbol, value;
+  obj_t symbol = NULL, value = NULL;
   unless(TYPE(operands) == TYPE_PAIR &&
          TYPE(CDR(operands)) == TYPE_PAIR)
     error("%s: illegal syntax", operator->operator.name);
@@ -3479,7 +3482,7 @@ static obj_t entry_eqv_hash(obj_t env, obj_t op_env, obj_t operator, obj_t opera
 
 static obj_t make_hashtable(obj_t operator, obj_t rest, hash_t hashf, cmp_t cmpf, int weak_key, int weak_value)
 {
-  size_t length;
+  size_t length = 0;
   if (rest == obj_empty)
     length = 8;
   else unless(CDR(rest) == obj_empty)
@@ -3717,7 +3720,7 @@ static obj_t entry_hashtable_keys(obj_t env, obj_t op_env, obj_t operator, obj_t
   length = UNTAG_COUNT(tbl->table.keys->length);
   for(i = 0; i < length; ++i) {
     obj_t key = tbl->table.keys->bucket[i];
-    if(key != NULL && key != obj_deleted)
+    if(key != obj_unused && key != obj_deleted)
       vector->vector.vector[j++] = tbl->table.values->bucket[i];
   }
   assert(j == vector->vector.length);
@@ -3757,7 +3760,8 @@ static struct {char *name; obj_t *varp;} sptab[] = {
   {"#f", &obj_false},
   {"#[undefined]", &obj_undefined},
   {"#[tail]", &obj_tail},
-  {"#[deleted]", &obj_deleted}
+  {"#[deleted]", &obj_deleted},
+  {"#[unused]", &obj_unused}
 };
 
 
@@ -3889,8 +3893,7 @@ static struct {char *name; entry_t entry;} funtab[] = {
 
 /* MPS Format                                                   %%MPS
  *
- * These functions satisfy the MPS Format Protocol for format
- * variant "A". See topic/format.
+ * These functions describe Scheme objects to the MPS. See topic/format.
  *
  * In general, MPS format methods are performance critical, as they're used
  * on the MPS critical path. See topic/critical.
@@ -4138,23 +4141,6 @@ static void obj_pad(mps_addr_t addr, size_t size)
 }
 
 
-/* obj_fmt_s -- object format parameter structure               %%MPS
- *
- * This is simply a gathering of the object format methods and the chosen
- * pool alignment for passing to `mps_fmt_create_A`. See topic/format.
- */
-
-struct mps_fmt_A_s obj_fmt_s = {
-  ALIGNMENT,
-  obj_scan,
-  obj_skip,
-  NULL,                         /* Obsolete copy method */
-  obj_fwd,
-  obj_isfwd,
-  obj_pad
-};
-
-
 /* buckets_scan -- buckets format scan method                        %%MPS
  */
 
@@ -4175,18 +4161,18 @@ static mps_res_t buckets_scan(mps_ss_t ss, mps_addr_t base, mps_addr_t limit)
           if (p == NULL) {
             /* key/value was splatted: splat value/key too */
             p = obj_deleted;
-            buckets->deleted += 2; /* tagged */
+            buckets->deleted = TAG_COUNT(UNTAG_COUNT(buckets->deleted) + 1);
             if (buckets->dependent != NULL) {
               buckets->dependent->bucket[i] = p;
-              buckets->dependent->deleted += 2; /* tagged */
+              buckets->dependent->deleted
+                = TAG_COUNT(UNTAG_COUNT(buckets->dependent->deleted) + 1);
             }
           }
           buckets->bucket[i] = p;
         }
       }
-      base = (char *)base +
-        ALIGN(offsetof(buckets_s, bucket) +
-              length * sizeof(buckets->bucket[0]));
+      base = (char *)base + ALIGN(offsetof(buckets_s, bucket) +
+                                  length * sizeof(buckets->bucket[0]));
     }
   } MPS_SCAN_END(ss);
   return MPS_RES_OK;
@@ -4200,9 +4186,8 @@ static mps_addr_t buckets_skip(mps_addr_t base)
 {
   buckets_t buckets = base;
   size_t length = UNTAG_COUNT(buckets->length);
-  return (char *)base +
-    ALIGN(offsetof(buckets_s, bucket) +
-          length * sizeof(buckets->bucket[0]));
+  return (char *)base + ALIGN(offsetof(buckets_s, bucket) +
+                              length * sizeof(buckets->bucket[0]));
 }
 
 
@@ -4219,20 +4204,6 @@ static mps_addr_t buckets_find_dependent(mps_addr_t addr)
   buckets_t buckets = addr;
   return buckets->dependent;
 }
-
-
-/* buckets_fmt_s -- buckets format parameter structure               %%MPS
- */
-
-struct mps_fmt_A_s buckets_fmt_s = {
-  ALIGNMENT,
-  buckets_scan,
-  buckets_skip,
-  NULL,                         /* Obsolete copy method */
-  NULL,                         /* fwd method not used by AWL */
-  NULL,                         /* isfwd method not used by AWL */
-  NULL                          /* pad method not used by AWL */
-};
 
 
 /* globals_scan -- scan static global variables                 %%MPS
@@ -4341,34 +4312,35 @@ static int start(int argc, char *argv[])
 
   total = (size_t)0;
   error_handler = &jb;
-  
-  /* We must register the global variable 'symtab' as a root before
-     creating the symbol table, otherwise the symbol table might be
-     collected in the interval between creation and registration. But
-     we must also ensure that 'symtab' is valid before registration
-     (in this case, by setting it to NULL). See topic/root. */
-  symtab = NULL;
-  ref = &symtab;
-  res = mps_root_create_table(&symtab_root, arena, mps_rank_exact(), 0,
-                              ref, 1);
-  if(res != MPS_RES_OK) error("Couldn't register symtab root");
-
-  /* The symbol table is strong-key weak-value. */
-  symtab = make_table(16, string_hash, string_equalp, 0, 1);
-
-  /* By contrast with the symbol table, we *must* register the globals as
-     roots before we start making things to put into them, because making
-     stuff might cause a garbage collection and throw away their contents
-     if they're not registered.  Since they're static variables they'll
-     contain NULL pointers, and are scannable from the start. See
-     topic/root. */
-  res = mps_root_create(&globals_root, arena, mps_rank_exact(), 0,
-                        globals_scan, NULL, 0);
-  if (res != MPS_RES_OK) error("Couldn't register globals root");
 
   if(!setjmp(*error_handler)) {
     for(i = 0; i < LENGTH(sptab); ++i)
       *sptab[i].varp = make_special(sptab[i].name);
+  
+    /* We must register the global variable 'symtab' as a root before
+       creating the symbol table, otherwise the symbol table might be
+       collected in the interval between creation and registration. But
+       we must also ensure that 'symtab' is valid before registration
+       (in this case, by setting it to NULL). See topic/root. */
+    symtab = NULL;
+    ref = &symtab;
+    res = mps_root_create_table(&symtab_root, arena, mps_rank_exact(), 0,
+                                ref, 1);
+    if(res != MPS_RES_OK) error("Couldn't register symtab root");
+
+    /* The symbol table is strong-key weak-value. */
+    symtab = make_table(16, string_hash, string_equalp, 0, 1);
+
+    /* By contrast with the symbol table, we *must* register the globals as
+       roots before we start making things to put into them, because making
+       stuff might cause a garbage collection and throw away their contents
+       if they're not registered.  Since they're static variables they'll
+       contain NULL pointers, and are scannable from the start. See
+       topic/root. */
+    res = mps_root_create(&globals_root, arena, mps_rank_exact(), 0,
+                          globals_scan, NULL, 0);
+    if (res != MPS_RES_OK) error("Couldn't register globals root");
+
     for(i = 0; i < LENGTH(isymtab); ++i)
       *isymtab[i].varp = intern(isymtab[i].name);
     env = make_pair(obj_empty, obj_empty);
@@ -4470,13 +4442,26 @@ int main(int argc, char *argv[])
   
   /* Create an MPS arena.  There is usually only one of these in a process.
      It holds all the MPS "global" state and is where everything happens. */
-  res = mps_arena_create(&arena,
-                         mps_arena_class_vm(), 
-                         (size_t)(32ul * 1024 * 1024));
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_ARENA_SIZE, 32 * 1024 * 1024);
+    MPS_ARGS_DONE(args);
+    res = mps_arena_create_k(&arena, mps_arena_class_vm(),  args);
+  } MPS_ARGS_END(args);
   if (res != MPS_RES_OK) error("Couldn't create arena");
 
-  /* Create the object format. */
-  res = mps_fmt_create_A(&obj_fmt, arena, &obj_fmt_s);
+  /* Create the object format. This gathers together the methods that
+     the MPS uses to interrogate your objects via the Format Protocol.
+     See topic/format. */
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, ALIGNMENT);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, obj_scan);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, obj_skip);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_FWD, obj_fwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ISFWD, obj_isfwd);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_PAD, obj_pad);
+    MPS_ARGS_DONE(args);
+    res = mps_fmt_create_k(&obj_fmt, arena, args);
+  } MPS_ARGS_END(args);
   if (res != MPS_RES_OK) error("Couldn't create obj format");
 
   /* Create a chain controlling GC strategy. FIXME: explain! */
@@ -4488,50 +4473,66 @@ int main(int argc, char *argv[])
 
   /* Create an Automatic Mostly-Copying (AMC) pool to manage the Scheme
      objects.  This is a kind of copying garbage collector. */
-  res = mps_pool_create(&obj_pool,
-                        arena,
-                        mps_class_amc(),
-                        obj_fmt,
-                        obj_chain);
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, obj_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+    MPS_ARGS_DONE(args);
+    res = mps_pool_create_k(&obj_pool, arena, mps_class_amc(), args);
+  } MPS_ARGS_END(args);
   if (res != MPS_RES_OK) error("Couldn't create obj pool");
 
   /* Create an allocation point for fast in-line allocation of objects
      from the `obj_pool`.  You'd usually want one of these per thread
      for your primary pools.  This interpreter is single threaded, though,
      so we just have it in a global. See topic/allocation. */
-  res = mps_ap_create(&obj_ap, obj_pool);
+  res = mps_ap_create_k(&obj_ap, obj_pool, mps_args_none);
   if (res != MPS_RES_OK) error("Couldn't create obj allocation point");
 
   /* Create an Automatic Mostly-Copying Zero-rank (AMCZ) pool to
      manage the leaf objects. */
-  res = mps_pool_create(&leaf_pool,
-                        arena,
-                        mps_class_amcz(),
-                        obj_fmt,
-                        obj_chain);
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_CHAIN, obj_chain);
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, obj_fmt);
+    MPS_ARGS_DONE(args);
+    res = mps_pool_create_k(&leaf_pool, arena, mps_class_amcz(), args);
+  } MPS_ARGS_END(args);
   if (res != MPS_RES_OK) error("Couldn't create leaf pool");
 
   /* Create allocation point for leaf objects. */
-  res = mps_ap_create(&leaf_ap, leaf_pool);
+  res = mps_ap_create_k(&leaf_ap, leaf_pool, mps_args_none);
   if (res != MPS_RES_OK) error("Couldn't create leaf objects allocation point");
 
   /* Create the buckets format. */
-  res = mps_fmt_create_A(&buckets_fmt, arena, &buckets_fmt_s);
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_ALIGN, ALIGNMENT);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SCAN, buckets_scan);
+    MPS_ARGS_ADD(args, MPS_KEY_FMT_SKIP, buckets_skip);
+    res = mps_fmt_create_k(&buckets_fmt, arena, args);
+  } MPS_ARGS_END(args);
   if (res != MPS_RES_OK) error("Couldn't create buckets format");
 
   /* Create an Automatic Weak Linked (AWL) pool to manage the hash table
      buckets. */
-  res = mps_pool_create(&buckets_pool,
-                        arena,
-                        mps_class_awl(),
-                        buckets_fmt,
-                        buckets_find_dependent);
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_FORMAT, buckets_fmt);
+    MPS_ARGS_ADD(args, MPS_KEY_AWL_FIND_DEPENDENT, buckets_find_dependent);
+    MPS_ARGS_DONE(args);
+    res = mps_pool_create_k(&buckets_pool, arena, mps_class_awl(), args);
+  } MPS_ARGS_END(args);
   if (res != MPS_RES_OK) error("Couldn't create buckets pool");
 
   /* Create allocation points for weak and strong buckets. */
-  res = mps_ap_create(&strong_buckets_ap, buckets_pool, mps_rank_exact());
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_exact());
+    MPS_ARGS_DONE(args);
+    res = mps_ap_create_k(&strong_buckets_ap, buckets_pool, args);
+  } MPS_ARGS_END(args);
   if (res != MPS_RES_OK) error("Couldn't create strong buckets allocation point");
-  res = mps_ap_create(&weak_buckets_ap, buckets_pool, mps_rank_weak());
+  MPS_ARGS_BEGIN(args) {
+    MPS_ARGS_ADD(args, MPS_KEY_RANK, mps_rank_weak());
+    MPS_ARGS_DONE(args);
+    res = mps_ap_create_k(&weak_buckets_ap, buckets_pool, args);
+  } MPS_ARGS_END(args);
   if (res != MPS_RES_OK) error("Couldn't create weak buckets allocation point");
 
   /* Register the current thread with the MPS.  The MPS must sometimes
@@ -4568,6 +4569,7 @@ int main(int argc, char *argv[])
      check final consistency and warn you about bugs.  It also allows the
      MPS to flush buffers for debugging data, etc.  It's good practise
      to destroy MPS objects on exit if possible rather than just quitting. */
+  mps_arena_park(arena);
   mps_root_destroy(reg_root);
   mps_thread_dereg(thread);
   mps_ap_destroy(strong_buckets_ap);

@@ -1,5 +1,5 @@
-#!/usr/local/perl
-# $HopeName: MMQA_harness!script:compile(trunk.27) $
+#!/usr/bin/perl -w
+# $Id: //info.ravenbrook.com/project/mps/master/test/test/script/compile#2 $
 #
 # provides subroutines to compile or compile and link
 # tests and test libraries.

@@ -1,6 +1,6 @@
 /* locusss.c: LOCUS STRESS TEST
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/locusss.c#6 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/locusss.c#7 $
  * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  */
 
@@ -9,6 +9,7 @@
 #include "mpslib.h"
 #include "mpsavm.h"
 #include "testlib.h"
+#include "mpslib.h"
 #include "mps.h"
 
 #include <stdlib.h>
@@ -233,6 +234,7 @@ int main(int argc, char *argv[])
 {
 
   randomize(argc, argv);
+  mps_lib_assert_fail_install(assert_die);
 
   printf("\nRunning test with no information about peak usage.\n");
   runArenaTest(smallArenaSize, FALSE, FALSE);

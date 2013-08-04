@@ -1,6 +1,6 @@
 /* mpmtypes.h: MEMORY POOL MANAGER TYPES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#30 $
+ * $Id: //info.ravenbrook.com/project/mps/master/code/mpmtypes.h#34 $
  * Copyright (c) 2001-2002, 2006 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (c) 2001 Global Graphics Software.
  *
@@ -43,6 +43,11 @@ typedef Addr Ref;                       /* <design/type/#ref> */
 typedef void *Pointer;                  /* <design/type/#pointer> */
 typedef Word Clock;                     /* processor time */
 typedef MPS_T_ULONGEST ULongest;        /* <design/type/#ulongest> */
+
+typedef mps_arg_s ArgStruct;
+typedef mps_arg_s *Arg;
+typedef mps_arg_s *ArgList;
+typedef mps_key_t Key;
 
 typedef Word RefSet;                    /* design.mps.refset */
 typedef Word ZoneSet;                   /* design.mps.refset */
@@ -104,12 +109,14 @@ typedef struct AllocPatternStruct *AllocPattern;
 typedef struct AllocFrameStruct *AllocFrame; /* <design/alloc-frame/> */
 typedef struct ReservoirStruct *Reservoir;   /* <design/reservoir/> */
 typedef struct StackContextStruct *StackContext;
+typedef unsigned FindDelete;    /* <design/cbs/> */
 
 
 /* Arena*Method -- see <code/mpmst.h#ArenaClassStruct> */
 
+typedef void (*ArenaVarargsMethod)(ArgStruct args[], va_list varargs);
 typedef Res (*ArenaInitMethod)(Arena *arenaReturn,
-                               ArenaClass class, va_list args);
+                               ArenaClass class, ArgList args);
 typedef void (*ArenaFinishMethod)(Arena arena);
 typedef Size (*ArenaReservedMethod)(Arena arena);
 typedef void (*ArenaSpareCommitExceededMethod)(Arena arena);
@@ -121,6 +128,11 @@ typedef Res (*ArenaChunkInitMethod)(Chunk chunk, BootBlock boot);
 typedef void (*ArenaChunkFinishMethod)(Chunk chunk);
 typedef void (*ArenaCompactMethod)(Arena arena, Trace trace);
 typedef Res (*ArenaDescribeMethod)(Arena arena, mps_lib_FILE *stream);
+
+/* These are not generally exposed and public, but are part of a commercial
+   extension to the MPS. */
+typedef void (*ArenaVMExtendedCallback)(Arena arena, Addr base, Size size);
+typedef void (*ArenaVMContractedCallback)(Arena arena, Addr base, Size size);
 
 
 /* TraceFixMethod */
@@ -141,7 +153,7 @@ typedef void (*FreeBlockStepMethod)(Addr base, Addr limit, Pool pool, void *p);
 /* Seg*Method -- see <design/seg/> */
 
 typedef Res (*SegInitMethod)(Seg seg, Pool pool, Addr base, Size size,
-                             Bool withReservoirPermit, va_list args);
+                             Bool withReservoirPermit, ArgList args);
 typedef void (*SegFinishMethod)(Seg seg);
 typedef void (*SegSetGreyMethod)(Seg seg, TraceSet grey);
 typedef void (*SegSetWhiteMethod)(Seg seg, TraceSet white);
@@ -154,14 +166,15 @@ typedef void (*SegSetBufferMethod)(Seg seg, Buffer buffer);
 typedef Res (*SegDescribeMethod)(Seg seg, mps_lib_FILE *stream);
 typedef Res (*SegMergeMethod)(Seg seg, Seg segHi,
                               Addr base, Addr mid, Addr limit,
-                              Bool withReservoirPermit, va_list args);
+                              Bool withReservoirPermit);
 typedef Res (*SegSplitMethod)(Seg seg, Seg segHi,
                               Addr base, Addr mid, Addr limit,
-                              Bool withReservoirPermit, va_list args);
+                              Bool withReservoirPermit);
 
 /* Buffer*Method -- see <design/buffer/> */
 
-typedef Res (*BufferInitMethod)(Buffer buffer, Pool pool, va_list args);
+typedef void (*BufferVarargsMethod)(ArgStruct args[], va_list varargs);
+typedef Res (*BufferInitMethod)(Buffer buffer, Pool pool, ArgList args);
 typedef void (*BufferFinishMethod)(Buffer buffer);
 typedef void (*BufferAttachMethod)(Buffer buffer, Addr base, Addr limit,
                                    Addr init, Size size);
@@ -177,7 +190,8 @@ typedef Res (*BufferDescribeMethod)(Buffer buffer, mps_lib_FILE *stream);
 
 /* Order of types corresponds to PoolClassStruct in <code/mpmst.h> */
 
-typedef Res (*PoolInitMethod)(Pool pool, va_list args);
+typedef void (*PoolVarargsMethod)(ArgStruct args[], va_list varargs);
+typedef Res (*PoolInitMethod)(Pool pool, ArgList args);
 typedef void (*PoolFinishMethod)(Pool pool);
 typedef Res (*PoolAllocMethod)(Addr *pReturn, Pool pool, Size size,
                                Bool withReservoirPermit);
@@ -413,6 +427,17 @@ enum {
   MessageTypeGC,  /* MPS_MESSAGE_TYPE_GC = trace end */
   MessageTypeGCSTART,  /* MPS_MESSAGE_TYPE_GC_START */
   MessageTypeLIMIT /* not a message type, the limit of the enum. */
+};
+
+
+/* FindDelete operations -- see <design/cbs/> and <design/freelist/> */
+
+enum {
+  FindDeleteNONE = 1, /* don't delete after finding */
+  FindDeleteLOW,      /* delete size bytes from low end of block */
+  FindDeleteHIGH,     /* delete size bytes from high end of block */
+  FindDeleteENTIRE,   /* delete entire range */
+  FindDeleteLIMIT     /* not a FindDelete operation; the limit of the enum. */
 };
 
 

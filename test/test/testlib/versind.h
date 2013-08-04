@@ -1,4 +1,4 @@
-/* $HopeName: MMQA_harness!testlib:versind.h(trunk.11) $
+/* $Id: //info.ravenbrook.com/project/mps/master/test/test/testlib/versind.h#2 $
  *
  * If you define mps_ symbols here, you also need to list them in
  * MMQA_harness!testlib:assumed.

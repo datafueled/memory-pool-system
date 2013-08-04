@@ -1,7 +1,7 @@
 /* global.c: ARENA-GLOBAL INTERFACES
  *
- * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#35 $
- * Copyright (c) 2001,2003 Ravenbrook Limited.  See end of file for license.
+ * $Id: //info.ravenbrook.com/project/mps/master/code/global.c#39 $
+ * Copyright (c) 2001-2013 Ravenbrook Limited.  See end of file for license.
  * Portions copyright (C) 2002 Global Graphics Software.
  *
  * .sources: See <design/arena/>.  design.mps.thread-safety is relevant
@@ -27,7 +27,7 @@
 #include "poolmv.h"
 #include "mpm.h"
 
-SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#35 $");
+SRCID(global, "$Id: //info.ravenbrook.com/project/mps/master/code/global.c#39 $");
 
 
 /* All static data objects are declared here. See .static */
@@ -381,15 +381,34 @@ void GlobalsFinish(Globals arenaGlobals)
   Arena arena;
   Rank rank;
 
-  AVERT(Globals, arenaGlobals);
+  /* Check that the tear-down is complete: that the client has
+   * destroyed all data structures associated with the arena. We do
+   * this *before* calling AVERT(Globals, arenaGlobals) because the
+   * AVERT will crash if there are any remaining data structures, and
+   * it is politer to assert than to crash. (The crash would happen
+   * because by this point in the code the control pool has been
+   * destroyed and so the address space containing all these rings has
+   * potentially been unmapped, and so RingCheck dereferences a
+   * pointer into that unmapped memory.) See job000652. */
   arena = GlobalsArena(arenaGlobals);
+  AVER(RingIsSingle(&arena->formatRing));
+  AVER(RingIsSingle(&arena->chainRing));
+  AVER(RingIsSingle(&arena->messageRing));
+  AVER(RingIsSingle(&arena->threadRing));
+  for(rank = 0; rank < RankLIMIT; ++rank)
+    AVER(RingIsSingle(&arena->greyRing[rank]));
+  AVER(RingIsSingle(&arenaGlobals->poolRing));
+  AVER(RingIsSingle(&arenaGlobals->rootRing));
+
+  AVERT(Globals, arenaGlobals);
 
   STATISTIC_STAT(EVENT2(ArenaWriteFaults, arena,
-                          arena->writeBarrierHitCount));
+                        arena->writeBarrierHitCount));
 
   arenaGlobals->sig = SigInvalid;
 
   RingFinish(&arena->formatRing);
+  RingFinish(&arena->chainRing);
   RingFinish(&arena->messageRing);
   RingFinish(&arena->threadRing);
   for(rank = 0; rank < RankLIMIT; ++rank)
@@ -398,7 +417,6 @@ void GlobalsFinish(Globals arenaGlobals)
   RingFinish(&arenaGlobals->poolRing);
   RingFinish(&arenaGlobals->globalRing);
 }
-
 
 /* GlobalsPrepareToDestroy -- prepare to destroy the globals of the arena
  *
@@ -427,24 +445,17 @@ void GlobalsPrepareToDestroy(Globals arenaGlobals)
     TraceIdMessagesDestroy(arena, ti);
   TRACE_SET_ITER_END(ti, trace, TraceSetUNIV, arena);
 
-  /* report dropped messages (currently in diagnostic varieties only) */
-  if(arena->droppedMessages > 0) {
+  /* report dropped messages */
+  if(arena->droppedMessages > 0)
     EVENT1(MessagesDropped, arena->droppedMessages);
-    DIAG_SINGLEF(( "GlobalsPrepareToDestroy_dropped",
-      "arena->droppedMessages = $U", (WriteFU)arena->droppedMessages,
-      NULL ));
-  }
 
   /* .message.queue.empty: Empty the queue of messages before */
   /* proceeding to finish the arena.  It is important that this */
   /* is done before destroying the finalization pool as otherwise */
   /* the message queue would have dangling pointers to messages */
   /* whose memory has been unmapped. */
-  if(MessagePoll(arena)) {
+  if(MessagePoll(arena))
     EVENT0(MessagesExist);
-    DIAG_SINGLEF(( "GlobalsPrepareToDestroy_queue",
-      "Message queue not empty", NULL ));
-  }
   MessageEmpty(arena);
 
   /* throw away the BT used by messages */
@@ -467,6 +478,7 @@ void GlobalsPrepareToDestroy(Globals arenaGlobals)
     PoolDestroy(pool);
   }
 }
+
 
 Ring GlobalsRememberedSummaryRing(Globals global)
 {
@@ -834,7 +846,7 @@ Res ArenaFinalize(Arena arena, Ref obj)
   if (!arena->isFinalPool) {
     Pool pool;
 
-    res = PoolCreate(&pool, arena, PoolClassMRG());
+    res = PoolCreate(&pool, arena, PoolClassMRG(), argsNone);
     if (res != ResOK)
       return res;
     arena->finalPool = pool;
@@ -1084,8 +1096,6 @@ void ArenaSetEmergency(Arena arena, Bool emergency)
   AVERT(Arena, arena);
   AVERT(Bool, emergency);
 
-  DIAG_SINGLEF(( "ArenaSetEmergency",
-    "emergency: $U", (WriteFU)emergency, NULL ));
   EVENT2(ArenaSetEmergency, arena, emergency);
 
   arena->emergency = emergency;
@@ -1101,7 +1111,7 @@ Bool ArenaEmergency(Arena arena)
 
 /* C. COPYRIGHT AND LICENSE
  *
- * Copyright (C) 2001-2003, 2008 Ravenbrook Limited <http://www.ravenbrook.com/>.
+ * Copyright (C) 2001-2013 Ravenbrook Limited <http://www.ravenbrook.com/>.
  * All rights reserved.  This is an open source license.  Contact
  * Ravenbrook for commercial licensing options.
  * 
